@@ -1,0 +1,229 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#                      c99.TraveltimeCurve
+#===========================================================
+# make travel time curves made by the taup_toolkit.
+#
+# the f90 code was written by Pei-ying (Patty) Lin at
+# ASU. any errors are undoubtedly mine, as I modified things.
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+#         (2) plot box bounds: Dist min/max, time min/max
+#         (3) some directory location information
+
+# OUTPUT:  (1) a postscript plot for SV
+# -----    (2) a postscript plot for SH
+#          (3) a postscript plot for Z
+
+set EVENT           = $1
+set DIRSRC          = $2
+set DIRDATA         = $3
+set DIRPLOT         = $4
+set DISTMIN         = $5
+set DISTMAX         = $6
+set TIMEMIN         = $7
+set TIMEMAX         = $8
+set COMP            = $9
+set CSHELL_NUM      = $10
+
+# go to the data directory
+set DIRPWD = ` pwd `
+
+
+# source our env variable script
+
+# loose the header line
+awk ' NR>1 {print $0}'  $DIRDATA/$EVENT/eventStation.$EVENT >! IINFIL
+
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' IINFIL `
+set NSTA   = ` wc -l IINFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1] 
+set ELON   = $COORDS[2] 
+set EZ     = $COORDS[3] 
+# set EZ     = `echo $COORDS[3] | awk '{ print $1/1000.0 }'`
+set EMAG   = $COORDS[4] 
+
+# check to see if script is to compute distance bounds
+# for plot.  If DISTMIN = -1, code does it.  If yes,
+# code will add +/- 10% of distance range of data
+set CHECK = ` echo $DISTMIN | awk ' $1 == -1  { print "Y"}' `
+if($CHECK == Y ) then
+   set MINMAX = ( ` awk '{print $3}' IINFIL | minmax -C ` )
+   set DISTMIN = ` echo $MINMAX | awk '{print int($1 - 0.1*($2 - $1))}' `
+   set DISTMAX = ` echo $MINMAX | awk '{print int($2 + 0.1*($2 - $1))}' `
+endif
+
+# make lists of seismograms, for plot panels: a separate
+# list for each plot to be made
+
+
+#===========================================================
+#             PLOTTING TIME!!!
+#===========================================================
+
+# here we make travel time curves with taup
+# here, we make them in groups, for different color coding in the
+# profile plots that follow. note: the plot gets pretty busy
+# pretty quickly, so i don't have all possibilities being plotted
+echo "c99: computing travel time curves"
+
+
+# plot the text of the title,
+# also, plot a big title at top of page:
+# first, break apart event name for Big Title:
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+# plot size (the f90 sac2xy code assumes these are the dimensions
+# we are working with)
+set XSIZE = 6
+set YSIZE = 8.5 
+
+# crunch some axis attributes for plot:
+# well put dist on horiz axis, and time on vertical
+set SCALE = X"$XSIZE"i/"$YSIZE"i
+set RANGE = $DISTMIN/$DISTMAX/$TIMEMIN/$TIMEMAX
+set BAXIS = a5f1/a5f1
+gmtset GRID_PEN_PRIMARY  0.25p,0/0/0
+
+set Y0 = -Y1.5i
+
+
+set iEZ = `echo $EZ | awk '{printf "%d\n",$1}'`
+set OUTFILE = $DIRPLOT/$EVENT.$CSHELL_NUM.traveltimeCurve.trip.$COMP.ps
+
+# plot some text
+pstext -Jx1i -R0/6/0/9 -K -N -P $Y0 << END >! $OUTFILE
+3.0 9.3 20  0 0 CB Event: ${MM}/${DD}/$YYYY ${HH}:${MIN}  Comp: $COMP
+3.0 9.0 15  0 0 CB $EVENT  LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG 
+-0.5 4.5 15 90 0 CB Distance (deg)
+3.0 -0.7 15  0 0 CB Time after earthquake origin time (sec)
+END
+
+# initiate coords for traces and curves
+psbasemap -J$SCALE -R$RANGE -B"$BAXIS"WSne -K -O -P >> $OUTFILE
+
+
+# plot travel time curves
+
+set MODEL = ak135
+set num_DISC = 2
+set REDUCE = 11 
+if ( $num_DISC == 2 ) set DISCON = ( 410 660 )
+
+
+# === make n_line.sh =======
+set TEMPsh = n_line.sh
+echo "#\!/bin/csh" >! $TEMPsh
+echo set nn = '`wc -l < plot.psxy`' >> $TEMPsh
+echo "set sign_b = 0" >> $TEMPsh
+echo 'echo "1" >! n_line.temp' >> $TEMPsh
+echo "set i = 1" >> $TEMPsh
+echo "while (" '$i' "<" '$nn' ")" >> $TEMPsh
+# way1_shell
+echo set d1 = '`cat plot.psxy'  "| awk 'NR == '"'$i'"' {print" '$1' "}'" '`' >> $TEMPsh
+echo set d2 = '`cat plot.psxy'  "| awk 'NR == '"'$i'"'+1 {print" '$1' "}'" '`' >> $TEMPsh
+echo 'set diff_d = `echo "$d1 - $d2" | bc -l `' >> $TEMPsh
+# if you want to output ' use "'"  output ` use '`' other 'text$qeqeqe'
+echo 'set temp = `echo $diff_d | awk' "'" '{ if ($1 >=0)  {print $1,1} else {print $1,0}}' "'" '`' >> $TEMPsh
+echo 'if ( $temp[2] != $sign_b) then' >> $TEMPsh
+echo '    echo $i >>!  n_line.temp' >> $TEMPsh
+echo '    set sign_b = $temp[2]'    >> $TEMPsh
+echo "endif"                        >> $TEMPsh
+echo " @ i ++"                      >> $TEMPsh
+echo "end"                          >> $TEMPsh
+echo 'echo $nn >> n_line.temp'      >> $TEMPsh
+echo "#EOF"                         >> $TEMPsh
+
+
+set IEVDP = `echo $EZ | awk '{print int($1)}'`
+if ( $num_DISC == 2  ) then
+   if ( $IEVDP < $DISCON[1] ) then
+       set PHASE = ( P Pv$DISCON[1]P P$DISCON[1]P Pv$DISCON[2]P P$DISCON[2]P  )
+       set PHASECOL = ( '170/170/170' '255/100/200' '230/0/0' '100/200/255' '0/0/235' )
+   else if ( $IEVDP >= $DISCON[1] &&  $IEVDP < $DISCON[2] ) then
+      set PHASE = ( P  Pv$DISCON[2]P P$DISCON[2]P  )
+      set PHASECOL = ( '170/170/170' '100/200/255' '0/0/235' )
+   else
+      set PHASE = ( P )
+      set PHASECOL = ( '170/170/170' )
+   endif  #endif EVDP
+
+
+else if ( $num_DISC == 3  ) then
+   if ( $IEVDP < $DISCON[1] ) then
+       set PHASE = ( P Pv$DISCON[1]P P$DISCON[1]P Pv$DISCON[2]P P$DISCON[2]P Pv$DISCON[3]P P$DISCON[3]P )
+       set PHASECOL = ( '170/170/170' '206/248/139' '0/246/63' '255/100/200' '230/0/0' '100/200/255' '0/0/235'  )
+   else if ( $IEVDP >= $DISCON[1] &&  $IEVDP < $DISCON[2] ) then
+       set PHASE = ( P Pv$DISCON[2]P P$DISCON[2]P Pv$DISCON[3]P P$DISCON[3]P )
+       set PHASECOL = ( '170/170/170' '255/100/200' '230/0/0' '100/200/255' '0/0/235' )
+   else if ( $IEVDP >= $DISCON[2] &&  $IEVDP < $DISCON[3] ) then
+       set PHASE = ( P  Pv$DISCON[3]P P$DISCON[3]P  )
+       set PHASECOL = ( '170/170/170' '100/200/255' '0/0/235' )
+   else
+       set PHASE = ( P )
+       set PHASECOL = ( '170/170/170' )
+   endif  #endif EVDP
+
+
+
+
+
+
+endif  #endif num_DISC
+foreach MAINPHASE  ( P pP sP )
+#foreach MAINPHASE  ( P )
+  #if ( $MAINPHASE != "P" ) then
+  #     echo qeqeqe
+  #     set PHASE = ( P Pv$DISCON[1]P P$DISCON[1]P Pv$DISCON[2]P P$DISCON[2]P Pv$DISCON[3]P P$DISCON[3]P )
+  #     set PHASECOL = ( '170/170/170' '206/248/139' '0/246/63' '255/100/200' '230/0/0' '100/200/255' '0/0/235')
+  #endif
+  taup_curve -mod $MODEL -h $EZ -ph $MAINPHASE
+  set check = `wc -l < taup_curve.gmt`
+if ( $check != 0 ) then
+  cat taup_curve.gmt | awk '  NR > 1 {print $1,$2-'$REDUCE'*$1 } ' >! plot.psxy
+  csh n_line.sh
+  cat n_line.temp
+  set i = 1
+  set nn = `wc -l < n_line.temp`
+       while ($i <= $#PHASE )
+          set n1 = `cat n_line.temp | awk 'NR == '$nn'-'$i' {print $1}'`
+          set n2 = `cat n_line.temp | awk 'NR == '$nn'-'$i'+1  {print $1}'`
+          MATH j = $#PHASE - $i + 1
+          if ( $j == 1 ) set n1 = 1
+          echo $i $MAINPHASE $PHASE[$j] $n1 $n2
+          cat plot.psxy | awk ' NR >= '$n1' && NR <= '$n2' {print $0}' | psxy -JX -R -M -W5/$PHASECOL[$j]  -O -K -V >> $OUTFILE
+          @ i ++
+       end
+set n1 = `cat n_line.temp | awk 'NR == '$nn'- 1 {print $1}'`
+set n2 = `cat n_line.temp | awk 'NR == '$nn'  {print $1}'`
+cat plot.psxy | awk ' NR >= '$n1' && NR <= '$n2'  && $1 > 32.5 && $1 <= 34 {print $0}' | awk 'NR == 1 {print $1,$2+1 ,12,0,0,"CM","'$MAINPHASE'"}' | pstext -JX -R -O -K >> $OUTFILE
+
+cat plot.psxy | awk ' NR >= '$n1' && NR <= '$n2'  && $1 > 32.5 && $1 <= 34 {print $0}' | awk 'NR == 1 {print $1,$2+1 ,12,0,0,"CM","'$MAINPHASE'"}'
+endif
+\rm taup_curve.gmt
+end #end foreach
+
+
+
+
+pstext -JX -R -O  << ! >> $OUTFILE
+!
+
+# clean up
+\rm n_line.* plot.psxy
+
+# message to screen we're done this this file
+echo "c92.TraveltimeCurve: just finished making PLOT FILE : $OUTFILE"
+
+# return to our pwd
+cd $DIRPWD
+
+#EOF

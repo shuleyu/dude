@@ -1,0 +1,157 @@
+#!/bin/csh
+# EJG Feb 2006
+# This C-shell makes a seismic wave ray path figure in cross-section view.
+# The Tau-P tool kit must be installed (http://www.seis.sc.edu/TauP)
+# The GMT package must be installed (http://gmt.soest.hawaii.edu/)
+# NOTE: this C-shell was written and run on a Linux system.  
+
+echo " "
+echo "-------------------------------------------------------------"
+echo "                c95.raypath_crosssection:  STARTING...       "
+echo "-------------------------------------------------------------"
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+set PHASE     = $5
+set DIST      = $6
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source the environmental variables
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# loose the header line
+awk ' NR > 1 {print $0}'  $MASTER >! INFIL
+
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1]
+set ELON   = $COORDS[2]
+set EZ     = $COORDS[3]
+set EMAG   = $COORDS[4]
+
+
+# Define the phase(s), colors, distances, model, source depth:
+set PHASE = ( $PHASE  )
+set PHASECOL = ( '0/0/255'  )
+#set PHASECOL = ( '0/0/255' '200/0/255' '255/0/0'  )
+set RANGE  = ( $DIST )
+set DEPTH    = $EZ 
+set MODEL    = prem
+
+set DIST = `echo $RANGE[1] | awk '{printf "%03d\n", $1}'`
+
+set OUTFILE  = $DIRPLOT/$EVENT.c95.raypath_crosssection.$PHASE.DIST$DIST.ps 
+
+
+#===========================================================
+#             PLOTTING TIME!!!
+#===========================================================
+
+echo "c95.raypath_crosssection: STARING ON THE PLOT FILES"
+
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+
+
+
+# plot some text
+pstext -Jx1i -R0/6/0/9 -K -N -P  << END >! $OUTFILE
+3.0 9.3 20  0 0 CB Event: ${MM}/${DD}/$YYYY ${HH}:${MIN} 
+3.0 9.0 15  0 0 CB $EVENT  LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG 
+3.0 8.7 15  0 0 CB PHASE = $PHASE in $PHASECOL at $DIST degree
+END
+
+# more text: script name and time stamp
+echo "3.0 8.4 10 0 0 CB SCRIPT: c95.raypath_crosssection" >! datetag1
+date "+CREATION DATE: %m/%d/%y  %H:%M:%S" >! datetag2
+paste datetag1 datetag2 >! datetag3
+pstext datetag3 -Jx -R -N -Wored -G0 -O -K >> $OUTFILE
+
+
+
+
+
+# make separate files for layers:
+set R = ( 6371 5971 5701 3730 3480 1221 )
+@ layer = 1
+while ( $layer <= $#R)
+   if ( -e RT.$R[$layer] ) \rm RT.$R[$layer]
+   @ theta = 0
+   while ( $theta <= 360)
+      echo $theta $R[$layer] >>! RT.$R[$layer]
+      @ theta = $theta + 2
+   end
+   @ layer++
+end
+
+# plot the layer files 
+set REG  = -R0/360/0/6371
+set PROJ = -JPa6.0i/90
+set AXIS = -Ba30f10p/500N
+gmtset TICK_LENGTH = 0.20i
+psxy RT.$R[1] $REG $PROJ $AXIS -W4/0/0/0 -G195/220/175 -Y1 -K -O >> $OUTFILE
+psxy RT.$R[2] -R -JP -W1/255/255/255 -O -K >> $OUTFILE
+psxy RT.$R[3] -R -JP -W1/255/255/255 -O -K >> $OUTFILE
+psxy RT.$R[4] -R -JP -W1/255/255/255 -O -K >> $OUTFILE
+psxy RT.$R[5] -R -JP -W4/0/0/0 -G255/255/175 -O -K >> $OUTFILE
+psxy RT.$R[6] -R -JP -W4/0/0/0 -G255/200/60 -O -K >> $OUTFILE
+\rm RT.????
+
+# Use Taup (taup_path) to make/plot the ray paths:
+@ j = 1
+while ($j <= $#PHASE )
+   @ i = 1
+   while ($i <= $#RANGE )
+      taup_path -mod $MODEL -h $DEPTH -deg $RANGE[$i] -ph $PHASE[$j]
+      awk ' NR>1 {print $0}'  taup_path.gmt >! taup_path.tmp
+      @ npaths = ` grep -n '>' taup_path.gmt | wc -l | awk '{print $1}' `
+      psxy taup_path.tmp -R -JP -M -W4/$PHASECOL[$j] -O -K  >> $OUTFILE
+      @ i++
+   end
+   @ j++
+end
+
+# plot a symbol for the event
+set RZ = ` echo 6371 $DEPTH | awk '{print $1-$2}' `
+psxy -R -JP -Sa0.2i -G0 -W1/0/0/0 -N -O -K  << END >> $OUTFILE
+0 $RZ
+END
+
+# plot a symbol for the stations
+@ i = 1
+while ($i <= $#RANGE )
+psxy -R -JP -Sc0.10i -G0/160/0 -W1/0/0/0 -N -O -K  << END >> $OUTFILE
+$RANGE[$i] 6371
+END
+@ i++
+end
+
+# finish the post script code
+pstext -R0/8/0/8 -JX8i/8i -N -O << END >> $OUTFILE
+END
+
+#clean up
+\rm .gmtdefaults .gmtcommands taup_path.gmt
+
+# return to our pwd
+cd $DIRPWD
+
+echo "c95.raypath_crosssection: just finished making OUTPUT FILE = $OUTFILE"
+
+echo "-------------------------------------------------------------"
+echo "                c95.raypath_crosssection:     DONE           "
+echo "-------------------------------------------------------------"
+echo " "
+
+#EOF

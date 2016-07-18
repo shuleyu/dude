@@ -1,0 +1,207 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#                   c10.map_TA_dists
+#===========================================================
+# this script uses GMT to plot a map of TA stations,
+# great circle paths, and equi-distance contour lines
+
+echo " "
+echo "-------------------------------------------------------------"
+echo "                c10.map_TA_dists:  STARTING"
+echo "-------------------------------------------------------------"
+
+# INPUT: station and event info from our master file
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+
+# OUTPUT: a postscript plot
+set OUTFILE = $DIRPLOT/$EVENT.c10.map_AZ_stations.ps
+
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source the environment variable script
+
+# make our file sans header line,
+# specifically for TA stations
+awk ' NR>1 && $9 >= 32 && $9 <= 37 && $10 >= -115 && $10 <= -109 {print $0}' eventStation.$EVENT >! INFIL 
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1] 
+set ELON   = $COORDS[2] 
+set EZ     = $COORDS[3] 
+set EMAG   = $COORDS[4] 
+
+# make an event lat/lon file:
+echo $ELAT $ELON >! xy.eq
+
+# make a station lat/lon file
+awk '{print $9,$10 }' INFIL >! xy.stations
+
+# great circle path files:
+# make the files that will contain the event lat/lon and station
+# lat/lon and the GMT delimeter (">") for our great circle paths
+if (-e xy.gcpaths ) \rm xy.gcpaths
+set npaths = ` wc -l xy.stations | awk '{print $1}' `
+
+# loop thru, one station at a time in each file, and make the input:
+@ m = 1
+while ($m <= $npaths )
+    echo '>' >>! xy.gcpaths
+    echo $ELAT $ELON >>! xy.gcpaths
+    awk ' NR=='$m' {print $0} ' xy.stations >>! xy.gcpaths
+    @ m++
+end
+
+echo "c10.map_TA_dists: STARTING TO MAKE PLOT FILE"
+
+# define the GMT plot bounds and size:
+set REG = -R-120/20/-60/50r
+set PROJ = -JA-90/38/7.2i
+
+# topog input file (right now, a course thing... ETOPO5)
+set INGRD = $DIRSRC/etopo5.grd
+
+# make a color palette table
+makecpt -Cglobe -T-6000/6000/200 -Z >! etopo5.cpt
+
+# resample the grid, as my etopo is rough (1x1):
+grdsample $INGRD -Gnewgrd -I0.3/0.3
+
+# initiate the plot file with the topography
+grdimage newgrd -Cetopo5.cpt $REG $PROJ -Sb -X0.50i -Y4.5i -V -K -P >! $OUTFILE
+
+# some clean up
+\rm .gmt* newgrd
+
+# plot the state political boundaries
+gmtset BASEMAP_FRAME_RGB = 100/210/100
+pscoast $REG $PROJ  -N2 -V -O -K -P >> $OUTFILE
+
+# now plot the national political boundaries
+gmtset BASEMAP_FRAME_RGB = orange
+pscoast $REG $PROJ -Dl -A10000 -N1 -V -O -K -P >> $OUTFILE
+
+# now plot the grid (hardwire for now, since this version of
+# GMT is being a big pain in the ass about allowing me to redefine
+# the grid w/out redefining everything else.  ARGH!)
+gmtset BASEMAP_FRAME_RGB = 0/0/0
+
+if(-e xy.grid)\rm xy.grid
+@ dlat = 2
+@ latmax = 80
+@ lon = -130
+@ dlon = 10
+@ lonmax = 0
+# lon lines
+while($lon <= $lonmax)
+   @ lat = 0
+   echo ">" >>! xy.grid
+   while($lat <= $latmax)
+     echo $lon $lat >>! xy.grid
+     @ lat = $lat + $dlat
+   end
+   @ lon = $lon + $dlon
+end
+@ lat = 0
+@ dlon = 2
+@ dlat = 10
+# lat lines
+while($lat <= $latmax)
+   @ lon = -130
+   echo ">" >>! xy.grid
+   while($lon <= $lonmax)
+     echo $lon $lat >>! xy.grid
+     @ lon = $lon + $dlon
+   end
+   @ lat = $lat + $dlat
+end
+
+# plot our little grid (ya gotta love brute force)
+psxy xy.grid $REG $PROJ -B0 $MGMT -W5/20/20/20t5_20:0 -V -O -K -P >> $OUTFILE
+     
+# now plot the GCPs
+psxy xy.gcpaths $REG $PROJ -: $MGMT -K -O -W0.01/100/30/100 >> $OUTFILE
+
+# now plot the EQ and stations
+psxy xy.eq       $REG $PROJ -: -Sa0.12i -K -O -W1/0/0/0 -G0 >> $OUTFILE
+psxy xy.stations $REG $PROJ -: -St0.08i -K -O -W0.01/0 -G0 >> $OUTFILE
+
+# define color of distance contours and labels
+set CONTCOL = 255/0/0
+
+# the location of the numbering of contours is being defined
+# here to happen between event coords and
+# some shift in longitude
+set LABELLAT1 = 50
+set LABELLON1 = -140
+set LABELLAT2 = 0
+set LABELLON2 = -60
+set LABELLINE = $LABELLON1/$LABELLAT1/$LABELLON2/$LABELLAT2
+
+# now, let's make our file of distances on a grid, for eventual
+# plotting of equi-epicentral-distance contours, just as in 
+# our 'city map' script.  this idea was from Kevin Eagar.
+# we'll compute distances across the whole globe (REGM)
+set REGM = -R0/360/-89/89
+grdmath $REGM -I1 $ELON $ELAT SDIST = dist.grd
+
+# Modified by Shule =========== >
+grd2xyz dist.grd > tmpfile.xyz
+set flag = `minmax -C tmpfile.xyz | awk '{print $6}' | awk '{ if ($1>181) print 1; else print 0}'`
+if ( $flag == 1 ) then
+    awk '{print $1,$2,$3/111.195}' tmpfile.xyz > tmpfile.xyz1
+    xyz2grd $REG -I1 tmpfile.xyz1 -Gdist.grd
+endif
+\rm tmpfile.xyz*
+# Modified by Shule < ===========
+
+# draw the equal distance contours (see the GMT man page for more
+# info on some of these choices). again, thanks to Kevin Eagar for this
+# idea of using gmtmath w/ grdcontour for this application
+grdcontour dist.grd $PROJ $REG -A5+s14+f1+k${CONTCOL}+ap -Gl$LABELLINE \
+    -C5 -S8 -W0.5/$CONTCOL -B0 -P -O -K >> $OUTFILE
+
+# use GMT's pstext to to plot the text of the title,
+# also, plot a big title at top of page:
+# first, break apart event name for Big Title:
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+# plot a title above the top of the globe
+# and plot a big title of the date higher up:
+pstext $REG $PROJ -N -O -K << END >> $OUTFILE
+-98 58 20 0 0 CB USArray Transportable Array Stations
+-98 56 16 0 0 CB ${MM}/${DD}/$YYYY ${HH}:${MIN} LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG NSTA=$NSTA
+END
+
+# more text: script name and time stamp
+echo "-98 54 10 0 0 CB SCRIPT: c10.map_TA_dists" >! datetag1
+date "+CREATION DATE: %m/%d/%y  %H:%M:%S" >! datetag2
+paste datetag1 datetag2 >! datetag3
+pstext datetag3 $REG $PROJ -N -Wored -G0 -O >> $OUTFILE
+
+
+# some clean up
+\rm xy.eq xy.station* xy.gcpaths* .gmt*  INFIL
+\rm xy.grid dist.grd etopo5.cpt datetag?
+
+# return to our pwd
+cd $DIRPWD
+
+echo "-------------------------------------------------------------"
+echo "                c10.map_TA_dists:  DONE"
+echo "-------------------------------------------------------------"
+echo " "
+
+#EOF

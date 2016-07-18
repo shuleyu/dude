@@ -1,0 +1,191 @@
+#!/bin/csh
+# EJG/PL March 2010
+#===========================================================
+#                   c12.radiation_pat
+#===========================================================
+# This script is primarily modeled after that of
+# Chunpeng Zhao, who wrote it for our Observational
+# Seismology class in the Fall of 2008
+# So, the credit goes to chunpeng, if there are
+# bugs, i claim responsibility, since i butchered
+# his script and radiation patther code!
+#
+# This script makes a 1 page plot of the following lower hemisphere
+# radiation patterns (using Aki & Richard's formulation)
+#
+# 1. A standard "beach ball" representation of the P focal mech
+# 2. Radiation pattern of P w/ red/blue shading
+# 3. Radiation pattern of SV w/ red/blue shading
+# 4. Radiation pattern of SH w/ red/blue shading
+#
+# you need to first get the strike dip and rake from 
+# somewhere.  For sure, you should be able to get it from:
+# http://www.globalcmt.org/CMTsearch.html
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+#         (2) strike, dip, rake (get from CMT web page)
+#         (3) some directory locations
+
+echo " "
+echo "-------------------------------------------------------------"
+echo "                c12.radiation_pat:     STARTING "
+echo "-------------------------------------------------------------"
+
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+set strike    = $5
+set dip       = $6
+set rake      = $7
+
+
+# OUTPUT:  (1) postscript plot of 4 beach balls
+# -----                       
+#          (2) 3 files: one for each P, SV, SH,
+#              that contain take-off angle (equivalently)
+#              radius in plot coords, and aximuth (theta),
+#              and amplitude between -1 and 1. these
+#              are ascii. later, gmt will make GRD files,
+#              then plot them
+
+set OUTFILE = $DIRPLOT/$EVENT.c12.radiation_pats.ps
+
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source the env variables
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# define event coords and mag
+set COORDS = ` awk ' NR==2 {print $11,$12,$13,$16}' $MASTER `
+set ELAT   = $COORDS[1]
+set ELON   = $COORDS[2]
+set EZ     = $COORDS[3]
+set EMAG   = $COORDS[4]
+
+# compile and run the radiation pattern code
+# (written in f90 vy Chunpeng Zhao. mod by EJG).
+#  The code makes output that GMT will plot, basically
+# azimuth, radius (which is really take off angle), 
+# and amplitude (between -1 and +1)
+$FCOMP $DIRSRC/radiation.f90 -o RADI
+RADI << EOF
+$strike $dip $rake
+EOF
+
+# convert the output of radiation.f, i.e., ASCII
+# radiation pattern info, to GMT's grd file format, for plotting
+foreach comp ( P SH SV )
+   xyz2grd ${comp}_radiation -G${comp}.grd -A -I1/1 -R0/360/0/90
+   mv ${comp}_radiation $EVENT.${comp}_radiation
+end
+# NOTE: we are plotting multiple longitudes (the 0 to 360 coord)
+# at latitude (which is really take off angle)=90. we will get
+# a warning message from GMT from this.  but it will still plot
+# fine
+
+# ===========================================
+#                   plotting time!
+# ===========================================
+
+echo "c12.radiation_pat:  MAKING THE PLOT FILE"
+
+# as mentioned above, we have 4 beach balls to plot
+# we will do it in a 2x2 grid 
+
+# make a color palette table
+makecpt -Cpolar -T-1/1/0.02 -I -Z >! RAD.cpt
+gmtset COLOR_NAN 0/0/0
+
+# ----------------------------
+# 1. Focal mechanism plot
+#    (traditional beach ball)
+# ----------------------------
+# beware: GMT v4.4.0 has some bugs w/ psmeca
+# install v4.5 or later...
+# also, there is a bug that crops up for
+# grdcontour, and extraneous line (unless I'm
+# using it wront!) Some of the choices below
+# for psmeca relate to where the beach ball
+# gets plotted in the plot coords; see the
+# man page for more info.
+set elat = 0
+set elon = 180
+set flat = 0
+set flon = 0
+set mag = 5.0
+set depth = 0
+echo $elon $elat $depth $strike $dip $rake $mag $flon $flat  >! focal
+psmeca focal -R0/360/-80/80 -JM4i -V  -Sa2.5i -G0/0/0 -X0.4i -Y5.95i -P -K   >! $OUTFILE
+
+# plot text
+pstext  -R0/3/0/3 -JX3i/3i -N -K -O -X0.2i -Y0.05i  -P << EOF  >> $OUTFILE
+0.0 4.3 16 0 4 LB RADIATION PATTERNS Event:$EVENT 
+0.0 4.0 16 0 4 LB Lat: $ELAT Lon: $ELON Dep:$EZ km Mag: $EMAG 
+0.0 3.7 16 0 4 LB Focal Mech: Strike=$strike Dip=$dip Rake=$rake
+EOF
+
+# more text: script name and time stamp
+echo "0.0 3.4 16 0 4 LB SCRIPT: c11.profile_big_TA" >! datetag1
+date "+CREATION DATE: %m/%d/%y  %H:%M:%S" >! datetag2
+paste datetag1 datetag2 >! datetag3
+pstext datetag3 -JX -R -N -G0 -O -K >> $OUTFILE
+
+
+# ----------------------------
+# 2. Shaded P radiation pat
+# ----------------------------
+set comp = P
+grdimage $comp.grd  -R0/360/0/90 -JPa2.5i -X4.0i -Y0.2i -CRAD.cpt -P -K -O  >> $OUTFILE
+echo "0.0 C" >! CONT
+grdcontour $comp.grd  -R -JP -CCONT -W0.05 -O -P -K >> $OUTFILE
+gmtset LABEL_FONT_SIZE 8p
+psbasemap  -R -JP -Ba45f15wsNe -K -O -P  >> $OUTFILE
+gmtset LABEL_FONT_SIZE 14p
+psscale -CRAD.cpt -D-0.7i/-0.5i/1.3i/0.1ih -O -K    -B1.0:Amplitude:/:: >> $OUTFILE
+gmtset LABEL_FONT_SIZE 8p
+pstext  -R0/3/0/3 -JX3i/3i  -O -K -P << EOF  >> $OUTFILE
+0.5 2.7 18 0 5 LB $comp
+EOF
+
+# ----------------------------
+# 3. Shaded SV radiation pat
+# ----------------------------
+set comp = SV
+grdimage $comp.grd  -R0/360/0/90 -JPa2.5i -X-3.5i -Y-4i -CRAD.cpt -P -K -O  >> $OUTFILE
+grdcontour $comp.grd  -R -JP -CCONT -W0.05 -O -P -K >> $OUTFILE
+psbasemap  -R -JP -Ba45f15wsNe -K -O -P  >> $OUTFILE
+pstext  -R0/3/0/3 -JX3i/3i  -O -K -P << EOF  >> $OUTFILE
+0.5 2.7 18 0 5 LB $comp
+EOF
+
+# ----------------------------
+# 4. Shaded SH radiation pat
+# ----------------------------
+set comp = SH
+grdimage $comp.grd  -R0/360/0/90 -JPa2.5i -X3.5i  -CRAD.cpt -P -K -O  >> $OUTFILE
+grdcontour $comp.grd  -R -JP -CCONT -W0.05 -O -P -K >> $OUTFILE
+psbasemap  -R -JP -Ba45f15wsNe -K -O -P  >> $OUTFILE
+pstext  -R0/3/0/3 -JX3i/3i  -O  -P << EOF  >> $OUTFILE
+0.5 2.7 18 0 5 LB $comp
+EOF
+
+# clean up
+\rm focal RADI {P,SH,SV}.grd RAD.cpt .gmt* CONT datetag?
+
+# return to our pwd
+cd $DIRPWD
+
+echo "-------------------------------------------------------------"
+echo "                c12.radiation_pat:     DONE "
+echo "-------------------------------------------------------------"
+echo " "
+
+#EOF

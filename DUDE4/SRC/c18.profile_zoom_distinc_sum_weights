@@ -1,0 +1,426 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#            c18.profile_zoom_distinc_sum_weights
+#===========================================================
+# this script makes record sections just like c09, but here
+# we flip records according to the radiation pattern
+# prediction for our phase of interest, then we scale the
+# record according to the P or S wave SNR prediction before
+# making the distance increment stack.
+
+# the f90 code was written by Pei-ying (Patty) Lin at
+# ASU. any errors are undoubtedly mine, as I modified things.
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+#         (2) plot box bounds: Dist min/max, time min/max
+#         (3) some directory location information
+#         (4) reference phase of interest, and component
+#             of motion for plotting
+#
+# known bugs: if all the sac header variables are not
+# defined as the f90 code things they should be, you'll
+# get a lot of crap spewing to the screen.  oh well.  it
+# still works.  ;)
+
+
+# OUTPUT:  (1) postscript plot for phase_comp
+# -----    (2) postscript plot for phase_comp, low passed
+
+echo " "
+echo "-------------------------------------------------------------"
+echo "          c18.profile_zoom_distinc_sum_weights: STARTING "
+echo "-------------------------------------------------------------"
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+set DISTMIN   = $5
+set DISTMAX   = $6
+set TIMEMIN   = $7
+set TIMEMAX   = $8
+set PHASE     = $9 
+set COMP      = $10
+set DISTWIN   = $11
+set DISTINC   = $12
+
+set flag_SNR = 0 
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# make the travel time curves
+echo "$DIRSRC/c98.TraveltimeCurve_zoom $EVENT $DIRSRC $DIRDATA $DIRPLOT $DISTMIN $DISTMAX $TIMEMIN $TIMEMAX $PHASE $COMP c18" >! run_TC.sh
+csh  run_TC.sh < /dev/null &
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# loose the header line, and distance out of our range:
+awk ' NR>1 {print $0}' $MASTER >! INFIL
+
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1] 
+set ELON   = $COORDS[2] 
+set EZ     = $COORDS[3] 
+set EMAG   = $COORDS[4] 
+
+
+# get the radiation pattern prediction
+# column w/ the goods. if we want to do a
+# different phase, we don't get polarity from
+# radiation pattern  unless we explicity
+# compute it (e.g., in c08*). thus we
+# will just give it a "1" in that case
+if ( $COMP == Z ) set radcomp = P
+if ( $COMP == T ) set radcomp = SH
+if ( $COMP == R ) set radcomp = SV
+
+if ($PHASE == P && $COMP == Z ) then
+   @ COL_RADPAT = 3
+   awk ' NR>1 {print $'$COL_RADPAT' }' eventStation.$EVENT.rad_info >! AMPFILE
+else if ($PHASE == S && $COMP == T ) then
+   @ COL_RADPAT = 21
+   awk ' NR>1 {print $'$COL_RADPAT' }' eventStation.$EVENT.rad_info >! AMPFILE
+else if ($PHASE == S && $COMP == R ) then
+   @ COL_RADPAT = 24
+   awk ' NR>1 {print $'$COL_RADPAT' }' eventStation.$EVENT.rad_info >! AMPFILE
+else if ($PHASE == SS && $COMP == T ) then
+   @ COL_RADPAT = 27
+   awk ' NR>1 {print $'$COL_RADPAT' }' eventStation.$EVENT.rad_info >! AMPFILE
+else if ($PHASE == ScS && $COMP == T ) then
+   @ COL_RADPAT = 30
+   awk ' NR>1 {print $'$COL_RADPAT' }' eventStation.$EVENT.rad_info >! AMPFILE
+else if ($PHASE == SKS && $COMP == R ) then
+   @ COL_RADPAT = 33
+   awk ' NR>1 {print $'$COL_RADPAT' }' eventStation.$EVENT.rad_info >! AMPFILE
+else if (  -e c14_radiation."$PHASE"_$radcomp ) then
+   echo "get ampinfo form c14_radiation."$PHASE"_$radcomp "
+   awk ' NR>1 {print $3 }' c14_radiation."$PHASE"_$radcomp >! AMPFILE
+else
+   @ o = 1
+   while($o <= $NSTA)
+       echo 1.0 >>! AMPFILE
+       @ o++
+   end
+endif
+# paste this on some info from the big info file
+awk '{print $1,$3}' INFIL >! STADIST
+awk '{print $2}' INFIL >! ARRAYCODE
+paste STADIST AMPFILE >! STADISTAMP
+
+if ( $flag_SNR ==  1 ) then
+# quickly compute SNR for P or S
+if ($PHASE == P && $COMP == Z ) then
+    awk '{if ($2 != 0.0 ) {print  $2/(.0000000001+$1), $7} else {print 0, $7}}' eventStation.$EVENT.SNR_info >! SNRFILE
+else if ($PHASE == S && $COMP == R ) then
+    awk '{if ($4 != 0.0 ) {print  $4/(.0000000001+$3), $7} else {print 0, $7}}' eventStation.$EVENT.SNR_info >! SNRFILE
+else if ($PHASE == S && $COMP == T ) then
+    awk '{if ($6 != 0.0 ) {print  $6/(.0000000001+$5), $7} else {print 0, $7}}' eventStation.$EVENT.SNR_info >! SNRFILE
+else
+    cp AMPFILE SNRFILE
+endif
+
+# paste this onto our growing file
+paste STADISTAMP SNRFILE ARRAYCODE >! STADISTAMPSNR
+\rm  STADISTAMP SNRFILE
+else if ( $flag_SNR ==  0 ) then
+paste STADISTAMP  ARRAYCODE >! STADISTAMPSNR
+#/bin/mv STADISTAMP STADISTAMPSNR 
+endif
+
+if(-e master_weights) \rm master_weights
+@ r = 1
+while($r <= $NSTA)
+    set AMPS = ` awk ' NR=='$r' {print $1,$2,$3,$4}' STADISTAMPSNR `
+    set STATION   = $AMPS[1]
+    set DISTANCE  = $AMPS[2]
+    set AMPLITUDE = $AMPS[3]
+    set ARRAY = $AMPS[4]
+    if (  $flag_SNR ==  1 ) then
+        set SNRATIO   = $AMPS[4]
+    else if ( $flag_SNR ==  0  ) then
+        set SNRATIO   = 10
+    endif
+    set FLIP = ` echo $AMPLITUDE | awk ' $1<0 { print "Y" }' `
+    if($FLIP == Y) then
+       @ AMPLITUDE = -1
+    else
+       @ AMPLITUDE = 1
+    endif
+    set iSNR = ` echo $SNRATIO | awk '{ print int($1) }' `
+    if($iSNR > 5 ) then
+       set WEIGHT = ` echo $AMPLITUDE | awk '{ print $1 * 1.0}' `
+    else if($iSNR > 4 && $iSNR <= 5 ) then
+       set WEIGHT = ` echo $AMPLITUDE | awk '{ print $1 * 0.9}' `
+    else if($iSNR > 3 && $iSNR <= 4 ) then
+       set WEIGHT = ` echo $AMPLITUDE | awk '{ print $1 * 0.8}' `
+    else if($iSNR > 2 && $iSNR <= 3 ) then
+       set WEIGHT = ` echo $AMPLITUDE | awk '{ print $1 * 0.6}' `
+    else if($iSNR > 1 && $iSNR <= 2 ) then
+       set WEIGHT = ` echo $AMPLITUDE | awk '{ print $1 * 0.4}' `
+    else if($iSNR <= 1 ) then
+       set WEIGHT = ` echo $AMPLITUDE | awk '{ print $1 * 0.2}' `
+    endif
+
+    echo $STATION H$COMP $DISTANCE $WEIGHT $ARRAY >>! master_weights
+
+    @ r++
+end
+\rm STADIST STADISTAMPSNR AMPFILE
+
+# -- only for TA
+# awk ' $3>='$DISTMIN' && $3<='$DISTMAX' && $5 == "TA" {print $0}'  master_weights >! master_weights_array
+# -- ALL
+awk ' $3>='$DISTMIN' && $3<='$DISTMAX' {print $0}'  master_weights >! master_weights_array
+
+
+# plot Z, and R, and T as separate plots.  We will also
+# do a band pass filter (in SAC). We will make two
+# versions: raw and low pass filtered.
+# thus we are making 6 plots: Z, R, T raw, and Z,
+# R, T low passed.
+
+# define the corners for the "raw" data in the band
+# pass filter.  this is here for those that wish
+# to get rid of the long period noise in the traces
+# do it with a band pass, thus, 2 corners needed. 
+set B1 = 0.01
+set B2 = 1.0
+
+# define the low pass corner:
+set F = 0.10
+
+# make the awkfile that will be run by SAC. it is
+# basically how we will precondition our records before
+# our fortran90 code that converts to ascii:
+cat << EOF >! awkfile
+{
+print "/bin/cp *." \$1 ".?H${COMP}.sac " \$1".H$COMP"  
+}
+EOF
+awk -f awkfile master_weights_array  >! ch_cp.sh
+csh ch_cp.sh
+
+set NSTA = `wc -l < master_weights_array` 
+
+if ( `grep -w $PHASE $DIRSRC/phasesinclude.h  |  wc -l ` != 1 ) then
+echo "c18.profile_zoom_distinc_sum_weights:     runing taup_setsac "
+# write t1 to the header
+ls *.H$COMP >! ${COMP}.LIST
+set insac = 1
+while ( $insac <= $NSTA ) 
+  set sacfile =  `cat ${COMP}.LIST | awk 'NR == '$insac' {print $1}' `
+  taup_setsac -mod prem -ph "$PHASE"-1 $sacfile
+@ insac ++     
+end #end while $insac
+endif 
+
+echo "c18.profile_zoom_distinc_sum_weights: making the SAC macro"
+cat << EOF >! awkfile
+{
+print "r " \$1 ".H${COMP}"  
+print "rmean" 
+print "rtr" 
+print "taper" 
+print "bp co $B1 $B2 n 2 p 2" 
+print "interp d 0.05"
+print "w " \$1".H$COMP " 
+print "lp co $F n 2 p 2" 
+print "w " \$1".H${COMP}lp" 
+} 
+EOF
+
+# make the sac macro now, using our awkfile
+awk -f awkfile master_weights_array  >! $EVENT.m.process
+
+echo "c18.profile_zoom_distinc_sum_weights: running the SAC macro"
+# run the sac macro
+sac << END >! out.sac
+m $EVENT.m.process
+quit
+END
+
+
+# make list of seismograms, for our f90 code
+awk ' {print $1"."$2, $4}' master_weights_array >! ${COMP}.LIST
+awk ' {print $1"."$2"lp", $4}' master_weights_array >! ${COMP}lp.LIST
+cat  ${COMP}.LIST
+
+# time to convert files to ASCII, using an f90 code
+# written by Pei-ying (Patty) Lin, PhD student in the
+# geophysics/seismology group at ASU. code sac2xyzoom.f90
+# makes output called "xy.seismograms".
+# amplitude scaling is pre-determined, but can be
+# changed with AMPSCALE:
+set AMPSCALE = 2 
+
+# compile code:
+#$FCOMP -m32 -I$DIRSRC $DIRSRC/sac2xyzoomstack_withweights.f90 $SACLIBs -o SAC2XYZOOMSTACK_withweights 
+$FCOMP -I$DIRSRC $DIRSRC/sac2xyzoomstack_withweights.f90 $SACLIBs -o SAC2XYZOOMSTACK_withweights 
+
+
+# run the code
+foreach TYPE ( $COMP ${COMP}lp )
+echo "c18.profile_zoom_distinc_sum_weights: converting $TYPE SAC files to XY"
+SAC2XYZOOMSTACK_withweights << EOF >! out.sac2xyzoomstack
+$PHASE
+$TIMEMIN $TIMEMAX
+$DISTMIN $DISTMAX
+$AMPSCALE
+$TYPE.LIST
+$DISTWIN $DISTINC
+EOF
+mv xy.seismograms xy.$TYPE.seismograms
+
+# grab info for the histogram plot to right of profile
+awk ' $1==">" { print $3,$2}' xy.$TYPE.seismograms >! $TYPE.stackcount
+end
+# note: the output is a big file
+
+
+#===========================================================
+#             PLOTTING TIME!!!
+#===========================================================
+
+echo "c18.profile_zoom_distinc_sum_weights: MAKING THE PLOT FILES"
+
+# plot the text of the title,
+# also, plot a big title at top of page:
+# first, break apart event name for Big Title:
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+# plot size (the f90 sac2xy code assumes these are the dimensions
+# we are working with)
+set XSIZE = 6
+set YSIZE = 8.5 
+
+# crunch some axis attributes for plot:
+# well put dist on horiz axis, and time on vertical
+set BX    = `echo $TIMEMIN $TIMEMAX | awk '{print (int(int(($2-$1)/10)/50)+1)*50 }' | awk '{print $1, $1/5}'`
+#set BX    = `echo $TIMEMIN $TIMEMAX | awk '{print $2-$1}' | awk '{ if ( $1/100 > 20 ) {print 500,100} else if ( $1/100 < 10 ) {print 100, 10} else {print 200, 20} }'`
+set BY    = `echo $DISTMIN $DISTMAX | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print $1, $1/5}'`
+#set BY = ( 0.5 0.1 )
+set SCALE = X"$XSIZE"i/-"$YSIZE"i
+set RANGE = $TIMEMIN/$TIMEMAX/$DISTMIN/$DISTMAX/
+set BAXIS = a"$BX[1]"f"$BX[2]"/a"$BY[1]"f"$BY[2]"
+set Y0 = -Y1.5i
+
+# now build the plots, one type at a time
+foreach TYPE ( $COMP ${COMP}lp )
+
+# define the output file
+set OUTFILE = $DIRPLOT/$EVENT.c18.profile_zoomstack_weights.$PHASE.$TYPE.ps
+
+# plot some text
+pstext -Jx1i -R0/6/0/9 -K -N -P $Y0 << END >! $OUTFILE
+3.0 9.3 20  0 0 CB Event: ${MM}/${DD}/$YYYY ${HH}:${MIN} STACK Phase=$PHASE Comp=$TYPE
+3.0 9.0 15  0 0 CB $EVENT  LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG NSTA=$NSTA
+-0.5 4.5 15 90 0 CB Distance (deg)
+3.0 -0.7 15  0 0 CB Time after PREM ${PHASE}-wave time (sec)
+END
+
+# more text: script name and time stamp
+echo "3.0 8.7 10 0 0 CB SCRIPT: c18.profile_zoom_distinc_sum_weights" >! datetag1
+date "+CREATION DATE: %m/%d/%y  %H:%M:%S" >! datetag2
+paste datetag1 datetag2 >! datetag3
+pstext datetag3 -Jx -R -N -Wored -G0 -O -K >> $OUTFILE
+\rm datetag?
+
+# initiate coords for records
+psbasemap -J$SCALE -R$RANGE -B"$BAXIS"WSne -K -O -P >> $OUTFILE
+
+# plot the records
+psxy xy.$TYPE.seismograms -J$SCALE -R$RANGE -W0.005i/0 $MGMT -O -K >> $OUTFILE
+
+# Modified by Shul =============== >
+psxy -J -R -W0.1p,red,- -O -K >> $OUTFILE << EOF
+-5 $DISTMIN
+-5 $DISTMAX
+EOF
+
+psxy -J -R -W0.1p,green,- -O -K >> $OUTFILE << EOF
+-10 $DISTMIN
+-10 $DISTMAX
+EOF
+
+psxy -J -R -W0.1p,blue,- -O -K >> $OUTFILE << EOF
+-15 $DISTMIN
+-15 $DISTMAX
+EOF
+
+psxy -J -R -W0.2p,red,- -O -K >> $OUTFILE << EOF
+5 $DISTMIN
+5 $DISTMAX
+EOF
+
+psxy -J -R -W0.2p,green,- -O -K >> $OUTFILE << EOF
+10 $DISTMIN
+10 $DISTMAX
+EOF
+
+psxy -J -R -W0.2p,blue,- -O -K >> $OUTFILE << EOF
+15 $DISTMIN
+15 $DISTMAX
+EOF
+
+psxy -J -R -W0.3p,darkred,- -O -K >> $OUTFILE << EOF
+20 $DISTMIN
+20 $DISTMAX
+EOF
+
+psxy -J -R -W0.3p,darkblue,- -O -K >> $OUTFILE << EOF
+25 $DISTMIN
+25 $DISTMAX
+EOF
+
+psxy -J -R -W0.3p,darkgreen,- -O -K >> $OUTFILE << EOF
+30 $DISTMIN
+30 $DISTMAX
+EOF
+# Modified by Shule < ===============
+
+# plot little histogram to right of profile:
+# (after Patty's script!)
+set HISTSCALE = X1i/-"$YSIZE"i
+set iMAX  = ` awk '{print $1}' $TYPE.stackcount | minmax -C | awk '{print $2}'`
+@ Ba_hist = $iMAX / 2
+@ Bf_hist = $Ba_hist / 5
+set R_hist = 0/$iMAX/$DISTMIN/$DISTMAX
+psxy $TYPE.stackcount -J$HISTSCALE -R$R_hist -Ba${Ba_hist}f${Bf_hist}S \
+    -SB${DISTINC}u -W1/0 -G200 -X"$XSIZE".1i -N -K -O >>  $OUTFILE
+
+# close up plot
+pstext -JX -R -O  << END >> $OUTFILE
+END
+
+end
+
+#some clean up, lists, tmp records, etc.
+\rm master_weights* ARRAYCODE STADISTAMP
+\rm *.H? *.H?lp .gmt*
+\rm *.LIST xy*seismograms *stackcount
+\rm  SAC2XYZOOMSTACK_withweights out.sac out.sac2xyzoomstack
+\rm INFIL awkfile $EVENT.m.process
+\rm run_TC.sh ch_cp.sh
+
+# return to our pwd
+cd $DIRPWD
+
+echo "-------------------------------------------------------------"
+echo "                c18.profile_zoom_distinc_sum_weights:     DONE "
+echo "-------------------------------------------------------------"
+echo " "
+
+
+#EOF

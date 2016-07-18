@@ -1,0 +1,242 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#                      c05.profile_big
+#===========================================================
+# as the title implies, this script will make a big
+# record section (a bunch of them, actually), for the
+# data for this event. we use a fortran 90 code to convert
+# SAC fmt files to ascii, after some quick processing in
+# SAC, then plot the result with GMT.  We add travel
+# time curves made by the taup_toolkit.
+#
+# the f90 code was written by Pei-ying (Patty) Lin at
+# ASU. any errors are undoubtedly mine, as I modified things.
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+#         (2) plot box bounds: Dist min/max, time min/max
+#         (3) some directory location information
+#  !! !!  NOTE!! you must hardwire your sac lib directory
+#         here.  do it now:
+
+
+# OUTPUT:  (1) a postscript plot for SV
+# -----    (2) a postscript plot for SH
+#          (3) a postscript plot for Z
+
+set ShellName = `basename $0`
+
+echo " "
+echo "-------------------------------------------------------------"
+echo "                ${ShellName}:     STARTING "
+echo "-------------------------------------------------------------"
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+set DISTMIN   = $5
+set DISTMAX   = $6
+set TIMEMIN   = $7
+set TIMEMAX   = $8
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source the environmental variables
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# loose the header line
+awk ' NR > 1 {print $0}'  $MASTER >! INFIL
+
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1] 
+set ELON   = $COORDS[2] 
+set EZ     = $COORDS[3] 
+set EMAG   = $COORDS[4] 
+
+# check to see if script is to compute distance bounds
+# for plot.  If DISTMIN = -1, code does it.  If yes,
+# code will add +/- 10% of distance range of data
+set CHECK = ` echo $DISTMIN | awk ' $1<0 { print "Y"}' `
+if($CHECK == Y ) then
+   set MINMAX = ( ` awk '{print $3}' INFIL | minmax -C ` )
+   set DISTMIN = ` echo $MINMAX | awk '{print int($1 - 0.1*($2 - $1))}' `
+   set DISTMAX = ` echo $MINMAX | awk '{print int($2 + 0.1*($2 - $1))}' `
+endif
+
+# compute the travel time curves for this series of plots
+echo "$DIRSRC/c99.TraveltimeCurve $EVENT $DIRSRC $DIRDATA $DIRPLOT $DISTMIN $DISTMAX $TIMEMIN $TIMEMAX ALL c05" >! run_TC.sh
+echo "$DIRSRC/c99.TraveltimeCurve $EVENT $DIRSRC $DIRDATA $DIRPLOT $DISTMIN $DISTMAX $TIMEMIN $TIMEMAX Z c05" >> run_TC.sh
+echo "$DIRSRC/c99.TraveltimeCurve $EVENT $DIRSRC $DIRDATA $DIRPLOT $DISTMIN $DISTMAX $TIMEMIN $TIMEMAX R c05" >> run_TC.sh
+echo "$DIRSRC/c99.TraveltimeCurve $EVENT $DIRSRC $DIRDATA $DIRPLOT $DISTMIN $DISTMAX $TIMEMIN $TIMEMAX T c05" >> run_TC.sh
+csh  run_TC.sh < /dev/null &
+
+
+# this script is written in the spirit of showing you
+# the whole event, the whole enchilada. thus we will
+# plot Z, and R, and T as separate plots.  We will also
+# do a band pass filter (in SAC). We will make two
+# versions: raw and low pass filtered.
+# thus we are making 6 plots: Z, R, T raw, and Z,
+# R, T low passed.
+
+# define the corners for the "raw" data in the band
+# pass filter.  this is here for those that wish
+# to get rid of the long period noise in the traces
+# do it with a band pass, thus, 2 corners needed. 
+set B1 = 0.01
+set B2 = 1.0
+
+# define the low pass corner:
+set F = 0.050
+
+# make the awkfile that will be run by SAC. it is
+# basically how we will precondition our records before
+# our fortran90 code that converts to ascii:
+echo "${ShellName}: making the SAC macro"
+cat << EOF >! awkfile
+{
+print "r *." \$1 ".*"  
+print "rmean" 
+print "rtr" 
+print "taper" 
+print "bp co $B1 $B2 n 2 p 2" 
+print "interp d 0.05"
+print "w " \$1".Rraw",\$1".Traw",\$1".Zraw" 
+print "lp co $F n 2 p 2" 
+print "w " \$1".Rlp",\$1".Tlp",\$1".Zlp" 
+} 
+EOF
+
+# make the sac macro now, using our awkfile
+awk -f awkfile INFIL >! $EVENT.m.process
+# run the sac macro
+echo "${ShellName}: running the SAC macro"
+sac << END >! out.sac
+m $EVENT.m.process
+quit
+END
+
+# make lists of seismograms, for plot panels: a separate
+# list for each plot to be made
+foreach COMP ( Z R T )
+   ls *.${COMP}raw >! ${COMP}raw.LIST
+   ls *.${COMP}lp >! ${COMP}lp.LIST
+end
+
+# time to convert files to ASCII, using an f90 code
+# written by Pei-ying (Patty) Lin, PhD student in the
+# geophysics/seismology group at ASU. code sac2xy.f90
+# makes output called "xy.seismograms".
+# amplitude scaling is pre-determined, but can be
+# changed with AMPSCALE:
+set AMPSCALE = 1.5 
+
+# compile code:
+#$FCOMP -m32 $DIRSRC/sac2xy.f90 $SACLIBs -o SAC2XY
+# $FCOMP $DIRSRC/sac2xy.f90 $SACLIBs -o SAC2XY
+
+
+# run the code
+foreach TYPE ( Rraw Rlp Traw Tlp Zraw Zlp )
+echo "${ShellName}: converting $TYPE SAC files to XY"
+${EXECDIR}/sac2xy.out << EOF
+$TIMEMIN $TIMEMAX
+$DISTMIN $DISTMAX
+$AMPSCALE
+$TYPE.LIST
+EOF
+mv xy.seismograms xy.seismograms.$TYPE
+end
+# note: the output is a big file
+
+
+#===========================================================
+#             PLOTTING TIME!!!
+#===========================================================
+
+echo "${ShellName}: STARING ON THE PLOT FILES"
+
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+# plot size (the f90 sac2xy code assumes these are the dimensions
+# we are working with)
+set XSIZE = 6
+set YSIZE = 8.5 
+
+# crunch some axis attributes for plot:
+# well put dist on horiz axis, and time on vertical
+#set BX    = `echo $TIMEMIN $TIMEMAX | awk '{print (int(int(($2-$1)/10)/50)+1)*50 }' | awk '{print $1, $1/5}'`
+set BX    = `echo $TIMEMIN $TIMEMAX | awk '{print $2-$1}' | awk '{ if ( $1/100 >= 20 ) {print 500,100} else if ( $1/100 < 10 ) {print 100, 10} else {print 200, 20} }'`
+
+set BY    = `echo $DISTMIN $DISTMAX | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print $1, $1/5}'`
+set SCALE = X"$XSIZE"i/-"$YSIZE"i
+set RANGE = $TIMEMIN/$TIMEMAX/$DISTMIN/$DISTMAX/
+set BAXIS = a"$BX[1]"f"$BX[2]"/a"$BY[1]"f"$BY[2]"
+set Y0 = -Y1.5i
+
+# now build the plots, one type at a time
+@ iTYPE = 0
+foreach TYPE ( Zraw Zlp Rraw Rlp Traw Tlp  )
+@ iTYPE ++
+# define the output file
+set OUTFILE = $DIRPLOT/$EVENT.${ShellName}.$iTYPE.$TYPE.ps
+
+# plot some text
+pstext -Jx1i -R0/6/0/9 -K -N -P $Y0 << END >! $OUTFILE
+3.0 9.3 20  0 0 CB Event: ${MM}/${DD}/$YYYY ${HH}:${MIN} Comp: $TYPE
+3.0 9.0 15  0 0 CB $EVENT  LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG NSTA=$NSTA
+-0.5 4.5 15 90 0 CB Distance (deg)
+3.0 -0.7 15  0 0 CB Time after earthquake origin time (sec)
+END
+
+# more text: script name and time stamp
+echo "3.0 8.7 10 0 0 CB SCRIPT: ${ShellName}" >! datetag1
+date "+CREATION DATE: %m/%d/%y  %H:%M:%S" >! datetag2
+paste datetag1 datetag2 >! datetag3
+pstext datetag3 -Jx -R -N -Wored -G0 -O -K >> $OUTFILE
+
+# initiate coords for traces and curves
+psbasemap -J$SCALE -R$RANGE -B"$BAXIS"WSne -K -O -P >> $OUTFILE
+
+# plot the records
+psxy xy.seismograms.$TYPE -J$SCALE -R$RANGE -W0.005i/0 $MGMT -O -K >> $OUTFILE
+
+# finish the post script code
+pstext -JX -R -O  << ! >> $OUTFILE
+!
+
+
+end
+
+#some clean up, lists, tmp records, etc.
+\rm {?????,????,???}.{Rraw,Rlp,Traw,Tlp,Zraw,Zlp}
+\rm {Rraw,Rlp,Traw,Tlp,Zraw,Zlp}.LIST
+# \rm out.sac SAC2XY datetag?
+\rm out.sac datetag?
+\rm xy.seismograms.*
+\rm awkfile INFIL  $EVENT.m.process 
+\rm run_TC.sh
+
+
+# return to our pwd
+cd $DIRPWD
+
+echo "-------------------------------------------------------------"
+echo "                ${ShellName}:     DONE "
+echo "-------------------------------------------------------------"
+echo " "
+
+#EOF

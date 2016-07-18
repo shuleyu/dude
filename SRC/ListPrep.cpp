@@ -1,0 +1,249 @@
+#include<iostream>
+#include<sstream>
+#include<fstream>
+#include<cstdio>
+#include<cstdlib>
+#include<vector>
+#include<string>
+#include<cstring>
+#include<algorithm>
+extern "C"{
+#include<sac.h>
+#include<sacio.h>
+}
+
+using namespace std;
+
+struct record {
+	string kname,ntwk,stnm,cmp,label;
+	double lat=0,lon=0;
+};
+
+struct info {
+	string label;
+	int BHT=0,BHR=0,BHZ=0;
+	int HHT=0,HHR=0,HHZ=0;
+	int THT=0,THR=0,THZ=0;
+};
+
+bool tmpfunc1(const struct record &item1,const struct record &item2){
+	return item1.label<item2.label;
+}
+
+bool tmpfunc2(const struct record &item1,const struct record &item2){
+	return item1.label==item2.label;
+}
+
+bool tmpfunc3(const struct record &item1,const struct record &item2){
+	return item1.stnm<item2.stnm;
+}
+
+bool tmpfunc4(const struct record &item1,const struct record &item2){
+	return item1.lon==item2.lon;
+}
+
+int main(int argc, char **argv){
+
+    enum PIenum{BH,FLAG1};
+    enum PSenum{SACList,FileList,FLAG2};
+    enum Penum{FLAG3};
+
+    /****************************************************************
+
+				Deal with inputs. (Store them in PI,PS,P)
+
+    ****************************************************************/
+
+	if (argc!=4){
+		cerr << "In C++: Argument Error!" << endl;
+		return 1;
+	}
+
+    int int_num,string_num,double_num;
+
+    vector<int> PI;
+    vector<string> PS;
+    vector<double> P;
+
+    int_num=atoi(argv[1]);
+    string_num=atoi(argv[2]);
+    double_num=atoi(argv[3]);
+
+	if (FLAG1!=int_num){
+		cerr << "In C++: Ints Naming Error !" << endl;
+	}
+	if (FLAG2!=string_num){
+		cerr << "In C++: Strings Naming Error !" << endl;
+	}
+	if (FLAG3!=double_num){
+		cerr << "In C++: Doubles Naming Error !" << endl;
+	}
+
+	string tmpstr;
+	int tmpint,Cnt;
+	double tmpval;
+
+	Cnt=0;
+	while (getline(cin,tmpstr)){
+		++Cnt;
+		stringstream ss{tmpstr};
+		if (Cnt<=int_num){
+			if (ss >> tmpint && ss.eof()){
+				PI.push_back(tmpint);
+			}
+			else{
+				cerr << "In C++: Ints reading Error !" << endl;
+				return 1;
+			}
+		}
+		else if (Cnt<=int_num+string_num){
+			PS.push_back(tmpstr);
+		}
+		else if (Cnt<=int_num+string_num+double_num){
+			if (ss >> tmpval && ss.eof()){
+				P.push_back(tmpval);
+			}
+			else{
+				cerr << "In C++: Doubles reading Error !" << endl;
+				return 1;
+			}
+		}
+		else{
+			cerr << "In C++: Redundant inputs !" << endl;
+			return 1;
+		}
+	}
+	if (Cnt!=int_num+string_num+double_num){
+		cerr << "In C++: Not enough inputs !" << endl;
+		return 1;
+	}
+
+    /****************************************************************
+
+                              Job begin.
+
+    ****************************************************************/
+
+	ifstream infile;
+	vector<struct record> data;
+
+	infile.open(PS[SACList]);
+	struct record item;
+	while (infile >> item.kname >> item.ntwk >> item.stnm >> item.cmp >> item.lat >> item.lon){
+		item.label=item.ntwk+"_"+item.stnm;
+		data.push_back(item);
+	}
+	infile.close();
+
+	// Get unique NW_ST by this label.
+	// (Same station name, different NT)
+	sort(data.begin(),data.end(),tmpfunc1);
+	auto it=unique(data.begin(),data.end(),tmpfunc2);
+
+	// Get unique NW_ST by station location.
+	// (Station report to multiple center)
+	sort(data.begin(),it,tmpfunc3);
+	it=unique(data.begin(),it,tmpfunc4);
+
+	// Use metadata to store unique NW_ST label.
+	vector<struct info> metadata;
+	vector<struct record> data_tmp(data.begin(),it);
+	struct info item2;
+	for (auto index: data_tmp){
+		item2.label=index.label;
+		metadata.push_back(item2);
+	}
+
+	// Count each unique NW_ST's info.
+	for (auto &index: metadata){
+		for (auto index2:data){
+			if (index2.label==index.label){
+				if (index2.cmp=="BHT"){
+					++index.BHT;
+				}
+				if (index2.cmp=="BHR"){
+					++index.BHR;
+				}
+				if (index2.cmp=="BHZ"){
+					++index.BHZ;
+				}
+				if (index2.cmp=="HHT"){
+					++index.HHT;
+				}
+				if (index2.cmp=="HHR"){
+					++index.HHR;
+				}
+				if (index2.cmp=="HHZ"){
+					++index.HHZ;
+				}
+				if (index2.cmp=="THT"){
+					++index.THT;
+				}
+				if (index2.cmp=="THR"){
+					++index.THR;
+				}
+				if (index2.cmp=="THZ"){
+					++index.THZ;
+				}
+			}
+		}
+	}
+
+
+	// Select Good traces.
+	sort(data.begin(),data.end(),tmpfunc1);
+	vector<struct record> data_clean;
+
+	for (auto index: metadata){
+
+		if ((index.BHT==1 && index.BHR==1 && index.BHZ==1) || (index.HHT==1 && index.HHR==1 && index.HHZ==1) || (index.THT==1 && index.THR==1 && index.THZ==1)){
+			if (index.BHT+index.BHR+index.BHZ+index.HHT+index.HHR+index.HHZ==6){
+				if (PI[BH]==1){
+					for (auto index2: data){
+						if (index2.label==index.label && index2.cmp[0]=='B'){
+							data_clean.push_back(index2);
+						}
+					}
+				}
+				else{
+					for (auto index2: data){
+						if (index2.label==index.label && index2.cmp[0]=='H'){
+							data_clean.push_back(index2);
+						}
+					}
+				}
+			}
+			else{
+				for (auto index2: data){
+					if (index2.label==index.label){
+						data_clean.push_back(index2);
+					}
+				}
+			}
+		}
+	}
+
+	// Output good data.
+	ofstream outfile,outfile_T,outfile_R,outfile_Z;
+	outfile.open(PS[FileList]);
+	outfile_T.open(PS[FileList]+"_T");
+	outfile_R.open(PS[FileList]+"_R");
+	outfile_Z.open(PS[FileList]+"_Z");
+
+	for (auto index: data_clean){
+		if (index.cmp.substr(2,1)=="T"){
+			outfile_T << index.kname << endl;
+		}
+		if (index.cmp.substr(2,1)=="R"){
+			outfile_R << index.kname << endl;
+		}
+		if (index.cmp.substr(2,1)=="Z"){
+			outfile_Z << index.kname << endl;
+		}
+		outfile << index.kname << endl;
+	}
+
+	outfile.close();
+
+    return 0;
+}

@@ -1,0 +1,304 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#                      c53.map_SKS_pathInOutCMB
+#===========================================================
+# this script uses GMT and the taup toolkit
+# to plot a map with all SKS bounce points along
+# the core-mantle boundary on a tomography model of D"
+# the purpose of this script is to show automation of
+# bounce point information of a seismic phase of interest.
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+#         (2) shear velocity values from a tomography model
+#         (3) some directory location info
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+
+
+# OUTPUT:  (1) postscript plot map
+# -------  (2) a new "more_info" file that keeps the bounce
+#              point info for possible later use
+
+set OUTFILE = $DIRPLOT/$EVENT.c53.map_SKS_pathInOutCMB.ps
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source the env variable script
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# loose the header line in our master file
+awk ' NR>1 {print $0}'  $MASTER >! INFIL
+
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1] 
+set ELON   = $COORDS[2] 
+set EZ     = $COORDS[3] 
+set EMAG   = $COORDS[4] 
+
+# output file for things we make. here: SKS bounce pts:
+\rm eventStation.$EVENT.more_info
+if(-e eventStation.$EVENT.more_info) then
+    @ INFOFLG = 1
+    # first see if we already made SKS bounce points,
+    # since file might exist from other activities.
+    # look for the header variable to the x coord.
+    # use this flag later to either read them or make them
+    @ DIDIT = ` grep -c xSKS eventStation.$EVENT.more_info `
+else
+    @ DIDIT   = 0
+    @ INFOFLG = 0
+endif
+
+# make an event lat/lon file:
+echo $ELAT $ELON >! xy.eq
+
+if (-e xy.gcpaths ) \rm xy.gcpaths
+if (-e xy.stations ) \rm xy.stations
+if (-e xy.SKS_bounce ) \rm xy.SKS_bounce
+
+# If we have not already made SKS bounce points, make them, and put
+# output into (a) file for plotting, and (b) our "more_info" file
+
+
+if($DIDIT == 0) then
+echo "qeqeqe"
+   # we're inside here because we have to make the bounce points
+   # define a min max distance for our SKS hunt.
+   # subjective choice here.  I'll say:
+   set RSKSMIN = 70       # units: deg
+   set RSKSMAX = 130      # units: deg
+   
+   # we will make some files:
+   # (a) make a file that contains the great circle path information,
+   #     i.e., the event lat/lon, station lat/lon, and GMT delimeter (">")
+   # (b) make a file that contains station lat/lons
+   # (c) make 2 files that contains SKS bounce pt lat/lons
+   
+   if (-e xy.SKS_bounce ) \rm xy.SKS_bounce
+   if (-e xy.SKS_info ) \rm xy.SKS_info
+   # make the header line in our temp info file 
+   echo "ySKS     xSKS" >! xy.SKS_info
+   
+   \rm xy.SKS_in xy.SKS_out 
+   @ m = 1
+   while ( $m <= $NSTA )
+   
+        # get distance, which we assess if in our interest bound:
+        set DIST = ` awk ' NR=='$m' {print $3 }' INFIL `
+   
+        # if in dist bound compute bounce points
+        set DISTFLG = ` echo $DIST $RSKSMIN $RSKSMAX | awk ' $1 >= $2 && $1 <= $3 {print "Y"}' `
+        if($DISTFLG == 'Y' ) then
+
+             # add to great circle path plot file
+             echo '>' >>! xy.gcpaths
+             echo $ELAT $ELON >>! xy.gcpaths
+             set XYSTA = ` awk ' NR=='$m' {print $9,$10} ' INFIL `
+             echo $XYSTA[1] $XYSTA[2] >>! xy.gcpaths
+    
+             # add to station coord plot file
+             echo $XYSTA[1] $XYSTA[2] >>! xy.stations
+    
+             # now we need to compute (using TauP Toolkit) the SKS
+             # bounce points, then put them in a plot file and the info file.
+             # beware: this next step takes a moment (few stations per second)
+             taup_pierce -mod prem -sta $XYSTA[1] $XYSTA[2] -evt $ELAT $ELON \
+                 -h $EZ -pierce 2891 -nodiscon -ph SKS | grep 2891 | \
+                 awk '{print $4,$5}'  >! xy.SKS_tmp
+             set XYSKSin  = `cat xy.SKS_tmp | awk 'NR == 1 { print $1, $2}'`
+             echo $XYSKSin  >>! xy.SKS_in
+             set XYSKSout = `cat xy.SKS_tmp | awk 'NR == 2 { print $1, $2}'`
+             echo $XYSKSout >>! xy.SKS_out
+             echo $XYSKSin $XYSKSout  >>!  xy.SKS_info 
+             echo $XYSKSin >>! xy.SKS_bounce
+             echo $XYSKSout >>! xy.SKS_bounce
+
+        else
+   
+          # we are not in the distance bound so we will
+             # put a "null" into the lat lon spots of the info file
+             echo null null >>!  xy.SKS_info
+        endif
+
+        @ m++
+
+   end   # end of while loop thru stations
+   set NSTA = `wc -l < xy.SKS_in`
+   # add our new info to more_info file
+   if($INFOFLG == 1 ) then
+       # add our files to existing files in the info file
+       paste eventStation.$EVENT.more_info xy.SKS_info >! newinfo
+       mv newinfo eventStation.$EVENT.more_info
+   else
+       # intiate the info file with our new info
+       mv xy.SKS_info eventStation.$EVENT.more_info
+   endif
+
+else
+
+   # we are here because SKS bounce points already exist in info file
+   # just need to grab all the info and make new "xy." files. 
+   # there are 2 possibilities: our desired info are the only 2
+   # columns in the info file (easiest) or there are other columns
+
+   #  first: check to see if there are only 2 columns, if not
+   # we find the right columns, then proceed
+   @ ncol = ` awk ' NR==1 { print NF-1 }' eventStation.$EVENT.more_info `
+   if($ncol == 1) then
+       # simply grab the XY info, as is
+       awk ' { print $1, $2}' eventStation.$EVENT.more_info >! xy.SKS_info
+   else
+       # we have to find correct columns with xSKS and ySKS info.
+       # i'm an awk moron, so this is brute force...
+       set search = xSKS
+       # we look column by column for 'search' var, xSKS
+       @ x = 1
+       while($x <= $ncol)
+           @ v = $x + 1
+           set header = ` awk ' NR==1  {print $'$x' }' eventStation.$EVENT.more_info `
+           if($header == $search) then
+                # if were here, we found the column, make our file and get out
+                awk ' { print $'$v', $'$x'}' eventStation.$EVENT.more_info >! xy.SKS_info
+                @ x = 999
+           endif
+           @ x++
+       end
+   endif
+
+   # paste the xy.SKS_info onto our eventStation file, so we can get the
+   # sta coords and SKS bnc pt coords, after nuking the lines w/ "nulls/
+   paste $MASTER xy.SKS_info >! eventStation.tmp
+
+   # now, keep only the stations that have info, i.e., non-nulls:
+   grep -v null eventStation.tmp >! INFIL0
+   # -- PLOT ALL BCP ----
+   #awk 'NR>1 { print $0 }' INFIL0 >! INFIL
+   # -- only PLOT TA
+   awk 'NR>1 i&& $2 == "TA" { print $0 }' INFIL0 >! INFIL
+ 
+   \rm INFIL0
+
+   # count them
+   set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+
+   # now loop through, line by line and make all the xy. files:
+   @ m = 1
+   while ( $m <= $NSTA )
+
+       # add to great circle path plot file
+       echo '>' >>! xy.gcpaths
+       echo $ELAT $ELON >>! xy.gcpaths
+       set XYSTA = ` awk ' NR=='$m' {print $9,$10} ' INFIL `
+       echo $XYSTA[1] $XYSTA[2] >>! xy.gcpaths
+   
+       # add to station coord plot file
+       echo $XYSTA[1] $XYSTA[2] >>! xy.stations
+   
+       # add to bounce point plot file
+       set XYSCS = ` awk ' NR=='$m' {print $19,$20,$21, $22} ' INFIL `
+       echo $XYSCS[1] $XYSCS[2] >>! xy.SKS_bounce
+ 
+       @ m++
+   end
+
+endif    # end of if loop to make bounce points
+
+
+
+#=======================================
+#         plotting time!
+#=======================================
+# plot the text of the title,
+# also, plot a big title at top of page:
+# first, break apart event name for Big Title:
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+
+# plot some text
+pstext -Jx1i -R0/6/0/9 -K -N -P << END >! $OUTFILE
+3.0 9.3 18  0 0 CB Event: ${MM}/${DD}/$YYYY ${HH}:${MIN}  SKS in(yellow)/out(green) points at CMB
+3.0 9.0 14  0 0 CB $EVENT  LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG NSTA=$NSTA
+3.0 8.7 12  0 0 CB Tomography model:  S20RTS (Ritsema) Z=2880 km 
+END
+
+
+# plot extra text
+echo "3.0 8.4 10 0 0 CB SCRIPT: c53.map_SKS_pathInOutCMB " >! datetag1
+date "+CREATION DATE: %m/%d/%y  %H:%M:%S" >! datetag2
+paste datetag1 datetag2 >! datetag3
+
+pstext datetag3 -Jx1i -R0/6/0/9 -N -Wored -G0 -O -K >> $OUTFILE
+
+
+
+# define the GMT plot bounds and size:
+set REG = -R-180/180/-90/90
+set PROJ = -JR$ELON/7.0i
+
+
+# first we will plot the tomography model.  i will choose
+# Jeroen Ritsema's 2000  model
+
+# first we convert the (x,y,dVs) ascii file in the src directory
+# to GMT binary, a "grd" file:
+xyz2grd $DIRSRC/ritsema.2880 -G2880.grd -I2 $REG -V -:
+
+# now plot the grd file w/ gmt's 'grdimage'.  the color
+# palette table "cpt" already exists, in the src directory
+set CPT = -C$DIRSRC/ritsema.cpt
+grdimage 2880.grd $CPT $REG $PROJ -E40 -K -O -V  -X-0.5i -Y2.5i >> $OUTFILE
+
+# add a color scale to the right for the tomography map
+psscale $CPT -D3.5i/-0.2i/3.0i/0.13ih -B2/:"@~\144@~Vs (%)": -V -O -K -N300 >> $OUTFILE
+
+# finally, we can now plot the coast lines
+pscoast $REG $PROJ -Ba0g45/a0g45wsne -Dl -A40000 -W2 -V -P -O -K >> $OUTFILE
+
+# then plot the great circle path file
+psxy xy.gcpaths $REG $PROJ -: $MGMT -K -O -W1.0/250/0/200t5_15:0 >> $OUTFILE
+
+# now plot the EQ and stations
+psxy xy.eq       $REG $PROJ -: -Sa0.12i -K -O -W1/0/0/0 -G0 >> $OUTFILE
+psxy xy.stations $REG $PROJ -: -St0.03i -K -O -W1/0/0/0 -G0 >> $OUTFILE
+
+# now plot the SKS bounce points:
+#psxy xy.SKS_bounce $REG $PROJ -: -Sx+0.15i -K -O -W3/yellow  >> $OUTFILE
+psxy  xy.SKS_in $REG $PROJ -: -Sx+0.15i -K -O -W3/yellow  >> $OUTFILE
+psxy  xy.SKS_out $REG $PROJ -: -Sx+0.15i -K -O -W3/195/220/175  >> $OUTFILE
+
+
+pstext $REG $PROJ -N -O   << END >> $OUTFILE
+END
+
+# some clean up
+\rm xy.eq xy.station* xy.gcpaths xy.SKS_bounce .gmt* 2880.grd
+\rm INFIL 
+\rm eventStation.tmp
+\rm datetag?
+if(-e xy.SKS_info) \rm xy.SKS_info
+if(-e xy.SKS_tmp) \rm xy.SKS_tmp
+
+
+# message to screen we're done this this file
+echo "c53.map_SKS_pathInOutCMB: just finished making PLOT FILE : $OUTFILE"
+
+
+
+# return to our pwd
+cd $DIRPWD

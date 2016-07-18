@@ -1,0 +1,151 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================
+#          c01.list_prep
+#===========================================
+# this is a simple script to deal with the
+# situation of having multiple segment files,
+# i.e., for a given station and network and
+# component of motion, there are many files.
+# it also deals with the odd case of some
+# stations reporting to more than 1 network.
+# this is a bit heavy handed, since,
+# right now, if such exists, they are not
+# processed further, and copied to a sub-
+# directory in the data files directory.
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+set MASTER    = eventStation.$EVENT
+
+cd ${DIRDATA}/${EVENT}
+
+#----- make a subdir for problem stations & log files -----
+if(-e prob_records,log ) then
+   echo "prob_records,log exists already" >>! ./prob_records,log/log.$EVENT
+else
+   mkdir prob_records,log
+   echo "making directory prob_records,log " >>! ./prob_records,log/log.$EVENT
+endif
+
+# make a copy of the original eventStation list file
+cp $MASTER ./prob_records,log/${MASTER}_original 
+
+
+# omit duplicate lines in our master file, 
+# e.g., for any station that has multiple
+# segments returned. (i.e., a station w/ more than 1 file for
+# a given component and network), which may have entered
+# info more than once (i.e., sod may have done this)
+sort -u $MASTER >! eventStation.sort
+
+cat eventStation.sort >! $MASTER
+\rm eventStation.sort 
+
+#----- start a log file -----
+echo "Earthquake:" $EVENT >! ./prob_records,log/log.$EVENT
+
+# make a file w/ unique network.station names
+# here we worry about network since some stations report to multiple
+# networks: we will only keep the first occurrance
+ls *.{B,H,T}H?.*sac | awk -F. '{print $2"."$3}' | sort -u >! NET.STA
+
+#-----  get number of net.stations -----
+@ NNETSTA = `  wc -l NET.STA | awk '{print $1}' `
+
+#----- start loop (in i) on stations -----
+# (one for each R, T, Z), if more than expected are found
+# copy them to the prob_records,log directory.
+# we will calculate  #'s of recs
+# per component, then move ones w/ more than
+# one rec to our prob_records,log dir
+@ i = 1
+while($i <= $NNETSTA)
+   set NET_STA = ` awk ' NR=='$i' {print $0}' NET.STA `
+
+   # count each component: make sure 1 file exists for each:
+   @ nZ = ` ls $EVENT.${NET_STA}.{B,H,T}HZ.*sac | wc -l | awk '{print $1}' `
+   @ nR = ` ls $EVENT.${NET_STA}.{B,H,T}HR.*sac | wc -l | awk '{print $1}' `
+   @ nT = ` ls $EVENT.${NET_STA}.{B,H,T}HT.*sac | wc -l | awk '{print $1}' `
+
+   # if more than 1 rec exists, move them to prob_recs dir. ...a bit
+   # heavy handed, but we'll also nuke any net.sta that does not have
+   # all 3 comps:
+
+   if($nZ > 1 || $nR > 1 || $nT > 1 || $nZ == 0 || $nR == 0 || $nT == 0 ) then
+        \mv $EVENT.${NET_STA}*.{B,H}H?.*sac ./prob_records,log/
+        echo "$EVENT.${NET_STA} has multiple records, moved to $EVENT/prob_records,log" \
+            >>! ./prob_records,log/log.$EVENT
+
+       # now, take this network.station combo out of MASTERFILE.
+       # some duct tape here! recall, varible NET_STA is net.sta, but
+       # in master file we have "sta net". (space in between, not ".")
+       # reverse order, loose period:
+       set CODE = ( ` echo $NET_STA | awk -F. '{print $2, $1}' ` )
+       # grep exclude it:
+       grep -v "$CODE" $MASTER >! newMASTER
+       \mv newMASTER $MASTER
+   endif
+
+   @ i++
+end  # -------- done with 1st station loop ------
+
+# we still have the possibility of one station reporting to 2 or
+# more networks.  we now deal with that. at this point we only
+# have stations for which all 3 comps are present.  so we'll just
+# use the Z comp for this query
+
+#-----  get number of net.stations -----
+# new list, new count (but just stations, not net.station)
+ls *.{B,H,T}H?.*sac | awk -F. '{print $3}' | sort -u >! STA
+@ NSTA = `  wc -l STA | awk '{print $1}' `
+@ i = 1
+while($i <= $NSTA)
+   set STATION = ` awk ' NR=='$i' {print $0}' STA `
+
+   # count to see if we have more than 1 Z comp for this STATION
+   @ nZ = ` ls $EVENT.*.${STATION}.{B,H,T}HZ.*sac | wc -l | awk '{print $1}' `
+   if($nZ > 1 ) then
+        # here we will make a list of the net.sta and move the 
+        # ones w/ multiple networks to prob_records,log dir
+        # (keeping the first one)
+        ls $EVENT.*${STATION}.{B,H,T}HZ.*sac | awk -F. '{print $2"."$3}' >! MULTLIST 
+        # move the multiples:
+        @ NMULT = ` wc -l MULTLIST | awk '{print $1}' `
+        @ d = 2
+        while($d <= $NMULT)   # this while loop only runs if NMULT > 1
+            set NET_STA = ` awk ' NR=='$d' {print $0}' MULTLIST `
+            \mv $EVENT.${NET_STA}.{B,H}H?.*sac ./prob_records,log/
+            echo "$EVENT.${NET_STA} is a network duplicate. moved to $EVENT/prob_records,log" >>! \
+                ./prob_records,log/log.$EVENT
+
+            # again, need to pull this network.station out of master file
+            # reverse order, loose period:
+            set CODE = ( ` echo ${NET_STA} | awk -F. '{print $2, $1}' ` )
+            # grep exclude it:
+            grep -v "$CODE" $MASTER >! newMASTER
+            \mv newMASTER $MASTER
+
+            @ d++
+        end
+   endif
+
+   @ i++
+end  # -------- done with 2nd station loop ------
+
+# overprint new MASTER file onto one in the data directory:
+# add a header line to our new master file:
+echo "STA  NET DIST X   AZ      X  BAZ     X   SLAT   SLON   ELAT ELON  EZ  X  X  MAG CA T DATE" >! LABEL
+cat LABEL  $MASTER >! newMASTER
+\mv newMASTER $MASTER
+\rm LABEL
+
+
+#clean up
+\rm STA NET.STA
+if(-e MULTLIST) \rm MULTLIST
+
+exit 0
