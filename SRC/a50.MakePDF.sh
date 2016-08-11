@@ -18,7 +18,7 @@ cd ${PLOTDIR}
 #              ! Work Begin !
 # ==================================================
 
-for EQ in `cat ${WORKDIR}/tmpfile_EQs_${RunNumber}`
+for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 
 	rm -f tmpfile_$$
@@ -38,6 +38,6 @@ done # End of EQ loop.
 # Clean up.
 rm -f ${PLOTDIR}/tmpfile*$$
 
-cd ${WORKDIR}
+cd ${OUTDIR}
 
 exit 0

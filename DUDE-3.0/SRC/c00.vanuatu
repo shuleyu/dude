@@ -1,0 +1,118 @@
+#!/bin/csh
+# EJG/PL March 2010
+#
+# this is an example of a master script that can run all the 
+# individual scripts.  you should be able to run this from any 
+# location that sees the directories defined below
+
+set EQ  = 201003041402       # event direction name
+set CMT = ( 338 41 83 )     # strike dip rake
+
+#==========================================================
+#                Critical user input
+#==========================================================
+
+# set path to directory with all codes & scripts, etc.:
+set DIRCODE = /Users/garnero/LG/SRC
+
+# set path to directory containing event sub-directories
+# it is expected that any eventStation files made by SOD are
+# in same directory as parent directory containing event
+# sub-directories:
+set DIRDATA  = /Users/garnero/LG/seismograms
+
+# set path to directory where output plots will be written:
+set DIRPLOT  = $DIRDATA/PLOTS
+
+# source our environment settings (compilers, codes, etc)
+source $DIRCODE/c0.ENV_setting
+
+#==========================================================
+#   make the plot directory, if it does not yet exist:
+#==========================================================
+if(-e $DIRPLOT ) then
+   echo $DIRPLOT exists, going to run scripts now!
+else
+   mkdir $DIRPLOT
+   echo Just made $DIRPLOT, going to run scripts now!
+endif
+
+
+#==========================================================
+#                    Run the scripts!  
+#   (for more description see README in $DIRCODE)
+#==========================================================
+
+set INPUT = ( $EQ $DIRCODE $DIRDATA $DIRPLOT )
+
+#$DIRCODE/c01.list_prep                 $INPUT                             # make lists of stations, etc
+
+#------------- General Plots Options -----------------------------------------------------------------------------------------------------
+#$DIRCODE/c02.map_master                $INPUT                             # Master map of great circle paths
+#$DIRCODE/c03.map_citydist              $INPUT                             # map of some major cities and paths and info
+#$DIRCODE/c04.histograms                $INPUT                             # histogram plots
+#$DIRCODE/c05.profile_big               $INPUT  0 180 0 3000               # big profile | dist, time minmax
+#$DIRCODE/c05.profile_big               $INPUT -1 180 0 3000               # big profile | dist, time minmax
+                                                                           # if dist minmax = -1, generate dist minmax automatically
+
+#$DIRCODE/c06.profile_big_comb          $INPUT  0 180 0 3000  0.4          # plot traces while disatance interval >= dist_gap
+                                                                           # |  dist/time minmax, dist_gap
+                                                                           # if dist minmax = -1, generate dist minmax automatically
+
+#$DIRCODE/c07.profile_big_distinc_sum    $INPUT 0 180 0 3000 1.0 1.0       # profile_big_stack | dist, time minmax, distwin, distinc
+                                                                           # if dist minmax = -1, generate dist minmax automatically
+
+$DIRCODE/c08.profile_zoom              $INPUT 45 80 -50 200  P Z          # zoom | time/dist minmax, phase/comp
+#$DIRCODE/c08.profile_zoom              $INPUT 0 100 -50 1000  S T          # zoom | time/dist minmax, phase/comp
+#$DIRCODE/c08.profile_zoom              $INPUT 0 100 -50 1000  S R          # zoom | time/dist minmax, phase/comp
+
+#$DIRCODE/c09.profile_zoom_distinc_sum  $INPUT 40 110 -100 1000 P Z 0.5 0.3     # zoom_diststack | time/dist minmax, phase/comp, distwin, distinc
+#$DIRCODE/c09.profile_zoom_distinc_sum  $INPUT 40 110 -100 500 S T 0.5 0.3     # zoom_diststack | time/dist minmax, phase/comp, distwin, distinc
+#$DIRCODE/c09.profile_zoom_distinc_sum  $INPUT 40 110 -100 500 S R 0.5 0.3     # zoom_diststack | time/dist minmax, phase/comp, distwin, distinc
+
+#$DIRCODE/c10.map_TA_dists              $INPUT                             # TA station map
+#$DIRCODE/c11.profile_big_TA            $INPUT 500 3000                    # big TA profile |  time minmax
+
+
+#$DIRCODE/c12.radiation_pat             $INPUT  $CMT                       # Focal mech & rad pats
+#$DIRCODE/c13.radpat_piercings          $INPUT  $CMT                       # rad pats + piercing points 
+
+
+#$DIRCODE/c16.empirical_src_stack       $INPUT P Z 10 90 -20 30 0          # empirical source maker |  phase/comp, dist/time minmax, flag_SNratio
+                                                                           # flag_SNratio   0= off/ 1= on( after running c16.measure_SNR) 
+#$DIRCODE/c16.empirical_src_stack       $INPUT S T 30 90 -20 40 0          # empirical source maker |  phase/comp, dist/time minmax, flag_SNratio
+                                                                           # flag_SNratio   0= off/ 1= on( after running c16.measure_SNR)
+#$DIRCODE/c16.empirical_src_stack       $INPUT S R 30 80 -20 40 0          # empirical source maker |  phase/comp, dist/time minmax, flag_SNratio
+                                                                           # flag_SNratio   0= off/ 1= on( after running c16.measure_SNR)
+
+
+#------------- User Advanced Options -------------------------------------------------------------------------------------------------------
+$DIRCODE/c50.map_scs_bounce            $INPUT                             # Map of ScS bounce points on tomography
+#$DIRCODE/c51.map_ss_bounce             $INPUT                             # Map of SS surface reflection pts on tomog
+#$DIRCODE/c52.map_sdiffpath             $INPUT                             # Map of S paths below a specific depth
+#$DIRCODE/c14.radpat_pierce_1           $INPUT  $CMT  PcP P             # radpat+piercings for 1 phase | phase/comp( of radpat)
+#$DIRCODE/c17.measure_SNR               $INPUT                             # calc and save SNR ratios
+#$DIRCODE/c16.empirical_src_stack       $INPUT P Z 10 90 -20 30 1          # empirical source maker |  phase/comp, dist/time minmax, flag_SNratio
+                                                                           # flag_SNratio   0= off/ 1= on( after running c16.measure_SNR)
+#$DIRCODE/c16.empirical_src_stack       $INPUT S T 40 95 -20 40 1          # empirical source maker |  phase/comp, dist/time minmax, flag_SNratio
+                                                                           # flag_SNratio   0= off/ 1= on( after running c16.measure_SNR)
+#DIRCODE/c16.empirical_src_stack       $INPUT S R 10 90 -20 40 1          # empirical source make |  phase/comp, dist/time minmax, flag_SNratio
+                                                                           # flag_SNratio   0= off/ 1= on( after running c16.measure_SNR)
+#$DIRCODE/c18.profile_zoom_distinc_sum_weights $INPUT 0 100 -50 1000 P Z 1 1.0     # zoom_diststack | time/dist minmax, phase/comp, distwin, distinc
+                                                                                  # vaild after rinng $DIRCODE/c13.radpat_piercings 
+                                                                                  # only vaild for those 12 phase-comp pairs
+#$DIRCODE/c18.profile_zoom_distinc_sum_weights $INPUT 0 100 -50 1000 S R 1 1.0     # zoom_diststack | time/dist minmax, phase/comp, distwin, distinc
+                                                                                  # vaild after rinng $DIRCODE/c13.radpat_piercings
+                                                                                  # only vaild for those 12 phase-comp pairs
+#$DIRCODE/c18.profile_zoom_distinc_sum_weights $INPUT 0 100 -50 1000 S T 1 1.0     # zoom_diststack | time/dist minmax, phase/comp, distwin, distinc
+                                                                                  # vaild after rinng $DIRCODE/c13.radpat_piercings, only for those 12 phases
+                                                                                  # only vaild for those 12 phase-comp pairs
+
+
+
+cat $DIRPLOT/$EQ.c*.ps >! $DIRPLOT/EQ_$EQ.ps; echo "c00.motherscript: just finished making the really big OUTPUT FILE : $DIRPLOT/EQ_$EQ.ps" 
+                                                                           # combine the general plots to 1 $EQ.ps. 
+pstopdf_alias $DIRPLOT/EQ_$EQ.ps $DIRPLOT/EQ_$EQ.pdf; echo "c00.motherscript: just finished making the really big OUTPUT FILE : $DIRPLOT/EQ_$EQ.pdf"
+                                                                           # convert $EQ.ps to $EQ.pdf
+
+#EOF

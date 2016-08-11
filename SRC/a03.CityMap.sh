@@ -10,18 +10,18 @@
 
 echo ""
 echo "--> `basename $0` is running."
-mkdir -p ${WORKDIR}
-cd ${WORKDIR}
+mkdir -p ${OUTDIR}
+cd ${OUTDIR}
 
 # ==================================================
 #              ! Work Begin !
 # ==================================================
 
 
-for EQ in `cat ${WORKDIR}/tmpfile_EQs_${RunNumber}`
+for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 	# Commands after press Ctrl+C.
-	trap "rm -f ${WORKDIR}/tmpfile*$$ ${PLOTDIR}/${EQ}*`basename ${0%.sh}`*.ps ${WORKDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${OUTDIR}/tmpfile*$$ ${PLOTDIR}/${EQ}*`basename ${0%.sh}`*.ps ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 	# Check list file.
@@ -81,8 +81,8 @@ EOF
 done # End of EQ loop.
 
 # Clean up.
-rm -f ${WORKDIR}/tmpfile*$$
+rm -f ${OUTDIR}/tmpfile*$$
 
-cd ${WORKDIR}
+cd ${OUTDIR}
 
 exit 0

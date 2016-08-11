@@ -1,0 +1,167 @@
+==========================================================================
+=                          README.2.SOD                                  =
+==========================================================================
+=                                                                        =
+=                Collection data using SOD                               =
+=                                                                        =
+=     This file contains the following information:                      =
+=        I.   Overview / commentary about SOD                            =
+=        II.  Finding events of interest using SOD                       =
+=        III. Collecting data using SOD                                  =
+=                                                                        =
+==========================================================================
+
+     -------------------------------------------------------------
+                 I.  Overview / commentary about SOD
+     -------------------------------------------------------------
+
+We have built these scripts around SOD.  There are many ways to collect
+data, and different data agencies sometimes require specific tools to be
+used.  Our group has commonly used autodrm, brekfast, and various web 
+interfaces in the past.  The choice for using SOD was that some steps 
+were made easier, especially since author Phillip Crotwell modified the
+code to enable construction of a "master file" which we use in most of
+the plots.
+
+This pile of duct tape need not be married to SOD, though most of the 
+scripts assume a specific seismogram filename structure, and a specific
+form to a master file (that contains station and event information).
+Lastly, the spirit of DUDE is to collect, process, and view earthquakes
+as they happen.  SOD doesn't really conflict with this, and appears to
+help.  
+
+That said: SOD is reliant on the network (internet) between you and the
+servers giving you data from some place) being stable.  Certain firewall
+settings may conflict with it. If you've never used SOD, it might take
+a moment to get used to it.  Please refer to the online information that
+the author provides at http://www.seis.sc.edu.  To be honest, we struggled
+with SOD because we had challenges with its unreliability in providing
+the instrument pole/zero files 100% of the time. We now avoid this issue
+by having SOD do the instrument deconvolution step for us, which it 
+appears to do reliably.
+
+SOD works with any data agency that has a DHI (data handling interface)
+server.  At present, IRIS and Berkeley do (note: Berkeley does not
+report all their data to IRIS). Canadian stations do not (we use
+autodrm for that network).
+
+SOD is written in java, and hence is platform independent.  This version
+that we are using requires java 1.6.  Some software we use for completely
+different applications (i.e., not part of DUDE) require other versions
+of SOD (e.g. v1.5).  Thus you will see in the SOD directory a little
+script we use to switch back to 1.6 if we are in 1.5.
+
+
+     -------------------------------------------------------------
+              II.  Finding events of interest using SOD 
+     -------------------------------------------------------------
+
+Here we assume you are fimiliar with SOD and how it collects data and/or
+information about earthquakes/stations.  We use a two step approach: step 1
+is to collect earthquake info, step 2 is to grab the data.  Here we discuss
+finding event information.
+
+In principle, this step can be omitted and the event information can be
+collected from any source (e.g., USGS automatic emails, whatever) then typed
+in the SOD data collection script.  There is an unfortunate potential hazard
+of doing it this way, for those of us that want to input lat/lon/z/Origin time
+info, and have SOD get the event.  It is this: SOD needs to go to an event 
+catalog to match an event to your criteria.  However, any number of catalogs
+(e.g., NEIC or PDE or (etc) ...) may have your event, if you do not tell
+SOD which catalog to look for.  If by chance two catalogs report the same
+event, and their origin times are different (usually the case), then SOD
+will treat it as two different events and collect the data twice, and you
+end up w/ doubles of your station files!  On the other hand, it is often the
+case that only one catalog contains your event of interest.  So if you tell
+SOD to use a catalog that does not have the event, you get no data.
+
+Our work around for the time being is to have SOD first collect event
+information from ALL catalogs, and write that info into a file on disk.
+We then edit that file by deleting entries we do not want.  Then the 
+subsequent collection step just reads that file. Perhaps this is not 
+optimal, but it seems to work and doesn't take too much time.  The event
+list file can have as many earthquakes in it as you like, so you can
+still collect lots of data from some specific region.
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+    SOD_request/CSV_MAKING.xml
+ '''''''''''''''''''''''''''''
+
+  Details          : get an event list using parameters in mk_event_list.xml
+  Input variables  : lat/lon/Z box, time period (put in mk_event_list.xml)
+  Running code     : sod -f mk_event_list.xml  (from within SOD directory)
+  Output           : events.csv 
+
+  NOTES:
+
+   - you will see some text spewed to the screen, mostly info about java, like:
+     EDDIES_MACBOOKPRO% sod -f CSV_MAKING.xml
+     2010-03-15 10:11:14,396 - jacorb.home unset! Will use '.'
+     2010-03-15 10:11:14,396 - File ./jacorb.properties for configuration jacorb not found
+     2010-03-15 10:11:17,506 - Warning - unknown codeset (MacRoman) - defaulting to ISO-8859-1
+     2010-03-15 10:11:17,518 - jacorb.home unset! Will use '.'
+     2010-03-15 10:11:17,520 - File ./jacorb.properties for configuration jacorb not found
+     2010-03-15 10:11:17,520 - no properties found for configuration jacorb
+
+     Don't be alarmed: * this is normal *
+
+   - if it is working, then you will not get your promt back, and SOD will be working
+     away, finding events that fit your parameters, and putting the info into the filename
+     designated in the script.
+
+   - you can check the event filename to see if the info is in there. If yes, you can go
+     ahead and kill the SOD process, then edit that event file as necessary.
+
+   - SOD makes a database everytime you run it; you will see files like
+     SodDb (a directory), Sod_Error.log and Sod.log (files).  These are useful is SOD dies
+     during some run (e.g., a network glitch), but they get added to everytime you run
+     SOD.  Our group usually deletes these before running SOD, everytime.
+
+
+     -------------------------------------------------------------
+              III. Collecting data using SOD
+     -------------------------------------------------------------
+
+We currently collect all IRIS holdings, and separately the Berkeley network data.
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+      data_iris_CSV.xml
+ '''''''''''''''''''''''''''''
+  Details          : collect all data except BK network for events in events.csv
+  Input info       : event file name, phases of interest, etc.
+  Running code     : sod -f data_iris_CSV.xml  (from within SOD directory)
+  Output           : 3 component RTZ data, eventStation table, "seismograms" dir
+
+  NOTES:
+
+   - In data_iris_CSV.xml and data_UCB_CSV.xml, you can set your own 
+     farvorites phases to write markers info in the sac files.
+
+   - if you change the phases, also modify the file, $DIRCODE/phasesinclude.h 
+ 
+   - It is advisable to keep P/Pdiff and S/Sdiff as phases stored in header
+     since some of our scripts use their timing information
+
+   - upon running this, you will first see similar java error messages come
+     to the screen, then 100's of lines of station data will come to the screen.
+     this is SOD telling you that these data will be queried for your event(s).
+     this might take 5 minutes
+
+   - if you are successful, following the many minutes of station info spewing 
+     to your screen, you will then see screen information about records SOD
+     has collected (i.e., written to your disk): "Got 1 seismograms for..."
+ 
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+      data_UCB_CSV.xml
+ '''''''''''''''''''''''''''''
+  Details          : collect only BK network data for events in events.csv
+  Input info       : event file name, phases of interest, etc.
+  Running code     : sod -f data_UCB_CSV.xml  (from within SOD directory)
+  Output           : 3 component RTZ data, eventStation table, "seismograms" dir
+
+  NOTES:
+
+   - BK data may take up to 2 days after the earthquake for data to become
+     available
+
+

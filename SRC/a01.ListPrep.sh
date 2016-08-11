@@ -1,52 +1,49 @@
 #!/bin/bash
 
 # ====================================================================
-# This script Make a clean list of stations.
-#
-# input file has 6 columns:
-# filename | network name | station name | component name | lat | lon.
+# This script make one file for each earthquake, including a list of
+# file names of selected stations for this earthquake.
 #
 # Shule Yu
-# Jan 30 2016
 # ====================================================================
 
 echo ""
-echo "--> `basename $0` is running."
-mkdir -p ${FileListDIR}
-cd ${FileListDIR}
+echo "--> `basename $0` is running. `date`"
+ScriptName=`basename $0`
+a01DIR=${OUTDIR}/${ScriptName%.sh}
+mkdir -p ${a01DIR}
 
 # ==================================================
 #              ! Work Begin !
 # ==================================================
 
-for EQ in `cat ${WORKDIR}/tmpfile_EQs_${RunNumber}`
+for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
-	# Commands after press Ctrl+C.
-	echo "    ==> Making FileList for ${EQ}."
-	trap "rm -f ${FileListDIR}/tmpfile*$$ ${FileListDIR}/${EQ}* ${WORKDIR}/*_${RunNumber}; exit 1" SIGINT
+	echo "    ==> Making selected file list of ${EQ}."
 
-	# Prepare C++ input.
-	find ${DATADIR}/${EQ} -iname "*sac" -exec saclst knetwk kstnm kcmpnm stla stlo f '{}' \; > tmpfile_${EQ}_$$
+	# Ctrl+C action.
+	trap "rm -f ${a01DIR}/tmpfile*$$ ${a01DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+
+	# Gather information.
+	find ${DATADIR}/${EQ} -iname "*sac" -exec saclst knetwk kstnm kcmpnm stla stlo f '{}' \; > ${a01DIR}/tmpfile_$$
 
 	# C++ code.
 	${EXECDIR}/ListPrep.out 1 2 0 << EOF
 ${USE_BH}
-tmpfile_${EQ}_$$
-${FileListDIR}/${EQ}_FileList
+${a01DIR}/tmpfile_$$
+${a01DIR}/${EQ}_FileList
 EOF
 
 	if [ $? -ne 0 ]
 	then
-		echo "    !=> C++ code failed ..."
-		rm -f tmpfile*$$
-		exit 1
+		echo "    !=> ListPrep.out C++ code failed on ${EQ} ..."
+		echo "" > ${a01DIR}/${EQ}_FileList
+		continue
 	fi
 
 done # End of EQ loop.
 
 # Clean up.
-rm -f tmpfile*$$
-
-cd ${WORKDIR}
+rm -f ${a01DIR}/tmpfile_$$
 
 exit 0

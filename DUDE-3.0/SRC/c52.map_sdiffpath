@@ -1,0 +1,322 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#                      c52.map_sdiffpath
+#===========================================================
+# this script uses GMT and the taup toolkit
+# to plot a map with the S or Sdiff paths
+# below a user defined depth.  Here, we'll do
+# it in the lowermost 1000 km of the mantle.
+# we'll plot this on top of
+# a dVs tomography model of the D" layer
+# (i know, D" shear velocities are not really
+# an appropriate comparison for path segments in
+# the lower 1000 km of the mantle, but it is
+# just an example).
+# the depth shell is defined in varible ZBOT, below.
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+#         (2) shear velocity values from a tomography model
+#         (3) some locations of directories
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+
+
+# OUTPUT:  (1) postscript plot map
+# -------  (2) columns for  "more_info" file of the lat/lon
+#              pairs for the start/stop locations of the
+#              S or Sdiff segments.
+
+set OUTFILE = $DIRPLOT/$EVENT.c52.map_S,Sdiff_paths.ps
+
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source env variable script
+source $DIRSRC/c0.ENV_setting
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# loose the header line in the info file
+awk ' NR>1 {print $0}'  $MASTER >! INFIL
+
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1] 
+set ELON   = $COORDS[2] 
+set EZ     = $COORDS[3] 
+set EMAG   = $COORDS[4] 
+
+# output file for things we make. (the more_info file), is
+# to be two lat lon pairs of the enter and exit points
+#  of this depth shell
+if(-e eventStation.$EVENT.more_info) then
+    @ INFOFLG = 1
+    # first see if we already made these crossing points,
+    # since more_info file might exist from other activities.
+    # look for the header variable to the x coord of the 
+    # entrance point (xIN). the four points will
+    # be called xIN yIN xOUT yOUT (x=lon, y=lat)
+    # use this flag later to either read them or make them
+    @ DIDIT = ` grep -c xIN eventStation.$EVENT.more_info `
+else
+    @ DIDIT   = 0
+    @ INFOFLG = 0
+endif
+
+# make an event lat/lon file:
+echo $ELAT $ELON >! xy.eq
+
+# we need to calculate (using taup_pierce)
+# how deep S for each station-event pair bottoms.
+# if it bottoms in our user defined depth shell, then
+# we will proceed, otherwise, we skip it.
+# we will calculate it for every path, and put the
+# info into the info file. later, we will assess if
+# we are in the depth shell of interest
+
+set ZBOT = 1891      # depth shell, in km
+
+if (-e xy.gcpaths ) \rm xy.gcpaths
+if (-e xy.stations ) \rm xy.stations
+if (-e xy.s_cross ) \rm xy.s_cross
+
+# If we have not already made the S crossing points, make them, and put
+# output into (a) file for plotting, and (b) our "more_info" file
+
+
+if($DIDIT == 0) then
+
+   # we're inside here because we have to make the crossing points
+   # i.e., they do not exist in the more_info file (or the more_info
+   # file hasn't been done yet)
+   # we will make some files:
+   # (a) make a file that contains the great circle path information,
+   #     i.e., the event lat/lon, station lat/lon, and GMT delimeter (">")
+   # (b) make a file that contains station lat/lons
+   # (c) make a fils that contains the depth shell crossing lat/lons
+   
+   if (-e xy.s_info ) \rm xy.s_info
+   # make the header line in our temp info file 
+   echo "S_bottom   yIN   xIN   yOUT    xOUT" >! xy.s_info
+   
+   @ m = 1
+   #while ( $m <= $NSTA )
+   while ( $m <= 1 )
+   
+      set xySTA = ` awk '  NR=='$m' {print $9,$10 }' INFIL `
+      taup_pierce -mod prem -evt $ELAT $ELON -h $EZ -sta $xySTA[1] $xySTA[2] \
+          -ph S,Sdiff -turn >! taup.tmp
+
+      # define bottoming depth
+      set SBOT = ` awk ' NR==2 {print $2}' taup.tmp `
+     
+      # now compute the piercing point lat/lons
+      taup_pierce -mod prem -evt $ELAT $ELON -h $EZ -sta $xySTA[1] $xySTA[2] \
+          -ph S,Sdiff -nodiscon -pierce $ZBOT >! taup.tmp
+
+      # count the output lines (3=ZBOT is pierced, 1=not pierced)
+      @ N = ` wc -l taup.tmp | awk '{print $1}' `
+      if($N == 1 ) then
+          set xIN = null
+          set yIN = null
+          set xOUT = null
+          set yOUT = null
+      else
+          set xIN  = ` awk ' NR==2 {print $5}' taup.tmp `
+          set yIN  = ` awk ' NR==2 {print $4}' taup.tmp `
+          set xOUT = ` awk ' NR==3 {print $5}' taup.tmp `
+          set yOUT = ` awk ' NR==3 {print $4}' taup.tmp `
+
+          # add to great circle path plot file
+          echo '>' >>! xy.gcpaths
+          echo $ELAT $ELON >>! xy.gcpaths
+          set XYSTA = ` awk ' NR=='$m' {print $9,$10} ' INFIL `
+          echo $XYSTA[1] $XYSTA[2] >>! xy.gcpaths
+   
+          # add to station coord plot file
+          echo $XYSTA[1] $XYSTA[2] >>! xy.stations
+
+          # add to crossing depthshell file
+          echo '>' >>! xy.s_cross
+          echo $yIN $xIN >>! xy.s_cross
+          echo $yOUT $xOUT >>! xy.s_cross
+      endif
+
+      # add to our info file that later gets added to *more_info
+      echo $SBOT $yIN $xIN $yOUT $xOUT >> xy.s_info
+      @ m++
+   end   # end of while loop thru stations
+
+   # add our new info to more_info file
+   if($INFOFLG == 1 ) then
+       # add our files to existing files in the info file
+       paste eventStation.$EVENT.more_info xy.s_info >! newinfo
+       mv newinfo eventStation.$EVENT.more_info
+   else
+       # the more_info file does not exist
+       # intiate the info file with our new info
+       mv xy.s_info eventStation.$EVENT.more_info
+   endif
+
+else
+
+   # we are here because our desired lat/lon info already exists in info file
+   # and we just need to grab all the info and make new "xy." files. 
+   # there are 2 possibilities: our desired info are all that
+   # composes the more_info file (thus there will be 5 columns)
+   # (easiest) or there is additional info in there
+   # (more likely case, and a bit more work) 
+   #
+   # first: check to see if there are only 5 columns, w/ one of the
+   # header variables being S_bottom (i.e., 1st possibility mentioned
+   # above). if not, we find the right columns, then proceed
+   
+   # count columns
+   @ ncol  = ` awk ' NR==1 { print NF}' eventStation.$EVENT.more_info `
+   @ CHECK = ` grep S_bottom eventStation.$EVENT.more_info | wc | awk '{print $1}' `
+   if($ncol == 5 && $CHECK == 1 ) then
+       # simply grab the XY info, as is 
+       awk ' { print $2,$3,$4,$5}' eventStation.$EVENT.more_info >! xy.s_info
+   else
+       # we're here because the desired info exists, but w/ other
+       # info, thus we need to find correct column.
+       # look for "yIN"
+       # i'm an awk moron, so this is brute force...
+       set search = yIN
+       # we look column by column for 'search' var, yIN
+       @ x = 1
+       while($x < $ncol)
+           @ a = $x + 1
+           @ b = $x + 2
+           @ c = $x + 3
+           set header = ` awk ' NR==1  {print $'$x' }' eventStation.$EVENT.more_info `
+           if($header == $search) then
+                # if we're here, we found the column, make our file and get out
+                awk ' { print $'$x', $'$a',$'$b',$'$c'}' eventStation.$EVENT.more_info >! xy.s_info
+                @ x = 999
+           endif
+           @ x++
+       end
+   endif
+
+   # paste the xy.s_info onto our eventStation file, so we can get the
+   # sta coords and ss bnc pt coords, after nuking the lines w/ "nulls/
+   paste $MASTER xy.s_info >! eventStation.tmp
+
+   # now, keep only the stations that have info, i.e., non-nulls:
+   grep -v null eventStation.tmp >! INFIL0
+   # loose the header line
+   awk 'NR>1 { print $0 }' INFIL0 >! INFIL
+   \rm INFIL0
+
+   # count them
+   set NPATHS   = ` wc -l INFIL | awk '{print $1}' `
+
+   # now loop through, line by line and make all the xy. files:
+   @ m = 1
+   while ( $m <= $NPATHS )
+
+       # add to great circle path plot file
+       echo '>' >>! xy.gcpaths
+       echo $ELAT $ELON >>! xy.gcpaths
+       set XYSTA = ` awk ' NR=='$m' {print $9,$10} ' INFIL `
+       echo $XYSTA[1] $XYSTA[2] >>! xy.gcpaths
+   
+       # add to station coord plot file
+       echo $XYSTA[1] $XYSTA[2] >>! xy.stations
+   
+       # add to crossing depthshell file (will end up
+       # being bold lines
+       set XYDEEP = ` awk ' NR=='$m' {print $18,$19,$20,$21} ' INFIL `
+       echo '>' >>! xy.s_cross
+       echo $XYDEEP[1] $XYDEEP[2] >>! xy.s_cross
+       echo $XYDEEP[3] $XYDEEP[4] >>! xy.s_cross
+ 
+       @ m++
+   end
+
+endif    # end of if loop to make bounce points
+
+
+#=====================================================================
+#                    plotting time!
+#=====================================================================
+
+# define the GMT plot bounds and size:
+set REG = -R-180/180/-90/90
+set PROJ = -JR$ELON/7.0i
+
+# first we will plot the tomography model.  i will choose
+# Jeroen Ritsema's 2000  model
+
+# first we convert the (x,y,dVs) ascii file in the src directory
+# to GMT binary, a "grd" file:
+xyz2grd $DIRSRC/ritsema.2880 -G2880.grd -I2 $REG -V -:
+
+# now plot the grd file w/ gmt's 'grdimage'.  the color
+# palette table "cpt" already exists, in the src directory
+set CPT = -C$DIRSRC/ritsema.cpt
+grdimage 2880.grd $CPT $REG $PROJ -E40 -K -P -V -X0.70i -Y5.5i >! $OUTFILE
+
+# add a color scale to the right for the tomography map
+psscale $CPT -D3.5i/-0.2i/3.0i/0.13ih -B2/:"@~\144@~Vs (%)": -V -O -K -N300 >> $OUTFILE
+
+# finally, we can now plot the coast lines
+pscoast $REG $PROJ -Ba0g45/a0g45wsne -Dl -A40000 -W2 -V -P -O -K >> $OUTFILE
+
+# then plot the great circle path file
+psxy xy.gcpaths $REG $PROJ -: $MGMT -K -O -W1.0/250/0/200t5_15:0 >> $OUTFILE
+
+# now plot the EQ and stations
+psxy xy.eq       $REG $PROJ -: -Sa0.12i -K -O -W1/0/0/0 -G0 >> $OUTFILE
+psxy xy.stations $REG $PROJ -: -St0.03i -K -O -W1/0/0/0 -G0 >> $OUTFILE
+
+# now plot the segments of the path below our ZBOT variable:
+psxy xy.s_cross $REG $PROJ -: $MGMT -K -O -W5/yellow  >> $OUTFILE
+
+# plot the text of the title,
+# also, plot a big title at top of page:
+# first, break apart event name for Big Title:
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+# plot a title above the top of the globe
+# and plot the big title of the date higher up:
+# big title first
+pstext $REG $PROJ -N -O -K -Y0.8i << END >> $OUTFILE
+$ELON 90 20 0 0 CB ${MM}/${DD}/$YYYY ${HH}:${MIN} S paths below $ZBOT km depth
+END
+# now littler title:
+# count paths
+set NPATHS  = ` wc -l xy.stations | awk '{print $1}' `
+pstext $REG $PROJ -N -O -K -Y-0.6i << END >> $OUTFILE
+$ELON 90 14 0 0 CB $EVENT  LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG NPATHS=$NPATHS of $NSTA stations
+END
+# add an info line about the tomog model
+pstext $REG $PROJ -N -O  -Y-5.3i << END >> $OUTFILE
+$ELON 90 12 0 0 CB Tomography model:  S20RTS (Ritsema) Z=2880 km
+END
+
+# some clean up
+\rm xy.eq xy.station* xy.gcpaths .gmt* 2880.grd
+\rm INFIL taup.tmp xy.s_cross eventStation.tmp
+if(-e xy.s_info) \rm xy.s_info
+
+# message to screen we're done this this file
+echo "c52.map_sdiffpath: just finished making PLOT FILE : $OUTFILE"
+
+# return to our pwd
+cd $DIRPWD

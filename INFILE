@@ -1,28 +1,30 @@
 
-# ==========================================================
-#                    ! DIRs and Files !
-# ==========================================================
+# ==============================================================================
+#                             ! DIRs and Files !
+# ==============================================================================
 
-<BASHCODEDIR>                        /home/shule/Research/Fun.Bash.c001
-<CCODEDIR>                           /home/shule/Research/Fun.C.c002
-<CPPCODEDIR>                         /home/shule/Research/Fun.C++.c003
-<SACDIR>                             /opt/sac
-<GMTHDIR>                            /opt/gmt-5.2.1/include
-<GMTLIBDIR>                          /opt/gmt-5.2.1/lib64
-<FCOMP>                              f95
-<CCOMP>                              gcc
-<CPPCOMP>                            c++
-<CPPFLAG>                            -std=c++14 -Wall
+<FCOMP>                      f95
+<CCOMP>                      gcc
+<CPPCOMP>                    c++
+<CFLAG>                      -Wall
+<CPPFLAG>                    -std=c++14 -Wall
 
-<WORKDIR>                            /home/shule/PROJ/t001.DUDE4
-DATADIR>                            /home/shule/DATA/Merge.Mw5.5.100km
-<DATADIR>                            /home/shule/PROJ/t053.ULVZ_Flat
-<CMTFILE>                            /home/shule/DATA/Merge.Mw5.5.100km/CMT.dat
+<SACDIR>                     /opt/sac
+<BASHCODEDIR>                /home/shule/Research/Fun.Bash.c001
+<CCODEDIR>                   /home/shule/Research/Fun.C.c002
+<CPPCODEDIR>                 /home/shule/Research/Fun.C++.c003
+
+<DATADIR>                    /home/shule/PROJ/t041.DATA/DATA_t041
+<CMTFILE>                    /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
+<OUTDIR>                     /home/shule/PROJ/t001.DUDE4
+
+<GMTVERSION>                 5
+							 -- select GMT verion: 4 or 5.
 
 # a01.
-<USE_BH>                             1
-									 -- 1: Use BH?.sac when station gives both BH and HH
-									 -- 0: Use HH?.sac when station gives both BH and HH
+<USE_BH>                     0
+							 -- 1: Use BH?.sac when station gives both BH and HH
+						     -- 0: Use HH?.sac data.
 
 # a05.
 # 1_Num  |  2_COMP (T/R/Z)  |  3_DISTMIN (deg)  |  4_DISTMAX (deg)  |  5_TIMEMIN (sec)  |  6_TIMEMAX (sec)  |  7_F1 (sec)  |   8_F2 (sec)  |   9_FilterFlag (0/1/2/3,no/lp/bp/hp)  |  10_Normalize (0/1,EachTrace/Unified)  |  11_PlotOrient (1: landscape; others: portrait)
@@ -37,13 +39,9 @@ DATADIR>                            /home/shule/DATA/Merge.Mw5.5.100km
 # EQs.
 <EQs_BEGIN>
 
-201500000077
-201500000173
-201500000189
-201500000269
-201500000285
-201500000093
-201500000365
-201500000381
+200608250044
+200705251747
+200707211327
+200707211534
 
 <EQs_END>

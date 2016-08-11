@@ -1,0 +1,143 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#                  c17.measure_SNR
+#===========================================================
+# here we use pei-ying (patty) lin's code for measuring
+# SNR.  specifically, we measure "noise" in front of the
+# direct P wave, 2 minutes of it, and for the same window
+# on the R and T components.  we do it by taking the envelope
+# of the time window, and summing under the curve.  time windows
+# are:
+#   Z comp noise  == Tp(prem)-3 min   to  Tp(prem)-1 min
+#   R comp noise  == Tp(prem)-3 min   to  Tp(prem)-1 min
+#   T comp noise  == Tp(prem)-3 min   to  Tp(prem)-1 min
+#   Z comp signal == Tp(prem)-30 sec  to  Tp(prem)+30 sec
+#   R comp signal == Ts(prem)-30 sec  to  Ts(prem)+30 sec
+#   T comp signal == Ts(prem)-30 sec  to  Ts(prem)+30 sec
+#
+# these 6 entities are computed, then written to an
+# info file along with the station name.  
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+
+# for now, we will do this only for distances that
+# taup predicts a p or pdiff.  older versions of 
+# taup have this issue: they stop making pdiff
+# around 155 deg.  we use a version from phillip c.
+# that extends distances to 180+
+#
+# we will employ this algorithm on velocity traces.
+# we will make velocity records in SAC.  we employ
+# a mild high pass filter for this as well (high pass
+# at 100 sec)
+#
+# KNOWN mini-BUG
+# the fortran code that grabs information from
+# the SAC files complains about some of the SAC
+# header fields having undefined values.  But
+# this is some kind of a protocol bug and does 
+# not affect any output.  The error scrolls to
+# standard out as, for example:
+# "ERROR 1336: Undefined header field value. KT6"
+ 
+# OUTPUT:  ASCII SNR file, eventStation.eq_date.SNR
+# (no plots made here!)
+
+echo " "
+echo "-------------------------------------------------------------"
+echo "                c17.measure_SNR:     STARTING "
+echo "-------------------------------------------------------------"
+
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source the env variables files
+source $DIRSRC/c0.ENV_setting
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# loose the header line
+awk ' NR>1 {print $0}' $MASTER >! INFIL
+
+# define event coords and mag
+set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+set ELAT   = $COORDS[1] 
+set ELON   = $COORDS[2] 
+set EZ     = $COORDS[3] 
+set EMAG   = $COORDS[4] 
+
+# make the awkfile that will be run by SAC. it is
+# basically how we will precondition our records before
+# our fortran90 code that measures SNR:
+echo "c17.measure_SNR: making the SAC macro"
+cat << EOF >! awkfile
+{
+print "r *." \$1 ".?H?.sac"  
+print "rmean" 
+print "rtr" 
+print "dif" 
+print "taper" 
+print "hp co 0.01 n 2 p 2" 
+print "w " \$1".VHR "\$1".VHT "\$1".VHZ"
+} 
+EOF
+
+# make the sac macro now, using our awkfile
+awk -f awkfile INFIL >! $EVENT.m.process
+
+
+# run the sac macro
+echo "c17.measure_SNR: running the SAC macro"
+sac << END >! out.sac
+m $EVENT.m.process
+quit
+END
+
+# make list of seismograms, for our f90 code input
+ls *.VHZ | awk -F. '{print $1 ".VHZ",$1 ".VHR",$1 ".VHT"}' >! in.SNRf90
+
+# compile code:
+#$FCOMP -m32 -I$SACHOME/include -o SNratio $DIRSRC/signalnoiseratio.f90 $SACLIBs 
+$FCOMP -I$SACHOME/include -o SNratio $DIRSRC/signalnoiseratio.f90 $SACLIBs 
+
+
+# run the code
+echo "c17.measure_SNR: computing signal and noise levels"
+SNratio << EOF >! out.SNratio
+in.SNRf90
+EOF
+
+# rename output:
+mv SNratio.info eventStation.$EVENT.SNR_info
+
+echo "c17.measure_SNR: just finished making output file : $DIRDATA/$EVENT/eventStation.$EVENT.SNR_info"
+
+#some clean up, lists, tmp records, etc.
+\rm out.sac
+\rm {???,????,?????}.VH?
+\rm in.SNRf90 SNratio out.SNratio
+\rm $EVENT.m.process
+\rm INFIL awkfile
+ 
+# return to our pwd
+cd $DIRPWD
+
+echo "-------------------------------------------------------------"
+echo "                c17.measure_SNR:     DONE "
+echo "-------------------------------------------------------------"
+echo " "
+
+
+#EOF

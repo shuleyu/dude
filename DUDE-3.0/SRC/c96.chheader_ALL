@@ -1,0 +1,87 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#===========================================================
+#                      c05.profile_big
+#===========================================================
+# as the title implies, this script will make a big
+# record section (a bunch of them, actually), for the
+# data for this event. we use a fortran 90 code to convert
+# SAC fmt files to ascii, after some quick processing in
+# SAC, then plot the result with GMT.  We add travel
+# time curves made by the taup_toolkit.
+#
+# the f90 code was written by Pei-ying (Patty) Lin at
+# ASU. any errors are undoubtedly mine, as I modified things.
+
+# INPUT:  (1) station/event location info and distances from
+# -----       master info file
+#         (2) plot box bounds: Dist min/max, time min/max
+#         (3) some directory location information
+#  !! !!  NOTE!! you must hardwire your sac lib directory
+#         here.  do it now:
+
+
+# OUTPUT:  (1) a postscript plot for SV
+# -----    (2) a postscript plot for SH
+#          (3) a postscript plot for Z
+
+echo " "
+echo "-------------------------------------------------------------"
+echo "                c05.big_profile:  STARTING... "
+echo "-------------------------------------------------------------"
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+set PHASE     = $5
+set header    = $6
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+# source the environmental variables
+source $DIRSRC/c0.ENV_setting
+
+# define the master file location / name
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# loose the header line
+#awk ' NR > 1 {print $0}'  $MASTER >! INFIL
+
+# define event coords and mag
+#set COORDS = ` awk ' NR==1 {print $11,$12,$13,$16}' INFIL `
+#set NSTA   = ` wc -l INFIL | awk '{print $1}' `
+#set ELAT   = $COORDS[1] 
+#set ELON   = $COORDS[2] 
+#set EZ     = $COORDS[3] 
+#set EMAG   = $COORDS[4] 
+#
+echo "c96.chheader: making the SAC macro"
+
+ls *.sac >! c96.SAC_LIST
+# set t1 to the header
+set insac = 1
+set nnsac =  `wc -l < c96.SAC_LIST `
+while ( $insac <= $nnsac )
+  set sacfile =  `cat c96.SAC_LIST | awk 'NR == '$insac' {print $1}' `
+  echo $sacfile
+  taup_setsac -mod prem -ph "$PHASE"-"$header" $sacfile
+@ insac ++
+end
+ 
+#some clean up, lists, tmp records, etc.
+\rm c96.SAC_LIST
+# return to our pwd
+cd $DIRPWD
+
+
+echo "-------------------------------------------------------------"
+echo "                c96.chheader: DONE"
+echo "-------------------------------------------------------------"
+echo " "
+
+
+
+#EOF

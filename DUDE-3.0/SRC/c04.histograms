@@ -1,0 +1,218 @@
+#!/bin/csh
+# EJG/PL March 2010
+# 
+#======================================================================
+#                      c04.histograms
+#======================================================================
+# this script uses GMT to plot some simple
+# histograms of distances of stations to the
+# earthquake for the records in the data
+# directory.  also, azimuths and backazimuths.
+
+# INPUT: basically, just distances from our info file
+# and locations of things (note: not all are used)
+
+set EVENT     = $1
+set DIRSRC    = $2
+set DIRDATA   = $3
+set DIRPLOT   = $4
+
+
+# go to the data directory
+set DIRPWD = ` pwd `
+cd $DIRDATA/$EVENT
+
+
+# define the master table file:
+set MASTER = $DIRDATA/$EVENT/eventStation.$EVENT
+
+# OUTPUT: a postscript plot
+
+set OUTFILE = $DIRPLOT/$EVENT.c04.histograms.ps
+
+# ================== DISTANCE HISTOGRAM ==========================
+# we will be general, and histogram info from ZERO
+# to 180 deg in distance, with a bin width of
+# 5 deg.  The defaults are below, and easily
+# changed  
+
+set XMIN = 0    # min histog x-axis (here, degrees)
+set XMAX = 180  # max histog x-axis (here, degrees)
+set XINC = 5    # histog bin width
+set XNUM = 20   # increment for x-axis number
+
+#----- make the input file of distances from master file
+awk ' NR>1 {print $3}' $MASTER >! in.histo_dist
+
+#first, make an ASCII file of the output, so we know
+# the plot bounds. pshistogram is a GMT code:
+pshistogram in.histo_dist -W$XINC -IO >! tmp.histo
+
+# add 20% to the max value and round off, for plot
+# maximum. some duct tape here...
+set FREQMAX = ` minmax -C tmp.histo | awk '{ print 1.2*$4}' `
+
+# round off for y axis max (more duct tape!):
+@ YMAX = ` echo $FREQMAX | awk '{print 10*int(1.0*$1/10.0) }' `
+
+# crunch an even number y-axis increment (assuming we have
+# more that "10" for at least some histogram bin...)
+@ YNUM = ` echo $YMAX | awk '{print 20*int(1.0*$1/100.0) }' `
+
+# have twice as many ticks as numbers on y-axis:
+@ YTICK = ` echo $YNUM | awk '{print int(1.0*$1 / 2.0) }' `
+
+# labels
+set XLABEL = 'Epicentral Distance (deg)'
+set YLABEL = 'Frequency'
+
+# change the GMT label font size default:
+gmtset LABEL_FONT_SIZE=16p
+
+# now make the postscript output for the distance histogram
+# using GMT's pshistogram
+pshistogram -Ba${XNUM}f${XINC}:"${XLABEL}":/a${YNUM}f${YTICK}:"${YLABEL}":WSne in.histo_dist \
+ -R$XMIN/$XMAX/0/$YMAX -JX6.0i/1.5i -W$XINC -L0.5p -G50/50/250 -V -X1.5i -Y8.8i -P -K >! $OUTFILE
+
+# add a title to this panel, first grab some info about event
+set NSTA   = ` wc -l $MASTER | awk '{print $1-1}' `
+set COORDS = ` awk ' NR==2 {print $11,$12,$13,$16}' $MASTER `
+# define the title Y locations:
+set yTITLE    = ` echo $YMAX | awk '{print 1.1*$1}' `
+set yBIGTITLE = ` echo $YMAX | awk '{print 1.5*$1}' `
+# break apart event name for Big Title:
+set YYYY = ` echo $EVENT | cut -c1-4 `
+set MM   = ` echo $EVENT | cut -c5-6 `
+set DD   = ` echo $EVENT | cut -c7-8 `
+set HH   = ` echo $EVENT | cut -c9-10 `
+set MIN  = ` echo $EVENT | cut -c11-12 `
+
+# GMT command to plot the text of the title,
+# also, plot a big title at top of page:
+pstext -R -JX -N -O -K << END >> $OUTFILE
+90 $yTITLE 14 0 0 CB $EVENT LAT=$COORDS[1] LON=$COORDS[2] Z=$COORDS[3] Mb=$COORDS[4] NSTA=$NSTA
+90 $yBIGTITLE 20 0 0 CB ${MM}/${DD}/$YYYY ${HH}:${MIN}
+END
+
+# some clean up
+\rm in.histo_dist tmp.histo .gmtdefaults* .gmtcommands*
+
+# ================== AZIMUTH HISTOGRAM ==========================
+# we will be general, and histogram up from ZERO
+# to 360 deg in azimuth, with a bin width of
+# 10 deg.  The defaults are below, and easily
+# changed  
+
+set XMIN = 0
+set XMAX = 360    
+set XINC = 5     # histog bin width
+set XNUM = 40    # increment for x-axis number
+
+#----- make the input file of azimuths from master file
+awk ' NR>1 {print $5}' $MASTER >! in.histo_az
+
+#as before, make an ASCII file of the output, so we know
+# the plot bounds:
+pshistogram in.histo_az -W$XINC -IO >! tmp.histo
+
+# add 20% to the max value and round off, for plot maximum:
+set FREQMAX = ` minmax -C tmp.histo | awk '{ print 1.2*$4}' `
+
+# round off for y axis max:
+@ YMAX = ` echo $FREQMAX | awk '{print 10*int(1.0*$1/10.0) }' `
+
+# crunch an even number y-axis increment (assuming we have
+# more that "10" for at least some histogram bin...)
+@ YNUM = ` echo $YMAX | awk '{print 20*int(1.0*$1/100.0) }' `
+
+# have twice as many ticks as numbers on y-axis:
+@ YTICK = ` echo $YNUM | awk '{print int(1.0*$1 / 2.0) }' `
+
+# xlabel change
+set XLABEL = 'Source Azimuth (deg)'
+
+# change the GMT label font size default:
+gmtset LABEL_FONT_SIZE=16p
+
+# Add the postscript output for the azimuth histogram
+pshistogram -Ba${XNUM}f${XINC}:"${XLABEL}":/a${YNUM}f${YTICK}:"${YLABEL}":WSne in.histo_az \
+ -R$XMIN/$XMAX/0/$YMAX -JX6.0i/1.5i -W$XINC -L0.5p -G50/50/250 -Y-3.0i -O -K >> $OUTFILE
+
+# add a title for this panel
+# 1st, define the title Y location
+set yTITLE = ` echo $YMAX | awk '{print 1.1*$1}' `
+# GMT command to plot the text of the title:
+pstext -R -JX -N -O -K << END >> $OUTFILE
+180 $yTITLE 14 0 0 CB $EVENT LAT=$COORDS[1] LON=$COORDS[2] Z=$COORDS[3] Mb=$COORDS[4] NSTA=$NSTA
+END
+
+# some clean up
+\rm in.histo_az tmp.histo .gmtdefaults* .gmtcommands*
+
+# ================== BACKAZIMUTH HISTOGRAM ==========================
+# we will be general, and histogram up from ZERO
+# to 360 deg in back azimuth, with a bin width of
+# 10 deg.  The defaults are below, and easily
+# changed (this is exactly the same as above, just
+# different input)
+
+set XMIN = 0
+set XMAX = 360    
+set XINC = 5     # histog bin width
+set XNUM = 40    # increment for x-axis number
+
+#----- make the input file of backazimuths from master file
+awk ' NR>1 {print $7}' $MASTER >! in.histo_baz
+
+#as before, make an ASCII file of the output, so we know
+# the plot bounds:
+pshistogram in.histo_baz -W$XINC -IO >! tmp.histo
+
+# add 20% to the max value and round off, for plot maximum:
+set FREQMAX = ` minmax -C tmp.histo | awk '{ print 1.2*$4}' `
+
+# round off for y axis max:
+@ YMAX = ` echo $FREQMAX | awk '{print 10*int(1.0*$1/10.0) }' `
+
+# crunch an even number y-axis increment (assuming we have
+# more that "10" for at least some histogram bin...)
+@ YNUM = ` echo $YMAX | awk '{print 20*int(1.0*$1/100.0) }' `
+
+# have twice as many ticks as numbers on y-axis:
+@ YTICK = ` echo $YNUM | awk '{print int(1.0*$1 / 2.0) }' `
+
+# xlabel change
+set XLABEL = 'Station Back Azimuth (deg)'
+
+# change the GMT label font size default:
+gmtset LABEL_FONT_SIZE=16p
+
+# Add the postscript output for the azimuth histogram
+pshistogram in.histo_baz \
+  -Ba${XNUM}f${XINC}:"${XLABEL}":/a${YNUM}f${YTICK}:"${YLABEL}":WSne  \
+  -R$XMIN/$XMAX/0/$YMAX -JX6.0i/1.5i -W$XINC -L0.5p -G50/50/250 -Y-3.0i \
+  -O -K >> $OUTFILE
+
+# add a title for this panel
+# 1st, define the title Y location
+set yTITLE = ` echo $YMAX | awk '{print 1.1*$1}' `
+# GMT command to plot the text of the title:
+pstext -R -JX -N -O -K << END >> $OUTFILE
+180 $yTITLE 14 0 0 CB $EVENT LAT=$COORDS[1] LON=$COORDS[2] Z=$COORDS[3] Mb=$COORDS[4] NSTA=$NSTA
+END
+
+
+# finally: script name and time stamp next:
+echo "180 0.0 10 0 0 CB SCRIPT: c04.histograms" >! datetag1
+date "+CREATION DATE: %m/%d/%y  %H:%M:%S" >! datetag2
+paste datetag1 datetag2 >! datetag3
+pstext datetag3 -JX -R -N -Wored -G0 -O -Y-1.5i >> $OUTFILE
+
+echo "c04.histograms: just finished making PLOT FILE = $OUTFILE"
+
+# some clean up
+\rm in.histo_baz tmp.histo .gmtcommands* .gmtdefaults*
+\rm datetag?
+
+# return to our pwd
+cd $DIRPWD

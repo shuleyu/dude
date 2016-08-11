@@ -1,0 +1,172 @@
+==========================================================================
+=                          README.1.overview                             =
+==========================================================================
+=                                                                        =
+=                Discovery Using Ducttape Excessively (DUDE)             =
+=                                                                        =
+=    DUDE scripts written by Ed Garnero and Patty (Peiying) Lin          =
+=         August 15, 2011 Version (constantly evolving)                   =
+=                                                                        =
+=                                                                        =
+=     This read me file has the following information:                   =
+=        I.   General introduction                                       =
+=        II.  Necessary freeware and where to get it                     =
+=        III. Getting started overview                                   =
+=                                                                        =
+==========================================================================
+
+
+ -------------------------------------------------------------------------
+                     I.  General introduction
+ -------------------------------------------------------------------------
+ This collection of scripts was originally written by Ed, then modified by
+ Chunpeng Zhao, then rewritten by Ed, then heavily modified by Patty.  The
+ goal of the scripts is a simple one: AUTOMATICALLY make a LOT of plots from
+ earthquake data to (1) learn about invidual earthquakes, (2) get ideas for
+ research, (3) be able to easily see new data as the happen!
+
+ While the scripts were originally developed on Linux systems, this version
+ was developed on MacBook Pro's.  In principle, it should also work on Linux 
+ systems. However, details in different versions of the freeware we use will 
+ directly relate to this working or not working. Thus, CAUTION: we've made 
+ zero attempt to make this pile of ducttape work in different or older 
+ versions of the packages we use, not have we test driven this on Linux in
+ the recent past.  Furthermore, we've put these things together for our own
+ amusement and fun, and make no claim to offer support for this pile of
+ ducttape. But we freely share it, and hope you do to, because when it does
+ work, it is really fun stuff. Everytime we look at a new earthquake using
+ DUDE, we see something we've never seen before.  Really!
+
+ Our philosophy was to write shorter scripts that have specific tasks, as
+ opposed to writing one or a few longer scripts or codes that everything.
+ I have so many abandoned codes I've written because they were too specific
+ in their design/construction.  Anyway, we also adopted the approach to use
+ common freeware, where possible.  That's the ducttape part.  The hope is
+ that the results are very easily modified as needs or interests or data
+ formats change.
+
+
+ -------------------------------------------------------------------------
+          II.  Necessary freeware and where to get it
+ -------------------------------------------------------------------------
+  Here are packages that are required for DUDE scripts to successfully run:
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+            SOD
+ ''''''''''''''''''''''''''
+ SOD (Standing Order Delivery, data collection code by Crotwell)
+    Version  : sod-3.0beta2
+    Source   : http://www.seis.sc.edu/sod3beta/
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+            SAC
+ ''''''''''''''''''''''''''
+ SAC (Seismic Analysis Dode, developed at Livermore)
+    Version  : SAC-101.2
+    Source   : http://www.iris.edu/software/sac/
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+            GMT
+ ''''''''''''''''''''''''''
+ GMT (Generic Mapping Tools, by Wessel and Smith)
+    Version  : GMT4.5.0
+    Source   : http://gmt.soest.hawaii.edu/
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+           TAUP
+ ''''''''''''''''''''''''''
+ TauP Toolkit (by P. Crotwell)
+    Version  : TauP-1.2beta2
+    Source   : http://www.seis.sc.edu/~crotwell/TauP-1.2beta2.zip
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+           g95
+ ''''''''''''''''''''''''''
+ g95 fortran compiler
+    Version  : g95
+    Source   : http://www.g95.org/
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+            gs
+ ''''''''''''''''''''''''''
+ Ghostscript plotter
+    Version  : 8.6.4   
+    Source   : http://pages.cs.wisc.edu/~ghost/
+    Note     : the version shouldn't matter for solely viewing plots.
+               But, you need to have an executable ps to pdf file converter.
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+           java
+ ''''''''''''''''''''''''''
+ java needs to be v1.6
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+           etc
+ ''''''''''''''''''''''''''
+ Various UNIX/LINUX utilities (gs, awk, grep, ps2pdf, etc)
+
+
+
+ -------------------------------------------------------------------------
+                    III. Getting started overview
+ -------------------------------------------------------------------------
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+     README files
+ ''''''''''''''''''''''''''
+ Might be good to look through all the README files first.  Apologies that
+ all this information may not be enitrely linear.  
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+   Directory structure
+ ''''''''''''''''''''''''''
+ We've written this around a directory structure as follows: (though it is
+ easily modified): three parent directories:
+   - "SRC" has all the scripts, f90 codes, and various input files
+   - "SOD" has all the data collection SOD scripts we use
+   - "seismograms" has all the event directories made by SOD and a "PLOTS"
+     directory made and populated by the scrirpts
+
+ ,,,,,,,,,,,,,,,,,,,,,,,,,,
+   First steps
+ ''''''''''''''''''''''''''
+ Running the scripts, when they actually work, is easy.  The hardest part is
+ getting correct versions of things on your computer, then getting environment
+ variables correct. This is the suggested sequence of things
+
+1. install all software.
+
+2.  use SOD to generate earthquake lists, that SOD reads in a subsequent step.
+    See README.2.SOD for details on this step.
+
+3. collect the data using SOD, which then writes SAC format files onto your disc
+   (instrument deconvolved R,T,Z files).  See README.SOD for details on this step.
+
+4. edit the 'Environment Setup script' to have all the correct paths to your 
+   software (you do this only once, unless you change the settings in other 
+   computing activities). The filename is SRC/c0.ENV_setting
+
+5. get the strike dip rake for the event from globalcmt.org (or google global CMT).
+   this is an unfortunate step, since it is "by hand" (for now, at least).
+   there is a logistical challenge here: there is sometimes a gap in time where
+   CMT's are not available.  Their quick determination of an event is available
+   as well as older events.  But between 1 and 6 months is sometimes not.
+
+6. put the correct event info and strike, dip, rake into the master script that
+   runs all the other scripts, called "SRC/c00.motherscript.  Also, put correct
+   path information for your data directory (variable DIRDATA), your SRC directory
+   (variable DIRCODE), and your plots directory (variable DIRPLOT) into c00.motherscript
+
+7. inside c00.motherscript, choose which scripts you wish to run, and specify
+   input parameters in that script. we've been doing this old school style for
+   DUDE scripts, by simply uncommenting/commenting scripts we want to run/skip.
+
+8. be sure all scripts have had their mode changed to executable
+
+9. be sure all phases you define in your SOD process (see README.2.SOD) are also
+   defined in "SRC/phasesinclude.h". 
+
+10. type c00.motherscript and they will crank away.  A ton of plots will be
+   made and put into a PLOTS directory (locations defined in motherscript).
+   if all the scripts in c00.motherscript are run, it might take 1-2 hours.
+   but we don't mind because our philosophy is that you run the scripts and
+   go to bed and wake up, have coffee, and look at earthquakes!

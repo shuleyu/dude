@@ -1,0 +1,38 @@
+<sod>
+    <eventArm>
+        <fdsnEvent>
+            <boxArea>
+                <latitudeRange>
+                    <min>30</min>
+                    <max>45</max>
+                </latitudeRange>
+                <longitudeRange>
+                    <min>135</min>
+                    <max>150</max>
+                </longitudeRange>
+            </boxArea>
+
+            <originDepthRange>
+                <unit>KILOMETER</unit>
+                <min>0</min>
+                <max>1000</max>
+            </originDepthRange>
+
+            <originTimeRange>
+                 <startTime>
+                    2013-10-25T00:00:00.000Z
+                </startTime>
+                <endTime>
+                    2013-10-25T23:59:59.999Z
+                </endTime>
+            </originTimeRange>
+            <magnitudeRange>
+                <min>6.0</min>
+            </magnitudeRange>
+            <catalog>NEIC PDE</catalog> 
+        </fdsnEvent>
+        <CSVEventPrinter>
+            <filename>events.csv</filename>
+        </CSVEventPrinter>
+    </eventArm>
+</sod>
