@@ -29,7 +29,7 @@ do
 
 	# C++ code.
 	${EXECDIR}/ListPrep.out 1 2 0 << EOF
-${USE_BH}
+${UseBH}
 ${a01DIR}/tmpfile_$$
 ${a01DIR}/${EQ}_FileList
 EOF

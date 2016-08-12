@@ -3,43 +3,40 @@
 #include<fstream>
 #include<cstdio>
 #include<cstdlib>
+#include<cmath>
 #include<vector>
 #include<string>
 #include<cstring>
 #include<algorithm>
-extern "C"{
-#include<sac.h>
-#include<sacio.h>
-}
 
 using namespace std;
 
 struct record {
-	string kname,ntwk,stnm,cmp,label;
+	string FileName,NetWork,StaName,Component,Label;
 	double lat=0,lon=0;
 };
 
 struct info {
-	string label;
+	string Label;
 	int BHT=0,BHR=0,BHZ=0;
 	int HHT=0,HHR=0,HHZ=0;
 	int THT=0,THR=0,THZ=0;
 };
 
 bool tmpfunc1(const struct record &item1,const struct record &item2){
-	return item1.label<item2.label;
+	return item1.Label<item2.Label;
 }
 
 bool tmpfunc2(const struct record &item1,const struct record &item2){
-	return item1.label==item2.label;
+	return item1.Label==item2.Label;
 }
 
 bool tmpfunc3(const struct record &item1,const struct record &item2){
-	return item1.stnm<item2.stnm;
+	return item1.StaName<item2.StaName;
 }
 
 bool tmpfunc4(const struct record &item1,const struct record &item2){
-	return item1.lon==item2.lon;
+	return (fabs(item1.lon-item2.lon)<0.01 && fabs(item1.lat-item2.lat)<0.01);
 }
 
 int main(int argc, char **argv){
@@ -129,60 +126,69 @@ int main(int argc, char **argv){
 
 	infile.open(PS[SACList]);
 	struct record item;
-	while (infile >> item.kname >> item.ntwk >> item.stnm >> item.cmp >> item.lat >> item.lon){
-		item.label=item.ntwk+"_"+item.stnm;
+	while (infile >> item.FileName >> item.NetWork >> item.StaName
+		          >> item.Component >> item.lat >> item.lon){
+		for (auto &a:item.Component){
+			a=toupper(a);
+		}
+		item.Label=item.NetWork+"_"+item.StaName;
 		data.push_back(item);
 	}
 	infile.close();
 
-	// Get unique NW_ST by this label.
-	// (Same station name, different NT)
+
+	// Get unique NW_ST by Label.
+	// Account for different NetWork + same StaName, while they are actually
+	// different stations.
 	sort(data.begin(),data.end(),tmpfunc1);
 	auto it=unique(data.begin(),data.end(),tmpfunc2);
 
+
 	// Get unique NW_ST by station location.
-	// (Station report to multiple center)
+	// Account for different NetWork + same StaName, while they are actually
+	// the same station.
+	// Notice: Distance < ~1.1 km is considered a same station.
 	sort(data.begin(),it,tmpfunc3);
 	it=unique(data.begin(),it,tmpfunc4);
 
-	// Use metadata to store unique NW_ST label.
+
+	// Use metadata to note down NW_ST pairs after selection.
+	struct info tmpinfo;
 	vector<struct info> metadata;
-	vector<struct record> data_tmp(data.begin(),it);
-	struct info item2;
-	for (auto index: data_tmp){
-		item2.label=index.label;
-		metadata.push_back(item2);
+	for (auto index=data.begin();index<it;index++){
+		tmpinfo.Label=index->Label;
+		metadata.push_back(tmpinfo);
 	}
 
-	// Count each unique NW_ST's info.
+	// Count components in good NW_ST pairs.
 	for (auto &index: metadata){
 		for (auto index2:data){
-			if (index2.label==index.label){
-				if (index2.cmp=="BHT"){
+			if (index2.Label==index.Label){
+				if (index2.Component=="BHT"){
 					++index.BHT;
 				}
-				if (index2.cmp=="BHR"){
+				if (index2.Component=="BHR"){
 					++index.BHR;
 				}
-				if (index2.cmp=="BHZ"){
+				if (index2.Component=="BHZ"){
 					++index.BHZ;
 				}
-				if (index2.cmp=="HHT"){
+				if (index2.Component=="HHT"){
 					++index.HHT;
 				}
-				if (index2.cmp=="HHR"){
+				if (index2.Component=="HHR"){
 					++index.HHR;
 				}
-				if (index2.cmp=="HHZ"){
+				if (index2.Component=="HHZ"){
 					++index.HHZ;
 				}
-				if (index2.cmp=="THT"){
+				if (index2.Component=="THT"){
 					++index.THT;
 				}
-				if (index2.cmp=="THR"){
+				if (index2.Component=="THR"){
 					++index.THR;
 				}
-				if (index2.cmp=="THZ"){
+				if (index2.Component=="THZ"){
 					++index.THZ;
 				}
 			}
@@ -196,18 +202,25 @@ int main(int argc, char **argv){
 
 	for (auto index: metadata){
 
-		if ((index.BHT==1 && index.BHR==1 && index.BHZ==1) || (index.HHT==1 && index.HHR==1 && index.HHZ==1) || (index.THT==1 && index.THR==1 && index.THZ==1)){
-			if (index.BHT+index.BHR+index.BHZ+index.HHT+index.HHR+index.HHZ==6){
+		if ((index.BHT==1 && index.BHR==1 && index.BHZ==1) ||
+			(index.HHT==1 && index.HHR==1 && index.HHZ==1) ||
+			(index.THT==1 && index.THR==1 && index.THZ==1) ){
+
+			if ( index.BHT+index.BHR+index.BHZ
+			    +index.HHT+index.HHR+index.HHZ==6){
+
 				if (PI[BH]==1){
 					for (auto index2: data){
-						if (index2.label==index.label && index2.cmp[0]=='B'){
+						if (index2.Label==index.Label &&
+							index2.Component[0]=='B'){
 							data_clean.push_back(index2);
 						}
 					}
 				}
 				else{
 					for (auto index2: data){
-						if (index2.label==index.label && index2.cmp[0]=='H'){
+						if (index2.Label==index.Label &&
+							index2.Component[0]=='H'){
 							data_clean.push_back(index2);
 						}
 					}
@@ -215,7 +228,7 @@ int main(int argc, char **argv){
 			}
 			else{
 				for (auto index2: data){
-					if (index2.label==index.label){
+					if (index2.Label==index.Label){
 						data_clean.push_back(index2);
 					}
 				}
@@ -231,16 +244,16 @@ int main(int argc, char **argv){
 	outfile_Z.open(PS[FileList]+"_Z");
 
 	for (auto index: data_clean){
-		if (index.cmp.substr(2,1)=="T"){
-			outfile_T << index.kname << endl;
+		if (index.Component.substr(2,1)=="T"){
+			outfile_T << index.FileName << endl;
 		}
-		if (index.cmp.substr(2,1)=="R"){
-			outfile_R << index.kname << endl;
+		if (index.Component.substr(2,1)=="R"){
+			outfile_R << index.FileName << endl;
 		}
-		if (index.cmp.substr(2,1)=="Z"){
-			outfile_Z << index.kname << endl;
+		if (index.Component.substr(2,1)=="Z"){
+			outfile_Z << index.FileName << endl;
 		}
-		outfile << index.kname << endl;
+		outfile << index.FileName << endl;
 	}
 
 	outfile.close();
