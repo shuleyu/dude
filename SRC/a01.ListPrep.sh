@@ -4,7 +4,7 @@
 # This script make one file for each earthquake, including a list of
 # file names of selected stations for this earthquake.
 #
-# Shule Yu
+# Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
 
 echo ""

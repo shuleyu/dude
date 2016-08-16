@@ -86,6 +86,7 @@ EXECDIR=${OUTDIR}/bin
 PLOTDIR=${OUTDIR}/PLOTS
 a01DIR=${OUTDIR}/a01.ListPrep
 a02DIR=${OUTDIR}/a02.MasterMap
+a03DIR=${OUTDIR}/a03.CityMap
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

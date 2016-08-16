@@ -3,7 +3,7 @@
 # ====================================================================
 # This script make an earthquake-station position plot.
 #
-# Shule Yu
+# Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
 
 echo ""
@@ -63,8 +63,7 @@ do
 		PROJ="-JR${EVLO}/7.0i"
 
 		# plot the coast lines
-		pscoast ${REG} ${PROJ} -Ba0g45/a0g45wsne -Dl -A40000 -W3/100/100/100 \
-		-G200/200/200 -X0.70i -Y5.5i -P -K > ${PLOTFILE}
+		pscoast ${REG} ${PROJ} -Ba0g45/a0g45wsne -Dl -A40000 -W3/100/100/100 -G200/200/200 -X0.70i -Y5.5i -P -K > ${PLOTFILE}
 
 		# plot the GCPs.
 
@@ -128,6 +127,8 @@ EOF
 
 	fi
 
+	# C*. Plot. (GMT-5)
+
 	if [ ${GMTVERSION} -eq 5 ]
 	then
 
@@ -152,15 +153,18 @@ EOF
 EOF
 		gmt pstext ${EQ}_pstext.txt -J -R -F+jCB+f14p,Helvetica,black -N -Xf0i -Yf9.5i -O -K >> ${PLOTFILE}
 
-		# script name and date tag.
+
+		# plot script name and date tag.
 		cat > ${EQ}_pstext.txt << EOF
 0 -1 SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`
 EOF
 		gmt pstext ${EQ}_pstext.txt -J -R -F+jCB+f10p,Helvetica,black -W0.1p,red -N -Xf0i -Yf1.0i -O -K >> ${PLOTFILE}
 
+
 		# plot the coast lines
 		gmt pscoast ${REG} ${PROJ} -Ba0g45/a0g45wsne -Dl -A40000 -W0.01p,100/100/100 \
 		-G200/200/200 -X0.70i -Yf4.5i -O -K >> ${PLOTFILE}
+
 
 		# plot the GCPs.
 
@@ -190,13 +194,15 @@ EOF
 			fi
 		done
 
+
 		# plot the EQ and stations
 		gmt psxy ${REG} ${PROJ} -Sa0.12i -O -K -W0.1p,black -G0 >> ${PLOTFILE} << EOF
 ${EVLO} ${EVLA}
 EOF
 		awk '{print $1,$2}' ${EQ}_stlo_stla_gcarc | gmt psxy ${REG} ${PROJ} -St0.03i -O -K -W0.1p,black -G0 >> ${PLOTFILE}
 
-		# gcp legend.
+
+		# plot gcp legend.
 		for GroupNum in `seq 1 9`
 		do
 			YPosition=`echo "4.2-${GroupNum}*0.25" | bc -l`
@@ -210,6 +216,7 @@ EOF
 			gmt pstext ${EQ}_pstext.txt -J -R -F+jLM+f8p,Helvetica,black -N -Xf4.35i -Yf${YPosition}i -O -K >> ${PLOTFILE}
 		done
 
+		# seal the plot.
 		gmt psxy -J -R -O >> ${PLOTFILE} << EOF
 EOF
 
