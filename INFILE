@@ -25,35 +25,34 @@
 #                             ! Job parameters !
 # ==============================================================================
 
-# a01. --------------------------------------------------------------------
+# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <UseBH>                      1
 
-#  Document:
+#  1. UseBH is a switch. It can be two values:
 #
-#  UseBH is a switch. It can be two values:
+#    1 -- Use BH?.sac (sampling rate ~40Hz) when station gives both BH and HH
+#    0 -- Use HH?.sac (sampling rate ~100Hz) records.
+#    * -- Stop scripts.
 #
-#  1 -- Use BH?.sac (sampling rate ~40Hz) when station gives both BH and HH
-#  0 -- Use HH?.sac (sampling rate ~100Hz) record instead.
-#  * -- Stop execution.
-#
-# a01. --------------------------------------------------------------------
+# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # a02.
 # a03.
 # a04.
 
-# a05. --------------------------------------------------------------------
+# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<Delta_BP>                           0.05
 <BP_BEGIN>
 
 	1    T    40    85    700    1700    0.03    0.3    2    1   0
 
 <BP_END>
-<Delta_BP>                           0.05
 
-# Document:
+#  1.
+
 # 1_Num  |  2_COMP (T/R/Z)  |  3_DISTMIN (deg)  |  4_DISTMAX (deg)  |  5_TIMEMIN (sec)  |  6_TIMEMAX (sec)  |  7_F1 (sec)  |   8_F2 (sec)  |   9_FilterFlag (0/1/2/3,no/lp/bp/hp)  |  10_Normalize (0/1,EachTrace/Unified)  |  11_PlotOrient (1: landscape; others: portrait)
-
-# a05. --------------------------------------------------------------------
+#
+# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # EQs.
 <EQs_BEGIN>

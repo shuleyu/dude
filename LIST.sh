@@ -1,9 +1,9 @@
 #!/bin/bash
 
-${SRCDIR}/a01.ListPrep.sh
+# ${SRCDIR}/a01.ListPrep.sh
+${SRCDIR}/a02.MasterMap.sh
 
 #  ================ Under Construction ==================
-# ${SRCDIR}/a02.MasterMap.sh
 # ${SRCDIR}/a03.CityMap.sh
 # ${SRCDIR}/a04.Histogram.sh
 # ${SRCDIR}/a05.BigProfile.sh
