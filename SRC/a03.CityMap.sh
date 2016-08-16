@@ -201,21 +201,15 @@ EOF
 
 
 		# plot title.
-		cat > ${EQ}_pstext.txt << EOF
-0 -1 ${MM}/${DD}/${YYYY} ${HH}:${MIN}
-EOF
+		echo "0 -1 ${MM}/${DD}/${YYYY} ${HH}:${MIN}" > ${EQ}_pstext.txt
 		gmt pstext ${EQ}_pstext.txt -JX8.5i/1i -R-1/1/-1/1 -F+jCB+f20p,Helvetica,black -N -Xf0i -Yf10i -P -K > ${PLOTFILE}
 
-		cat > ${EQ}_pstext.txt << EOF
-0 -1 ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG}
-EOF
+		echo "0 -1 ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG}" > ${EQ}_pstext.txt
 		gmt pstext ${EQ}_pstext.txt -J -R -F+jCB+f14p,Helvetica,black -N -Xf0i -Yf9.5i -O -K >> ${PLOTFILE}
 
 
 		# plot script name and date tag.
-		cat > ${EQ}_pstext.txt << EOF
-0 -1 SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`
-EOF
+		echo "0 -1 SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`" > ${EQ}_pstext.txt
 		gmt pstext ${EQ}_pstext.txt -J -R -F+jCB+f10p,Helvetica,black -W0.1p,red -N -Xf0i -Yf0.5i -O -K >> ${PLOTFILE}
 
 
@@ -266,12 +260,9 @@ EOF
 
 
 		# plot city distance
-		cat > ${EQ}_pstext1.txt << EOF
--10 110 City
-EOF
-		cat > ${EQ}_pstext2.txt << EOF
-10 110 Distance (deg)
-EOF
+		echo "-10 110 City" > ${EQ}_pstext1.txt
+		echo "10 110 Distance (deg)" > ${EQ}_pstext2.txt
+
 		# Shift plot origin. Auxilliary grid: -Ba10g10/a10g10
 		gmt pstext ${EQ}_pstext1.txt -JX8.5i/3i -R-100/100/-100/100 -F+jRB+f14p,Times-BoldItalic,black -N -Xf0i -Yf1.0i -O -K >> ${PLOTFILE}
 		gmt pstext ${EQ}_pstext2.txt -J -R -F+jLB+f14p,Times-BoldItalic,black -N -O -K >> ${PLOTFILE}

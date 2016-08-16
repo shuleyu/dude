@@ -1,22 +1,21 @@
 #!/bin/bash
 
 # ====================================================================
-# This script Make a clean list of stations.
+# This script combine all *ps file and make a PDF file.
 #
-# input file has 6 columns:
-# filename | network name | station name | component name | lat | lon.
-#
-# Shule Yu
-# Jan 30 2016
+# Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
 
 echo ""
-echo "--> `basename $0` is running."
+echo "--> `basename $0` is running. `date`"
 cd ${PLOTDIR}
 
 # ==================================================
 #              ! Work Begin !
 # ==================================================
+
+# Ctrl+C action.
+trap "rm -f ${PLOTDIR}/tmpfile_$$ ${EQ}.pdf ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
@@ -30,13 +29,13 @@ do
 
 	if [ -s tmpfile_$$ ]
 	then
+		echo "    ==> Combining ps plot from ${EQ}."
 		ps2pdf tmpfile_$$ ${EQ}.pdf
 	fi
 
-done # End of EQ loop.
+	rm -f tmpfile_$$
 
-# Clean up.
-rm -f ${PLOTDIR}/tmpfile*$$
+done # End of EQ loop.
 
 cd ${OUTDIR}
 
