@@ -9,6 +9,22 @@
 #include<cstring>
 #include<algorithm>
 
+/*******************************************************************
+
+	This C++ code deal with station selection based on component:
+
+	For each group of component:
+		BHT, BHR, BHZ
+		HHT, HHR, HHZ
+		THT, THR, THZ
+		BHN, BHE, BHZ
+		HHN, HHE, HHZ
+
+	each station mush has at least one complete group of component
+	to be deemed as qualified and get selected.
+
+*******************************************************************/
+
 using namespace std;
 
 struct record {
@@ -21,6 +37,8 @@ struct info {
 	int BHT=0,BHR=0,BHZ=0;
 	int HHT=0,HHR=0,HHZ=0;
 	int THT=0,THR=0,THZ=0;
+	int BHE=0,BHN=0;
+	int HHE=0,HHN=0;
 };
 
 bool tmpfunc1(const struct record &item1,const struct record &item2){
@@ -191,6 +209,18 @@ int main(int argc, char **argv){
 				if (index2.Component=="THZ"){
 					++index.THZ;
 				}
+				if (index2.Component=="BHE"){
+					++index.BHE;
+				}
+				if (index2.Component=="BHN"){
+					++index.BHN;
+				}
+				if (index2.Component=="HHE"){
+					++index.HHE;
+				}
+				if (index2.Component=="HHN"){
+					++index.HHN;
+				}
 			}
 		}
 	}
@@ -204,10 +234,32 @@ int main(int argc, char **argv){
 
 		if ((index.BHT==1 && index.BHR==1 && index.BHZ==1) ||
 			(index.HHT==1 && index.HHR==1 && index.HHZ==1) ||
-			(index.THT==1 && index.THR==1 && index.THZ==1) ){
+			(index.THT==1 && index.THR==1 && index.THZ==1) ||
+			(index.BHE==1 && index.BHN==1 && index.BHZ==1) ||
+			(index.HHE==1 && index.HHN==1 && index.HHZ==1) ){
 
 			if ( index.BHT+index.BHR+index.BHZ
-			    +index.HHT+index.HHR+index.HHZ==6){
+			     +index.HHT+index.HHR+index.HHZ==6){
+
+				if (PI[BH]==1){
+					for (auto index2: data){
+						if (index2.Label==index.Label &&
+							index2.Component[0]=='B'){
+							data_clean.push_back(index2);
+						}
+					}
+				}
+				else{
+					for (auto index2: data){
+						if (index2.Label==index.Label &&
+							index2.Component[0]=='H'){
+							data_clean.push_back(index2);
+						}
+					}
+				}
+			}
+			else if ( index.BHE+index.BHN+index.BHZ
+					  +index.HHE+index.HHN+index.HHZ==6){
 
 				if (PI[BH]==1){
 					for (auto index2: data){
@@ -237,11 +289,13 @@ int main(int argc, char **argv){
 	}
 
 	// Output good data.
-	ofstream outfile,outfile_T,outfile_R,outfile_Z;
+	ofstream outfile,outfile_T,outfile_R,outfile_Z,outfile_E,outfile_N;
 	outfile.open(PS[FileList]);
 	outfile_T.open(PS[FileList]+"_T");
 	outfile_R.open(PS[FileList]+"_R");
 	outfile_Z.open(PS[FileList]+"_Z");
+	outfile_E.open(PS[FileList]+"_E");
+	outfile_N.open(PS[FileList]+"_N");
 
 	for (auto index: data_clean){
 		if (index.Component.substr(2,1)=="T"){
@@ -252,6 +306,12 @@ int main(int argc, char **argv){
 		}
 		if (index.Component.substr(2,1)=="Z"){
 			outfile_Z << index.FileName << endl;
+		}
+		if (index.Component.substr(2,1)=="E"){
+			outfile_E << index.FileName << endl;
+		}
+		if (index.Component.substr(2,1)=="N"){
+			outfile_N << index.FileName << endl;
 		}
 		outfile << index.FileName << endl;
 	}

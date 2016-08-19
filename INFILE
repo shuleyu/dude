@@ -14,7 +14,8 @@
 <CCODEDIR>                   /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                 /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                    /home/shule/PROJ/t041.DATA/DATA_t041
+<DATADIR>                    /NAS/shule/PROJ/t003.NEZ/20111122_20111122
+DATADIR>                    /home/shule/PROJ/t041.DATA/DATA_t041
 <CMTFILE>                    /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
 <OUTDIR>                     /home/shule/PROJ/t001.DUDE4
 
@@ -22,44 +23,76 @@
 							 -- select GMT verion: 4 or 5.
 
 # ==============================================================================
-#                             ! Job parameters !
+#                               ! parameters !
 # ==============================================================================
 
-# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <UseBH>                      1
 
-#  1. UseBH is a switch. It can be two values:
+#  UseBH:
+#    value choose from "1","0"
+#    -- "1" means use BH?.sac (sampling rate ~40Hz) when station gives both BH and HH
+#    -- "0" means use HH?.sac (sampling rate ~100Hz) when station gives both BH and HH
+#    -- other value will stop scripts immediately.
 #
-#    1 -- Use BH?.sac (sampling rate ~40Hz) when station gives both BH and HH
-#    0 -- Use HH?.sac (sampling rate ~100Hz) records.
-#    * -- Stop scripts.
-#
-# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # a02.
 # a03.
 # a04.
 
-# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-<Delta_BP>                           0.05
+# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<Delta_BP>                   0.05
+<Amplitude_BP>               0.5
+
 <BP_BEGIN>
 
-	1    T    40    85    700    1700    0.03    0.3    2    1   0
+Z    40    85    100    1400    0.03    0.3    All    NO    All    Portrait
 
 <BP_END>
 
-#  1.
-
-# 1_Num  |  2_COMP (T/R/Z)  |  3_DISTMIN (deg)  |  4_DISTMAX (deg)  |  5_TIMEMIN (sec)  |  6_TIMEMAX (sec)  |  7_F1 (sec)  |   8_F2 (sec)  |   9_FilterFlag (0/1/2/3,no/lp/bp/hp)  |  10_Normalize (0/1,EachTrace/Unified)  |  11_PlotOrient (1: landscape; others: portrait)
+#  Delta_BP:
+#    choose a sampling rate to interpolate/desample the raw data. (in sec.)
 #
-# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Amplitude_BP:
+#    choose a plot size for maximum amplitude ("1"). (in deg)
+#
+#  BP_BEGIN_END:
+#    each line will result in one plot.
+#    sections within each line is documented as followed:
+#
+#    A. Component. (choose from "T","R","Z","E","N")
+#    B. GCP Distance min. (in deg)
+#    C. GCP Distance max. (in deg)
+#    D. Time window min. (relative to origin time, in sec.)
+#    E. Time window max. (relative to origin time, in sec.)
+#    F. Filter lower corner. (if set to 0.0, apply a low-pass butterworth filter using upper corner)
+#    G. Filter upper corner. (if set to 0.0, apply a high-pass butterworth filter using lower corner)
+#       ( if both lower and upper corner are set to 0.0, don't apply the filter. )
+#    H. Normalize. (choose from "Own","All"
+#                               -- "Own" means the maximum amplitude of each trace will be set to "1".
+#                               -- "All" means preserve the relative amplitude between each trace, and
+#                                  the maximum ampiltude across all traces is set to "1".)
+#    I. TravelTime (choose from "NO","SH","SV","P","ALL"
+#                               -- "NO" means no travel-time curve.
+#                               -- "SH" will overlaply plot main SH phases travel-time curve.
+#                               -- "SV" will overlaply plot main SV phases travel-time curve.
+#                               -- "P" will overlaply plot main P phases travel-time curve.
+#                               -- "ALL" means plot all component travel-time curve.)
+#    J. Choose one network. (choose from network names. for all data, use "All")
+#    K. Plot orientation. (choose from "Landscape","Portrait")
+#
+# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # EQs.
 <EQs_BEGIN>
+
+201111221848
+
+<EQs_END>
+
 
 200608250044
 200705251747
 200707211327
 200707211534
-
-<EQs_END>

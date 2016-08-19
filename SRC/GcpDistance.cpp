@@ -9,6 +9,19 @@ extern "C"{
 #include<ASU_tools.h>
 }
 
+/*******************************************************************
+
+	This C++ code take 2 geographic location inputs:
+
+	Lon1, Lat1, Lon2, Lat2
+
+	and calculate the great circle distance (in degree) between
+	them.
+
+	Output to standard output (the screen).
+
+*******************************************************************/
+
 using namespace std;
 
 int main(int argc, char **argv){

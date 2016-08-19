@@ -52,9 +52,9 @@ EOF
 	# ============================
 	trap "rm -f ${a01DIR}/tmpfile*$$ ${a01DIR}/${EQ}_FileList_Info ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
-	echo "<STNM> <NETWK> <OMarker> <BeginTime> <EndTime> <COMP> <Gcarc> <Az> <BAz> <STLO> <STLA>" > ${a01DIR}/${EQ}_FileList_Info
+	echo "<FileName> <STNM> <NETWK> <OMarker> <BeginTime> <EndTime> <COMP> <Gcarc> <Az> <BAz> <STLO> <STLA>" > ${a01DIR}/${EQ}_FileList_Info
 	saclst kstnm knetwk o b npts delta kcmpnm gcarc az baz stlo stla f `cat ${a01DIR}/${EQ}_FileList` \
-	| awk '{$1="";$6=$5+$6*$7;$7=""; print $0}' >> ${a01DIR}/${EQ}_FileList_Info
+	| awk '{$6=$5+$6*$7;$7=""; print $0}' >> ${a01DIR}/${EQ}_FileList_Info
 
 
 	# ============================

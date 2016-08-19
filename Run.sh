@@ -42,7 +42,7 @@ trap "rm -f ${OUTDIR}/*_$$; exit 1" SIGINT
 
 # Read in single line parameters.
 # Commands below read these parameters as variables. Can be used by "$" sign.
-grep -n "<" ${OUTDIR}/tmpfile_INFILE_$$     \
+grep -n "<" ${OUTDIR}/tmpfile_INFILE_$$      \
 | grep ">" | grep -v "BEGIN" | grep -v "END" \
 | awk 'BEGIN {FS="<"} {print $2}'            \
 | awk 'BEGIN {FS=">"} {print $1,$2}' > tmpfile_$$
@@ -88,6 +88,7 @@ a01DIR=${OUTDIR}/a01.ListPrep
 a02DIR=${OUTDIR}/a02.MasterMap
 a03DIR=${OUTDIR}/a03.CityMap
 a04DIR=${OUTDIR}/a04.Histogram
+a05DIR=${OUTDIR}/a05.BigProfile
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 
