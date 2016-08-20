@@ -54,21 +54,32 @@ do
 
 		Num=$((Num+1))
 		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
-		rm -f ${a05DIR}/${EQ}*
+		if [ "${Normalize}" = Own ]
+		then
+			Normalize=1
+		else
+			Normalize=0
+		fi
 
+		# Clean dir.
+		rm -f ${a05DIR}/${EQ}*
 
 		# set up SAC operator.
 		if [ `echo "${F1}==0.0" | bc` -eq 1 ] && [ `echo "${F2}==0.0" | bc` -eq 1 ]
 		then
 			SACCommand="mul 1"
+			FrequencyContent="No filter"
 		elif [ `echo "${F1}==0.0" | bc` -eq 1 ]
 		then
 			SACCommand="lp co ${F2} n 2 p 2"
+			FrequencyContent="butterworth lp < ${F2} Hz."
 		elif [ `echo "${F2}==0.0" | bc` -eq 1 ]
 		then
 			SACCommand="hp co ${F1} n 2 p 2"
+			FrequencyContent="butterworth hp > ${F1} Hz."
 		else
 			SACCommand="bp co ${F1} ${F2} n 2 p 2"
+			FrequencyContent="butterworth bp ${F1} ~ ${F2} Hz."
 		fi
 
 
@@ -236,17 +247,82 @@ EOF
 
 		# f. Process data (from sac to ascii).
 		saclst gcarc f `ls ${EQ}*sac` > ${EQ}_PlotList_Gcarc
-		NSTA=`wc -l < ${EQ}_PlotList_Gcarc`
 
-# 		${EXECDIR}/BigProfile.cpp 1 2 3 << EOF
-# ${Normalize}
-# ${EQ}_PlotList_Gcarc
-# ${EQ}_PlotFile.txt
-# ${Amplitude_BP}
-# ${DISTMIN}
-# ${DISTMAX}
-# EOF
+		# tighten the Distance range.
+		[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
+		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C | awk -v D=${Amplitude_BP} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
+		read DISTMIN DISTMAX < tmpfile_$$
+		rm -f tmpfile_$$
 
+		# Decide the amplitude scale (in deg)
+		AmpScale=`echo "${Amplitude_BP}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
+
+
+		${EXECDIR}/BigProfile.out 1 3 1 << EOF
+${Normalize}
+${EQ}_PlotList_Gcarc
+${EQ}_PlotFile.txt
+${EQ}_ValidTraceNum.txt
+${AmpScale}
+EOF
+		if [ $? -ne 0 ]
+		then
+			echo "    ~=> BigProfile.out C++ code failed on ${EQ}, plot ${Num} ..."
+			continue
+		fi
+
+		read NSTA < ${EQ}_ValidTraceNum.txt
+
+
+		# g. plot. (GMT-4)
+		if [ ${GMTVERSION} -eq 4 ]
+		then
+
+			# basic gmt settings
+			gmtset PAPER_MEDIA = letter
+			gmtset ANNOT_FONT_SIZE_PRIMARY = 12p
+			gmtset LABEL_FONT_SIZE = 16p
+			gmtset LABEL_OFFSET = 0.1i
+			gmtset BASEMAP_FRAME_RGB = +0/0/0
+			gmtset GRID_PEN_PRIMARY = 0.5p,gray,-
+
+			# plot title and tag.
+			[ ${PlotOrient} = "Portrait" ] && XSIZE=8.5 || XSIZE=11
+			[ ${PlotOrient} = "Portrait" ] && Ori="-P" || Ori=""
+			[ ${PlotOrient} = "Portrait" ] && YP="-Y9.5i" || YP="-Y7i"
+
+			pstext -JX${XSIZE}i/1i -R-100/100/-1/1 -N -X0i ${YP} ${Ori} -K > ${PLOTFILE} << EOF
+0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} NetWork: ${NetWork} Comp: ${COMP}
+0 0.5 12 0 0 CB @;red;${FrequencyContent}@;;
+0 0 15  0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}
+EOF
+			pstext -J -R -N -Wored -G0 -Y-0.5i -O -K >> ${PLOTFILE} << EOF
+0 0.5 10 0 0 CB SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`
+EOF
+
+
+			# plot seismogram.
+			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
+
+			[ `echo "(${TIMEMAX}-${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100g500"
+			[ `echo "(${TIMEMAX}-${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20g200"
+			[ `echo "(${TIMEMAX}-${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10g100"
+			XLABEL="Time after earthquake origin time (sec)"
+
+			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5"g"$1}'`
+			[ `echo "(${DISTMAX}-${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1g0.5"
+			[ `echo "(${DISTMAX}-${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1g0.1"
+			YLABEL="Distance (deg)"
+
+			[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"
+			[ ${PlotOrient} = "Portrait" ] && YP="-Y-8i" || YP="-Y-5.5i"
+
+			REG="-R${TIMEMIN}/${TIMEMAX}/${DISTMIN}/${DISTMAX}"
+
+			psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/${YAXIS}:"${YLABEL}":WSne ${XP} ${YP} -K -O >> ${PLOTFILE}
+			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -O >> ${PLOTFILE}
+
+		fi
 
 
 	done < ${OUTDIR}/tmpfile_BP_${RunNumber} # End of plot loop.

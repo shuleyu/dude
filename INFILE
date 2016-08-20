@@ -19,14 +19,14 @@ DATADIR>                    /home/shule/PROJ/t041.DATA/DATA_t041
 <CMTFILE>                    /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
 <OUTDIR>                     /home/shule/PROJ/t001.DUDE4
 
-<GMTVERSION>                 5
+<GMTVERSION>                 4
 							 -- select GMT verion: 4 or 5.
 
 # ==============================================================================
 #                               ! parameters !
 # ==============================================================================
 
-# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a01. =========================================================================
 <UseBH>                      1
 
 #  UseBH:
@@ -35,19 +35,19 @@ DATADIR>                    /home/shule/PROJ/t041.DATA/DATA_t041
 #    -- "0" means use HH?.sac (sampling rate ~100Hz) when station gives both BH and HH
 #    -- other value will stop scripts immediately.
 #
-# a01. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a01. =========================================================================
 
 # a02.
 # a03.
 # a04.
 
-# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a05. =========================================================================
 <Delta_BP>                   0.05
-<Amplitude_BP>               0.5
+<Amplitude_BP>               0.375
 
 <BP_BEGIN>
 
-Z    40    85    100    1400    0.03    0.3    All    NO    All    Portrait
+T    40    85    200    1800    0.03    0.3    All    NO    TA    Portrait
 
 <BP_END>
 
@@ -55,7 +55,7 @@ Z    40    85    100    1400    0.03    0.3    All    NO    All    Portrait
 #    choose a sampling rate to interpolate/desample the raw data. (in sec.)
 #
 #  Amplitude_BP:
-#    choose a plot size for maximum amplitude ("1"). (in deg)
+#    choose a plot size for maximum amplitude ("1"). (in inch.)
 #
 #  BP_BEGIN_END:
 #    each line will result in one plot.
@@ -82,7 +82,9 @@ Z    40    85    100    1400    0.03    0.3    All    NO    All    Portrait
 #    J. Choose one network. (choose from network names. for all data, use "All")
 #    K. Plot orientation. (choose from "Landscape","Portrait")
 #
-# a05. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# a05. =========================================================================
+
+
 
 # EQs.
 <EQs_BEGIN>

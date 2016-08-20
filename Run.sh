@@ -215,7 +215,7 @@ do
 done
 
 # Executables (fortran).
-for code in `ls ${SRCDIR}/*.f 2>/dev/null`
+for code in `ls ${SRCDIR}/*.f90 2>/dev/null`
 do
     name=`basename ${code}`
     name=${name%.f}
