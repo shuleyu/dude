@@ -187,7 +187,7 @@ int main(int argc, char **argv){
 
 			Time+=item.Delta;
 		}
-		fpout << "<" << endl;
+		fpout << ">" << endl;
 	}
 
 	fpout.close();

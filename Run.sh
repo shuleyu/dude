@@ -88,7 +88,8 @@ a01DIR=${OUTDIR}/a01.ListPrep
 a02DIR=${OUTDIR}/a02.MasterMap
 a03DIR=${OUTDIR}/a03.CityMap
 a04DIR=${OUTDIR}/a04.Histogram
-a05DIR=${OUTDIR}/a05.BigProfile
+a05DIR=${OUTDIR}/a05.MakeTravelTimeData
+a06DIR=${OUTDIR}/a06.BigProfile
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

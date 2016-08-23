@@ -50,6 +50,32 @@ EOF
 		continue
 	fi
 
+	# Hand selected traces.
+
+	mysql -N ScS_CP > tmpfile_$$  << EOF
+select eq,netwk,stnm from Master_a06 where wantit=1 and eq=${EQ};
+EOF
+	awk '{printf "%s\\.%s\\.%s\\.\n",$1,$2,$3}' tmpfile_$$ > tmpfile1_$$
+
+	rm -f tmpfile_$$
+	while read File
+	do
+		grep "${File}" ${a01DIR}/${EQ}_FileList   >> tmpfile_$$
+		grep "${File}" ${a01DIR}/${EQ}_FileList_Z >> tmpfileZ_$$
+		grep "${File}" ${a01DIR}/${EQ}_FileList_E >> tmpfileE_$$
+		grep "${File}" ${a01DIR}/${EQ}_FileList_N >> tmpfileN_$$
+		grep "${File}" ${a01DIR}/${EQ}_FileList_T >> tmpfileT_$$
+		grep "${File}" ${a01DIR}/${EQ}_FileList_R >> tmpfileR_$$
+	done < tmpfile1_$$
+	rm -f tmpfile1_$$
+
+	mv tmpfile_$$  ${a01DIR}/${EQ}_FileList
+	mv tmpfileZ_$$ ${a01DIR}/${EQ}_FileList_Z
+	mv tmpfileE_$$ ${a01DIR}/${EQ}_FileList_E
+	mv tmpfileN_$$ ${a01DIR}/${EQ}_FileList_N
+	mv tmpfileT_$$ ${a01DIR}/${EQ}_FileList_T
+	mv tmpfileR_$$ ${a01DIR}/${EQ}_FileList_R
+
 	# ============================
 	#     B. Get stations Info.
 	# ============================

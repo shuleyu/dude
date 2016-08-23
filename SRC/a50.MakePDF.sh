@@ -22,7 +22,7 @@ do
 
 	rm -f tmpfile_$$
 
-	for file in `ls -rt ${EQ}*ps 2>/dev/null`
+	for file in `ls -rt ${EQ}* 2>/dev/null`
 	do
 		cat ${file} >> tmpfile_$$
 	done

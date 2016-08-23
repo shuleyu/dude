@@ -14,12 +14,11 @@
 <CCODEDIR>                   /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                 /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                    /NAS/shule/PROJ/t003.NEZ/20111122_20111122
-DATADIR>                    /home/shule/PROJ/t041.DATA/DATA_t041
-<CMTFILE>                    /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
-<OUTDIR>                     /home/shule/PROJ/t001.DUDE4
+<DATADIR>                    /home/shule/PROJ/t041.DATA/NorthAmerican
+<CMTFILE>                    /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
+<OUTDIR>                     /home/shule/PROJ/t001.ScS_CA
 
-<GMTVERSION>                 4
+<GMTVERSION>                 5
 							 -- select GMT verion: 4 or 5.
 
 # ==============================================================================
@@ -42,12 +41,78 @@ DATADIR>                    /home/shule/PROJ/t041.DATA/DATA_t041
 # a04.
 
 # a05. =========================================================================
+<Model_TT>                   prem
+
+<PhaseList_BEGIN>
+
+P P
+P Pdiff
+P PP
+P PPP
+P PcP
+P PKP
+P PKKP
+P PKIKP
+P PKiKP
+P pP
+P pPdiff
+
+PSV SP
+PSV PS
+PSV ScP
+PSV PcS
+PSV SKP
+PSV sP
+PSV pS
+PSV pSS
+PSV sPdiff
+PSV pPdiff
+PSV pScP
+PSV pPS
+
+SV PKS
+SV SKS
+SV SKKS
+SV SKKKS
+SV pSKS
+SV pSKKS
+SV sSKS
+SV sSKKS
+SV 4.0kmps
+
+SVSH S
+SVSH SS
+SVSH sS
+
+SH ScS
+
+<PhaseList_END>
+
+#  Model_TT:
+#    choose a TauP velocity model for arrival calculation.
+#    TauP provided: prem,iasp91,ak135,1066a,herrin,jb,pwdk,sp6,1066b,alfs,qdt
+#
+#  PhaseList_BEGIN_END:
+#    each line represent a phase, user can freely add/remove phase(s) to this list.
+#    sections within each line is documented as followed:
+#
+#    A. Component. (choose from "P","PSV","SV","SVSH","SH")
+#    B. Phase name. (this should obey the TauP toolkit naming convension;
+#                    if the name is not sutable, it will be warned and skipped;
+#                    4.0kmps will be translate to "Rayleigh";
+#                    4.5kmps will be translate to "Love")
+#
+# a05. =========================================================================
+
+# a06. =========================================================================
 <Delta_BP>                   0.05
 <Amplitude_BP>               0.375
 
 <BP_BEGIN>
 
-T    40    85    200    1800    0.03    0.3    All    NO    TA    Portrait
+T    40    90    900    1500    0.03    0.3    All    NO    All    Portrait
+T    40    90    900    1500    0.03    0.2    All    NO    All    Portrait
+T    40    90    900    1500    0.03    0.1    All    NO    All    Portrait
 
 <BP_END>
 
@@ -73,28 +138,84 @@ T    40    85    200    1800    0.03    0.3    All    NO    TA    Portrait
 #                               -- "Own" means the maximum amplitude of each trace will be set to "1".
 #                               -- "All" means preserve the relative amplitude between each trace, and
 #                                  the maximum ampiltude across all traces is set to "1".)
-#    I. TravelTime (choose from "NO","SH","SV","P","ALL"
-#                               -- "NO" means no travel-time curve.
-#                               -- "SH" will overlaply plot main SH phases travel-time curve.
-#                               -- "SV" will overlaply plot main SV phases travel-time curve.
-#                               -- "P" will overlaply plot main P phases travel-time curve.
-#                               -- "ALL" means plot all component travel-time curve.)
+#    I. TravelTime (choose from "P","PSV","SV","SVSH","SH","NO","ALL"
+#                               -- "P" will add "P"&"PSV" phase group travel-time curve.
+#                               -- "PSV" will add "PSV" phase group travel-time curve.
+#                               -- "SV" will add "SV"&"SVSH" phase group travel-time curve.
+#                               -- "SVSH" will add "SVSH" phase group travel-time curve.
+#                               -- "SH" will add "SH" phase group travel-time curve.
+#                               -- "NO" means plot none travel-time curve.
+#                               -- "ALL" means plot all groups.)
 #    J. Choose one network. (choose from network names. for all data, use "All")
 #    K. Plot orientation. (choose from "Landscape","Portrait")
 #
-# a05. =========================================================================
+# a06. =========================================================================
 
 
 
 # EQs.
 <EQs_BEGIN>
 
-201111221848
-
-<EQs_END>
-
-
 200608250044
+200609220232
+200610232100
+200611130126
 200705251747
+200707120523
 200707211327
 200707211534
+200711160313
+200711180540
+200711291900
+200802161445
+200803242039
+200807080913
+200808262100
+200809031125
+200810122055
+200901170257
+200907120612
+200907141838
+200909050358
+200911130727
+200911141944
+201001252252
+201001280804
+201003042239
+201005190415
+201005241618
+201007120011
+201008121154
+201009130715
+201010221931
+201101010956
+201103061231
+201104021059
+201104170158
+201106080306
+201106201636
+201108150253
+201109021347
+201111221848
+201205141000
+201205280507
+201206020752
+201206071603
+201208020938
+201210080150
+201211101457
+201211221307
+201302221201
+201308230834
+201408242321
+201409241116
+201410261045
+201502021049
+201502111857
+201503230451
+201506101352
+201509281528
+201511260545
+201601140325
+
+<EQs_END>
