@@ -8,8 +8,8 @@
 
 echo ""
 echo "--> `basename $0` is running. `date`"
-mkdir -p ${a06DIR}
-cd ${a06DIR}
+mkdir -p ${a07DIR}
+cd ${a07DIR}
 
 # ==================================================
 #              ! Work Begin !
@@ -20,7 +20,7 @@ for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 
 	# Ctrl+C action.
-	trap "rm -f ${a06DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${a07DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 	# A. Check the exist of list file.
@@ -48,7 +48,7 @@ do
 
 	# C. Enter the plot loop.
 	Num=0
-	while read COMP DISTMIN DISTMAX TIMEMIN TIMEMAX F1 F2 Normalize TravelCurve NetWork PlotOrient
+	while read PlotGap COMP DISTMIN DISTMAX TIMEMIN TIMEMAX F1 F2 Normalize TravelCurve NetWork PlotOrient
 	do
 
 
@@ -62,9 +62,8 @@ do
 		fi
 
 
-
 		# Clean dir.
-		rm -f ${a06DIR}/${EQ}*
+		rm -f ${a07DIR}/${EQ}*
 
 		# set up SAC operator.
 		if [ `echo "${F1}==0.0" | bc` -eq 1 ] && [ `echo "${F2}==0.0" | bc` -eq 1 ]
@@ -86,7 +85,7 @@ do
 
 
 		# Ctrl+C action.
-		trap "rm -f ${a06DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+		trap "rm -f ${a07DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 		# a. Select network and gcp distance window.
@@ -155,7 +154,7 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_BP}
+interp d ${Delta_BPC}
 w junk.sac
 cut O ${TIMEMIN} ${TIMEMAX}
 r junk.sac
@@ -193,7 +192,7 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_BP}
+interp d ${Delta_BPC}
 w junk.sac
 cut O ${TIMEMIN} ${TIMEMAX}
 r junk.sac
@@ -233,7 +232,7 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_BP}
+interp d ${Delta_BPC}
 w junk.sac
 cut O ${TIMEMIN} ${TIMEMAX}
 r junk.sac
@@ -253,10 +252,13 @@ EOF
 		# f. Process data (from sac to ascii).
 		saclst gcarc f `ls ${EQ}*sac` > ${EQ}_PlotList_Gcarc
 
+		sort -g -k 2,2 ${EQ}_PlotList_Gcarc > tmpfile_$$
+		mv tmpfile_$$ ${EQ}_PlotList_Gcarc
+
 
 		# tighten the Distance range, take amplitude in consideration.
 		[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
-		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C | awk -v D=${Amplitude_BP} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
+		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C | awk -v D=${Amplitude_BPC} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
 		read DISTMIN DISTMAX < tmpfile_$$
 		rm -f tmpfile_$$
 
@@ -264,19 +266,20 @@ EOF
 		# Decide the amplitude scale (in deg),
 		# in this c++ code, sac files are converted into a big ascii file.
 
-		AmpScale=`echo "${Amplitude_BP}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
+		AmpScale=`echo "${Amplitude_BPC}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
 
-		${EXECDIR}/BigProfile.out 1 3 1 << EOF
+		${EXECDIR}/BigProfileComb.out 1 3 2 << EOF
 ${Normalize}
 ${EQ}_PlotList_Gcarc
 ${EQ}_PlotFile.txt
 ${EQ}_ValidTraceNum.txt
 ${AmpScale}
+${PlotGap}
 EOF
 		if [ $? -ne 0 ]
 		then
 			echo "    ~=> BigProfile.out C++ code failed on ${EQ}, plot ${Num} ..."
-			rm -f ${a06DIR}/${EQ}* ${PLOTFILE}
+			rm -f ${a07DIR}/${EQ}* ${PLOTFILE}
 			exit 1
 		fi
 
@@ -336,7 +339,7 @@ EOF
 			if [ $? -ne 0 ]
 			then
 				echo "    !=> TextPosition.out C++ code failed on ${EQ}, plot ${Num} ..."
-				rm -f ${a06DIR}/${EQ}* ${PLOTFILE}
+				rm -f ${a07DIR}/${EQ}* ${PLOTFILE}
 				exit 1
 			fi
 
@@ -504,7 +507,7 @@ EOF
 
 		fi
 
-	done < ${OUTDIR}/tmpfile_BP_${RunNumber} # End of plot loop.
+	done < ${OUTDIR}/tmpfile_BPC_${RunNumber} # End of plot loop.
 
 done # End of EQ loop.
 

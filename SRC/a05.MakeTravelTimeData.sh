@@ -11,12 +11,14 @@ echo "--> `basename $0` is running. `date`"
 mkdir -p ${a05DIR}
 cd ${a05DIR}
 
-echo "taup.distance.precision=3" > .taup
-echo "taup.time.precision=3" >> .taup
 
 # ==================================================
 #              ! Work Begin !
 # ==================================================
+
+# TauP precission setting.
+echo "taup.distance.precision=3" > .taup
+echo "taup.time.precision=3" >> .taup
 
 for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
@@ -41,6 +43,7 @@ do
 	${BASHCODEDIR}/Findfield.sh ${a01DIR}/EQInfo.txt "${keys}" | grep ${EQ} > ${EQ}_Info
 	read EQ EVDP < ${EQ}_Info
 
+
 	# C. Make travel time data using TauP.
 	while read COMP PhaseName
 	do
@@ -48,9 +51,11 @@ do
 		[ ${PhaseName} = "4.0kmps" ] && OUTFILE=${a05DIR}/${EQ}_${COMP}_Rayleigh
 		[ ${PhaseName} = "4.5kmps" ] && OUTFILE=${a05DIR}/${EQ}_${COMP}_Love
 
+
 		# make the traveltime data.
 		taup_curve -ph ${PhaseName} -mod ${Model_TT} -h ${EVDP} -o ${OUTFILE}
 		OUTFILE=${OUTFILE}.gmt
+
 
 		# loose the first line.
 		if ! [ -s "${OUTFILE}" ]
@@ -63,19 +68,19 @@ do
 			mv tmpfile_$$ ${OUTFILE}
 		fi
 
-		# make a "First Arrival" version of travel time curve. (do an envelope)
+		# make a "First Arrival" version of travel time curve. (do an envelope from left)
 		${EXECDIR}/FirstArrival.out 0 2 0 << EOF
 ${OUTFILE}
 ${OUTFILE}_Enveloped
 EOF
-
 		if [ $? -ne 0 ]
 		then
 			echo "    ~=> FirstArrival.out C++ code failed on ${OUTFILE} ..."
-			continue
+			rm -f ${a05DIR}/${EQ}*
+			exit 1
 		fi
 
-	done < ${OUTDIR}/tmpfile_PhaseList_${RunNumber} # End of phase loop
+	done < ${OUTDIR}/tmpfile_PhaseList_${RunNumber} # End of phase loop.
 
 done # End of EQ loop.
 

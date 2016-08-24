@@ -106,6 +106,7 @@ int main(int argc, char **argv){
 	struct Record tmpdata;
 	vector<struct Record> Data;
 
+	// Read in Dist-Time.
 	fpin.open(PS[infile].c_str());
 	for (int index=0;index<NPTS;index++){
 		fpin >> tmpdata.Dist >> tmpdata.Time;
@@ -113,9 +114,14 @@ int main(int argc, char **argv){
 	}
 	fpin.close();
 
+
+	// Shuffle the vector to get a random order.
 	unsigned seed=chrono::system_clock::now().time_since_epoch().count();
 	shuffle(Data.begin(),Data.end(),default_random_engine(seed));
 
+
+	// Find the first suitable dist-time value pair (live within the plot range)
+	// and output them.
 	ofstream fpout;
 	fpout.open(PS[outfile].c_str());
 	for (size_t index=0;index<Data.size();index++){

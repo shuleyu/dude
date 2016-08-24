@@ -6,12 +6,12 @@
 # ${SRCDIR}/a03.CityMap.sh
 # ${SRCDIR}/a04.Histogram.sh
 # ${SRCDIR}/a05.MakeTravelTimeData.sh
-${SRCDIR}/a06.BigProfile.sh
-${SRCDIR}/a50.MakePDF.sh
+# ${SRCDIR}/a06.BigProfile.sh
+# ${SRCDIR}/a07.BigProfileComb.sh
+# ${SRCDIR}/a50.MakePDF.sh
 
 # ========= under construction =============
-# ${SRCDIR}/a07.BigProfileComb.sh
-# ${SRCDIR}/a08.BigProfileDistincSum.sh
+${SRCDIR}/a08.BigProfileDistincSum.sh
 # ${SRCDIR}/a09.ZoomProfile.sh
 # ${SRCDIR}/a10.ZoomProfileComb.sh
 # ${SRCDIR}/a11.ZoomProfileDistincSum.sh

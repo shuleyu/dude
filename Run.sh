@@ -90,6 +90,7 @@ a03DIR=${OUTDIR}/a03.CityMap
 a04DIR=${OUTDIR}/a04.Histogram
 a05DIR=${OUTDIR}/a05.MakeTravelTimeData
 a06DIR=${OUTDIR}/a06.BigProfile
+a07DIR=${OUTDIR}/a07.BigProfileComb
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

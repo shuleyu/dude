@@ -12,6 +12,7 @@ extern "C"{
 
 using namespace std;
 
+// Template used for sort according to indexes.
 template <typename T>
 vector<size_t> sort_indexes(const vector<T> &v) {
 
@@ -123,8 +124,9 @@ int main(int argc, char **argv){
 
 	fpin.close();
 
-	// Sort according to time increasing order
-	// if time value is in decreasing order (which indicate no triplication)
+
+	// Sort dist and time according to time increasing order, when
+	// time serie is in decreasing order (which indicate no triplication);
 	// this is for ScSScS, ScSScSScS, etc.
 	auto f=[](const double &d1,const double &d2){return d1>d2;};
 	if (is_sorted(TravelTime.begin(),TravelTime.end(),f)){
@@ -144,7 +146,8 @@ int main(int argc, char **argv){
 	}
 
 
-	// Find triplications in traveltime.
+	// Find triplications in travel time curve in terms of Distance series
+	// change trend.
 	vector<vector<double>> TriDist;
 	vector<vector<double>> TriTime;
 	int LastIndex=0;
@@ -154,6 +157,7 @@ int main(int argc, char **argv){
 			 ( TravelDist[index-1]<TravelDist[index] &&
 			   TravelDist[index+1]<TravelDist[index]  ) ){
 
+			// sort each section into dist ascending order.
 			vector<double> tmpvecdist(TravelDist.begin()+LastIndex,
 			                      TravelDist.begin()+index+1);
 			auto Index=sort_indexes(tmpvecdist);
@@ -164,6 +168,7 @@ int main(int argc, char **argv){
 			}
 			TriDist.push_back(tmpvecdist);
 
+			// sort each section time accordingly.
 			vector<double> tmpvectime(Index.size());
 			index2=0;
 			for (auto i:Index){
@@ -174,14 +179,15 @@ int main(int argc, char **argv){
 
 			LastIndex=index;
 
-			// Small fix for exotic phases "refelct" at 180 deg.
+			// Small fix for exotic phases "reflect" at 180 deg.
 			if (TravelDist[LastIndex]>=174){
 				break;
 			}
-
 		}
 	}
 
+	// Small fix for exotic phases "reflect" at 180 deg.
+	// Add the last section, if there's no "reflect" section.
 	if (TravelDist[LastIndex]<174){
 
 		vector<double> tmpvecdist(TravelDist.begin()+LastIndex,TravelDist.end());
@@ -203,14 +209,16 @@ int main(int argc, char **argv){
 	}
 
 
-	// For each distance point, seek (interpolate) the first arrival in
-	// different sections.
+	// For each unique distance data point, seek (interpolate) the first
+	// arrival in different sections.
+	// Output to a two column dist-time file.
 
 	ofstream fpout;
 
 	sort(TravelDist.begin(),TravelDist.end());
 	auto it_end=unique(TravelDist.begin(),TravelDist.end());
 
+	// Loop through unique dist data point.
 	fpout.open(PS[outfile].c_str());
 	for (auto it=TravelDist.begin();it<it_end;it++){
 
@@ -221,15 +229,20 @@ int main(int argc, char **argv){
 			auto item1=TriDist[index];
 			auto item2=TriTime[index];
 
+			// Find the section contains this dist value.
 			if ( ( (*(item1.begin()))-(*it) ) *
 				 ( (*(item1.end()-1))-(*it) ) <=0  ){
 
 				double *x=&item1[0];
 				double *y=&item2[0];
 
+				// Interpolate in this section, get the travel time
+				// for this dist value within this section.
 				double ThisTime,ThisDist=(*it);
 				wiginterpd(x,y,item1.size(),&ThisDist,&ThisTime,1,1);
 
+
+				// Choose the smallest travel time.
 				if (LeastTime>ThisTime){
 					LeastTime=ThisTime;
 				}

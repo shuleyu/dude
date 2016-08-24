@@ -12,7 +12,7 @@ echo "--> `basename $0` is running. `date`"
 mkdir -p ${a03DIR}
 cd ${a03DIR}
 
-# The city list.
+# City list.
 cat > Cities.txt << EOF
 72.7 19 Bombay
 -67 10.5 Caracas
@@ -77,6 +77,7 @@ EOF
 
 	sort -g -k 1,1 ${EQ}_CityDist.txt > tmpfile_$$
 	mv tmpfile_$$ ${EQ}_CityDist.txt
+
 
 	# D. Make event-city gcp files.
 	rm -f ${EQ}_gcpfile
@@ -229,7 +230,7 @@ EOF
 		EVLO2=`echo ${EVLO} | awk '{print 1.*$1 + 160}'`
 
 		# 3. use GMT's grdmath to compute a file with distances across the
-		# whole globe, from the EQ: (gor GMT-5, they use km in unit -_-|)
+		# whole globe, from the EQ: (for GMT-5, they use km in unit -_-|.. )
 		gmt grdmath -Rg -I1deg ${EVLO} ${EVLA} SDIST = dist.grd
 		gmt grdmath -Rg dist.grd 111.195 DIV = dist.grd
 

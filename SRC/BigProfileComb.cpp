@@ -32,7 +32,7 @@ int main(int argc, char **argv){
 
     enum PIenum{NormalizeFlag,FLAG1};
     enum PSenum{infile,plotfile,validnum,FLAG2};
-    enum Penum{AmpScale,FLAG3};
+    enum Penum{AmpScale,PlotGap,FLAG3};
 
     /****************************************************************
 
@@ -119,6 +119,7 @@ int main(int argc, char **argv){
 	char sacfile_char[300];
 	Record tmp_record;
 	vector<Record> Data;
+	double FirstDist=0;
 
 
 	// read from sac file list.
@@ -138,6 +139,15 @@ int main(int argc, char **argv){
 			cout << "SAC File: " << sacfile
 			<< " has small amplitude, skipping ... " << endl;
 			continue;
+		}
+
+
+		// Comb the traces.
+		if (tmp_record.gcarc-FirstDist<P[PlotGap]){
+			continue;
+		}
+		else{
+			FirstDist=tmp_record.gcarc;
 		}
 
 		// Normalize each trace; or noted down maximum amplitude and

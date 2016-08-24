@@ -14,9 +14,9 @@
 <CCODEDIR>                   /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                 /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                    /home/shule/PROJ/t041.DATA/NorthAmerican
-<CMTFILE>                    /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
-<OUTDIR>                     /home/shule/PROJ/t001.ScS_CA
+<DATADIR>                    /NAS/shule/PROJ/t003.RTZ/20111122_20111122
+<CMTFILE>                    /home/shule/PROJ/t041.DATA/DATA_t041
+<OUTDIR>                     /home/shule/PROJ/t001.DUDE4
 
 <GMTVERSION>                 5
 							 -- select GMT verion: 4 or 5.
@@ -82,9 +82,29 @@ SV 4.0kmps
 
 SVSH S
 SVSH SS
+SVSH SSS
+SVSH SSSS
+SVSH Sdiff
 SVSH sS
+SVSH sSS
+SVSH sSSS
 
 SH ScS
+SH ScSScS
+SH ScSScSScS
+SH ScSScSScSScS
+SH ScSScSScSScSScS
+SH ScSScSScSScSScSScS
+SH ScSScSScSScSScSScSScS
+SH sSdiff
+SH sScS
+SH sScSScS
+SH sScSScSScS
+SH sScSScSScSScS
+SH sScSScSScSScSScS
+SH sScSScSScSScSScSScS
+SH sScSScSScSScSScSScSScS
+SH 4.5kmps
 
 <PhaseList_END>
 
@@ -110,9 +130,7 @@ SH ScS
 
 <BP_BEGIN>
 
-T    40    90    900    1500    0.03    0.3    All    NO    All    Portrait
-T    40    90    900    1500    0.03    0.2    All    NO    All    Portrait
-T    40    90    900    1500    0.03    0.1    All    NO    All    Portrait
+T    0    180    200    1800    0.03    0.3    All    ALL    3E    Portrait
 
 <BP_END>
 
@@ -151,71 +169,26 @@ T    40    90    900    1500    0.03    0.1    All    NO    All    Portrait
 #
 # a06. =========================================================================
 
+# a07. =========================================================================
+<Delta_BPC>                   0.05
+<Amplitude_BPC>               0.375
+
+<BPC_BEGIN>
+
+0.5    Z    0    180    200    1800    0.03    0.3    All    ALL    All    Portrait
+
+<BPC_END>
+#
+#
+#
+#
+#
+# a07. =========================================================================
 
 
 # EQs.
 <EQs_BEGIN>
 
-200608250044
-200609220232
-200610232100
-200611130126
-200705251747
-200707120523
-200707211327
-200707211534
-200711160313
-200711180540
-200711291900
-200802161445
-200803242039
-200807080913
-200808262100
-200809031125
-200810122055
-200901170257
-200907120612
-200907141838
-200909050358
-200911130727
-200911141944
-201001252252
-201001280804
-201003042239
-201005190415
-201005241618
-201007120011
-201008121154
-201009130715
-201010221931
-201101010956
-201103061231
-201104021059
-201104170158
-201106080306
-201106201636
-201108150253
-201109021347
 201111221848
-201205141000
-201205280507
-201206020752
-201206071603
-201208020938
-201210080150
-201211101457
-201211221307
-201302221201
-201308230834
-201408242321
-201409241116
-201410261045
-201502021049
-201502111857
-201503230451
-201506101352
-201509281528
-201511260545
-201601140325
 
 <EQs_END>

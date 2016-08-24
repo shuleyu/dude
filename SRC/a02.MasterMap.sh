@@ -23,7 +23,7 @@ do
 	# Ctrl+C action.
 	trap "rm -f ${a02DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
-	# A. Check the exist of list file.
+	# A. Check the existance of list file.
 	if ! [ -s ${a01DIR}/${EQ}_FileList_Info ]
 	then
 		echo "    ~=> ${EQ} doesn't have FileList ..."
@@ -78,6 +78,7 @@ do
 		RGB[9]="250/0/0"
 		RGB[10]="250/250/250"
 
+		# decide which group each gcp path belongs to.
 		rm -f ${EQ}_gcpfile_Group*
 		while read STLO STLA GCARC
 		do
@@ -85,6 +86,8 @@ do
 			printf ">\n%f %f\n%f %f\n" ${EVLO} ${EVLA} ${STLO} ${STLA} >> ${EQ}_gcpfile_Group${GroupNum}
 		done < ${EQ}_stlo_stla_gcarc
 
+
+		# plot each group.
 		for GroupNum in `seq 1 10`
 		do
 			if [ -e ${EQ}_gcpfile_Group${GroupNum} ]
@@ -92,6 +95,7 @@ do
 				psxy ${EQ}_gcpfile_Group${GroupNum} ${REG} ${PROJ} -m -W0.5p,${RGB[${GroupNum}]} -O -K >> ${PLOTFILE}
 			fi
 		done
+
 
 		# plot the EQ and stations
 		psxy ${REG} ${PROJ} -Sa0.12i -O -K -W1/0/0/0 -G0 >> ${PLOTFILE} << EOF
@@ -106,7 +110,7 @@ EOF
 		pstext ${REG} ${PROJ} -N -O -K -Y-0.6i >> ${PLOTFILE} << EOF
 ${EVLO} 90 14 0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}
 EOF
-		# gcp legend.
+		# plot gcp legend.
 		psxy -J -R -X2.8i -Y-4i -O -K >> ${PLOTFILE} << EOF
 EOF
 		for GroupNum in `seq 1 9`
@@ -120,7 +124,7 @@ EOF
 EOF
 		done
 
-		# script name and date tag.
+		# plot script name and date tag.
 		pstext -JX3.0i -R0/5/0/5 -N -Wored -G0 -O -X-1.4i -Y-1.0i >> ${PLOTFILE} << EOF
 0.0 4.2 10 0 0 LM SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`
 EOF
@@ -179,6 +183,7 @@ EOF
 		RGB[9]="250/0/0"
 		RGB[10]="250/250/250"
 
+		# decide which group each gcp path belongs to.
 		rm -f ${EQ}_gcpfile_Group*
 		while read STLO STLA GCARC
 		do
@@ -186,6 +191,7 @@ EOF
 			printf ">\n%f %f\n%f %f\n" ${EVLO} ${EVLA} ${STLO} ${STLA} >> ${EQ}_gcpfile_Group${GroupNum}
 		done < ${EQ}_stlo_stla_gcarc
 
+		# plot each group.
 		for GroupNum in `seq 1 10`
 		do
 			if [ -e ${EQ}_gcpfile_Group${GroupNum} ]

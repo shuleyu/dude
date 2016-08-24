@@ -288,7 +288,7 @@ int main(int argc, char **argv){
 		}
 	}
 
-	// Output good data.
+	// Output good traces.
 	ofstream outfile,outfile_T,outfile_R,outfile_Z,outfile_E,outfile_N;
 	outfile.open(PS[FileList]);
 	outfile_T.open(PS[FileList]+"_T");
