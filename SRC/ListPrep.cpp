@@ -141,6 +141,7 @@ int main(int argc, char **argv){
 
 	ifstream infile;
 	vector<struct record> data;
+	vector<struct record> Data;
 
 	infile.open(PS[SACList]);
 	struct record item;
@@ -151,6 +152,8 @@ int main(int argc, char **argv){
 		}
 		item.Label=item.NetWork+"_"+item.StaName;
 		data.push_back(item);
+		Data.push_back(item);
+
 	}
 	infile.close();
 
@@ -180,7 +183,7 @@ int main(int argc, char **argv){
 
 	// Count components in good NW_ST pairs.
 	for (auto &index: metadata){
-		for (auto index2:data){
+		for (auto index2:Data){
 			if (index2.Label==index.Label){
 				if (index2.Component=="BHT"){
 					++index.BHT;
@@ -227,10 +230,11 @@ int main(int argc, char **argv){
 
 
 	// Select Good traces.
-	sort(data.begin(),data.end(),tmpfunc1);
+	sort(Data.begin(),Data.end(),tmpfunc1);
 	vector<struct record> data_clean;
 
 	for (auto index: metadata){
+
 
 		if ((index.BHT==1 && index.BHR==1 && index.BHZ==1) ||
 			(index.HHT==1 && index.HHR==1 && index.HHZ==1) ||
@@ -242,7 +246,7 @@ int main(int argc, char **argv){
 			     +index.HHT+index.HHR+index.HHZ==6){
 
 				if (PI[BH]==1){
-					for (auto index2: data){
+					for (auto index2: Data){
 						if (index2.Label==index.Label &&
 							index2.Component[0]=='B'){
 							data_clean.push_back(index2);
@@ -250,7 +254,7 @@ int main(int argc, char **argv){
 					}
 				}
 				else{
-					for (auto index2: data){
+					for (auto index2: Data){
 						if (index2.Label==index.Label &&
 							index2.Component[0]=='H'){
 							data_clean.push_back(index2);
@@ -262,7 +266,7 @@ int main(int argc, char **argv){
 					  +index.HHE+index.HHN+index.HHZ==6){
 
 				if (PI[BH]==1){
-					for (auto index2: data){
+					for (auto index2: Data){
 						if (index2.Label==index.Label &&
 							index2.Component[0]=='B'){
 							data_clean.push_back(index2);
@@ -270,7 +274,7 @@ int main(int argc, char **argv){
 					}
 				}
 				else{
-					for (auto index2: data){
+					for (auto index2: Data){
 						if (index2.Label==index.Label &&
 							index2.Component[0]=='H'){
 							data_clean.push_back(index2);
@@ -279,7 +283,7 @@ int main(int argc, char **argv){
 				}
 			}
 			else{
-				for (auto index2: data){
+				for (auto index2: Data){
 					if (index2.Label==index.Label){
 						data_clean.push_back(index2);
 					}
@@ -298,6 +302,7 @@ int main(int argc, char **argv){
 	outfile_N.open(PS[FileList]+"_N");
 
 	for (auto index: data_clean){
+
 		if (index.Component.substr(2,1)=="T"){
 			outfile_T << index.FileName << endl;
 		}

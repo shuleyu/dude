@@ -24,7 +24,7 @@ do
 
 
 	# A. Check the exist of list file.
-	if ! [ -s ${a01DIR}/${EQ}_FileList_Info ]
+	if ! [ -s ${a01DIR}/${EQ}_FileList ]
 	then
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
@@ -260,6 +260,11 @@ EOF
 		[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
 		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C | awk -v D=${Amplitude_BPC} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
 		read DISTMIN DISTMAX < tmpfile_$$
+        if [ `echo "${DISTMIN}==${DISTMAX}"|bc` -eq 1 ]
+        then
+            DISTMIN=`echo "${DISTMIN}" | awk '{print $1-1}'`
+            DISTMAX=`echo "${DISTMAX}" | awk '{print $1+1}'`
+        fi
 		rm -f tmpfile_$$
 
 
@@ -290,7 +295,7 @@ EOF
 
 		# prepare travel time curves files.
 
-		[ `echo "${EVDP}>50"|bc` -eq 1 ] && DepthPhase="" || DepthPhase="[[:lower:]]"
+		[ `echo "${EVDP}<50"|bc` -eq 1 ] && DepthPhase="" || DepthPhase="[[:upper:]]"
 
 		case "${TravelCurve}" in
 			NO )

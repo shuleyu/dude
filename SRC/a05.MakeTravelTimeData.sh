@@ -29,7 +29,7 @@ do
 
 
 	# A. Check the exist of list file.
-	if ! [ -s ${a01DIR}/${EQ}_FileList_Info ]
+	if ! [ -s ${a01DIR}/${EQ}_FileList ]
 	then
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue

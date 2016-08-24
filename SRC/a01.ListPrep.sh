@@ -43,6 +43,7 @@ ${a01DIR}/${EQ}_FileList
 EOF
 	rm -f tmpfile_$$
 
+
 	if [ $? -ne 0 ]
 	then
 		echo "    !=> ListPrep.out C++ code failed on ${EQ} ..."
