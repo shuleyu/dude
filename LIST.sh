@@ -9,12 +9,12 @@ ${SRCDIR}/a05.MakeTravelTimeData.sh
 # ${SRCDIR}/a06.BigProfile.sh
 # ${SRCDIR}/a07.BigProfileComb.sh
 # ${SRCDIR}/a08.BigProfileDistinctSum.sh
-${SRCDIR}/a09.ZoomProfile.sh
-# ${SRCDIR}/a50.MakePDF.sh
+# ${SRCDIR}/a09.ZoomProfile.sh
+# ${SRCDIR}/a10.ZoomProfileComb.sh
+${SRCDIR}/a11.ZoomProfileDistinctSum.sh
+${SRCDIR}/a50.MakePDF.sh
 
 # ========= under construction =============
-# ${SRCDIR}/a10.ZoomProfileComb.sh
-# ${SRCDIR}/a11.ZoomProfileDistinctSum.sh
 # ${SRCDIR}/a12.RadiationPat.sh
 # ${SRCDIR}/a13.RadiationPatPiercings.sh
 # ${SRCDIR}/a14.SNR.sh

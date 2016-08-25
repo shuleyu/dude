@@ -29,7 +29,7 @@ do
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
 	else
-		echo "    ==> Making BigProfile plot(s) of ${EQ}."
+		echo "    ==> Making ZoomProfile plot(s) of ${EQ}."
 	fi
 
 	# B. Pull information.
@@ -61,7 +61,6 @@ do
 			PhaseFile=`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped`
 			PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
 			PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
-			echo ${PhaseDistMin} ${PhaseDistMax}
 		fi
 
 
@@ -380,12 +379,12 @@ EOF
 
 		# prepare travel time curves files.
 
-		[ `echo "${EVDP}<50"|bc` -eq 1 ] && DepthPhase="" || DepthPhase="[[:upper:]]"
+		[ `echo "${EVDP}<50"|bc` -eq 1 ] && DepthPhase="[[:upper:]]" || DepthPhase=""
+
+		# (uncomment this line to plot all phase disregard of event depth.)
+# 		DepthPhase=""
 
 		case "${TravelCurve}" in
-			NO )
-				echo "" > ${EQ}_PhaseArrivalFiles.txt
-				;;
 			ALL )
 				ls ${a05DIR}/${EQ}_*_${DepthPhase}*.gmt > ${EQ}_PhaseArrivalFiles.txt
 				;;
@@ -499,9 +498,9 @@ EOF
 			# plot basemap.
 			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
 
-			[ `echo "(${TIMEMAX}-${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
-			[ `echo "(${TIMEMAX}-${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
-			[ `echo "(${TIMEMAX}-${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
 			XLABEL="Time after earthquake origin time (sec)"
 
 			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`

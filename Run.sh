@@ -93,6 +93,8 @@ a06DIR=${OUTDIR}/a06.BigProfile
 a07DIR=${OUTDIR}/a07.BigProfileComb
 a08DIR=${OUTDIR}/a08.BigProfileDistinctSum
 a09DIR=${OUTDIR}/a09.ZoomProfile
+a10DIR=${OUTDIR}/a10.ZoomProfileComb
+a11DIR=${OUTDIR}/a11.ZoomProfileDistinctSum
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

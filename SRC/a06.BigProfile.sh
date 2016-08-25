@@ -291,7 +291,10 @@ EOF
 
 		# prepare travel time curves files.
 
-		[ `echo "${EVDP}<50"|bc` -eq 1 ] && DepthPhase="" || DepthPhase="[[:upper:]]"
+		[ `echo "${EVDP}<50"|bc` -eq 1 ] && DepthPhase="[[:upper:]]" || DepthPhase=""
+
+		# (uncomment this line to plot all phase disregard of event depth.)
+# 		DepthPhase=""
 
 		case "${TravelCurve}" in
 			NO )
@@ -381,9 +384,9 @@ EOF
 			# plot basemap.
 			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
 
-			[ `echo "(${TIMEMAX}-${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
-			[ `echo "(${TIMEMAX}-${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
-			[ `echo "(${TIMEMAX}-${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
 			XLABEL="Time after earthquake origin time (sec)"
 
 			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`

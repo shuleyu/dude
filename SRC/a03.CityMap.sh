@@ -96,7 +96,8 @@ EOF
 		gmtset ANNOT_FONT_SIZE_PRIMARY = 8p
 		gmtset LABEL_FONT_SIZE = 9p
 		gmtset LABEL_OFFSET = 0.1c
-		gmtset BASEMAP_FRAME_RGB = 100/100/100
+		gmtset BASEMAP_FRAME_RGB = +0/0/0
+		gmtset GRID_PEN_PRIMARY = 0.05p,100/100/100
 
 		# projection and map range.
 		REG="-R0/360/-90/90"

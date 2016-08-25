@@ -14,9 +14,9 @@
 <CCODEDIR>                   /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                 /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                    /NAS/shule/PROJ/t003.RTZ/20111122_20111122
-<CMTFILE>                    /home/shule/PROJ/t041.DATA/DATA_t041
-<OUTDIR>                     /home/shule/PROJ/t001.DUDE4
+<DATADIR>                    /home/shule/PROJ/t041.DATA/NorthAmerican
+<CMTFILE>                    /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
+<OUTDIR>                     /home/shule/PROJ/t001.ScS_CA
 
 <GMTVERSION>                 5
 							 -- select GMT verion: 4 or 5.
@@ -140,7 +140,7 @@ SH 4.5kmps
 
 <BP_BEGIN>
 
-Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
+T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portraitt
 
 <BP_END>
 
@@ -175,9 +175,11 @@ Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
 #                               -- "NO" means plot none travel-time curve.
 #                               -- "ALL" means plot all groups.)
 #    J. Choose one network. (choose from network names. for all data, use "AllSt")
-#    K. Plot orientation. (choose from "Landscape","Portrait")
+#    K. Plot orientation. (choose from "Landscape","Portraitt")
 #
 # a06. =========================================================================
+
+
 
 # a07. =========================================================================
 # Note: Dependent on a01,a05(for traveltime plot).
@@ -187,7 +189,7 @@ Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
 
 <BPC_BEGIN>
 
-0.5    T    0    180    200    1800    0.03    0.3    Global    ALL    TA    Portrait
+0.5    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portraitt
 
 <BPC_END>
 
@@ -195,7 +197,7 @@ Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
 #  There's only one difference, the first parameter in BPC_BEGIN_END:
 #
 #    A. Gap distance. Will select trace apart from each other (in gcarc) >= this value.
-#    B. see a06.
+#    B-End. see a06.
 #
 # a07. =========================================================================
 
@@ -210,7 +212,7 @@ Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
 
 <BPDS_BEGIN>
 
-1    0.5    T    0    180    200    1800    0.03    0.3    Global    ALL    TA    Portrait
+1    0.5    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portraitt
 
 <BPDS_END>
 
@@ -219,13 +221,9 @@ Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
 #
 #    A. Gcarc bin width. Will sum-average traces within each bin with this gcarc size.
 #    B. Bin increment. Bin center position in gcarc is seperated by this value.
-#    C. see a06.
+#    C-End. see a06.
 #
 # a08. =========================================================================
-
-
-
-
 
 
 
@@ -237,7 +235,8 @@ Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
 
 <ZP_BEGIN>
 
-PKKP    Z    0    180    -100    200    0.03    0.3    Global    P    AllSt    Portrait
+S    T    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portraitt
+S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portraitt
 
 <ZP_END>
 
@@ -245,22 +244,129 @@ PKKP    Z    0    180    -100    200    0.03    0.3    Global    P    AllSt    P
 #  There's only one difference, the first parameter in ZP_BEGIN_END:
 #
 #    A. One chosen phase to align the profile to.
-#    B.
-#    C.
-#    D. See a06.
+#    B-D. See a06.
 #    E. Cut around the chosen phase t1. (usually a negative value, in sec.)
 #    F. Cut around the chosen phase t2. (usually a positive value, in sec.)
-#    G.
-#    H.
-#    I.
-#    J.
-#    K. See a06.
+#    G-End. See a06.
 #
 # a09. =========================================================================
+
+
+
+
+# a10. =========================================================================
+# Note: Dependent on a01,a05(for traveltime plot).
+
+<Delta_ZPC>                   0.05
+<Amplitude_ZPC>               0.375
+
+<ZPC_BEGIN>
+
+0.5    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
+0.5    ScS    T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
+0.5    S      T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
+0.5    ScS    T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
+0.5    S      T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
+0.5    ScS    T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
+0.5    S      T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
+0.5    ScS    T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
+
+<ZPC_END>
+
+#  Most of the parameter explanation see a09.
+#  There's only one difference, the first parameter in ZPC_BEGIN_END:
+#
+#    A. Gap distance. Will select trace apart from each other (in gcarc) >= this value.
+#    B-End. see a09.
+#
+# a10. =========================================================================
+
+
+
+
+# a11. =========================================================================
+# Note: Dependent on a01,a05(for traveltime plot).
+
+<Delta_ZPDS>                   0.05
+<Amplitude_ZPDS>               0.375
+
+<ZPDS_BEGIN>
+
+1    0.5    S    T    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portraitt
+
+<ZPDS_END>
+
+#  Most of the parameter explanation see a09.
+#  There's only two differences, the first and the second parameter in ZPDS_BEGIN_END:
+#
+#    A. Gcarc bin width. Will sum-average traces within each bin with this gcarc size.
+#    B. Bin increment. Bin center position in gcarc is seperated by this value.
+#    C. see a09.
+#
+# a11. =========================================================================
+
+
 
 # EQs.
 <EQs_BEGIN>
 
+200608250044
+200609220232
+200610232100
+200611130126
+200705251747
+200707120523
+200707211327
+200707211534
+200711160313
+200711180540
+200802161445
+200803242039
+200807080913
+200808262100
+200809031125
+200810122055
+200901170257
+200907120612
+200907141838
+200909050358
+200911130727
+200911141944
+201001252252
+201001280804
+201003042239
+201005190415
+201005241618
+201007120011
+201009130715
+201010221931
+201101010956
+201103061231
+201104170158
+201106080306
+201106201636
+201108150253
+201109021347
 201111221848
+201205141000
+201205280507
+201206020752
+201206071603
+201208020938
+201210080150
+201211101457
+201211221307
+201302221201
+201308230834
+201408242321
+201409241116
+201410261045
+201502021049
+201502111857
+201503230451
+201506101352
+201509281528
+201511260545
+201601140325
 
 <EQs_END>
