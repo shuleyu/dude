@@ -91,6 +91,8 @@ a04DIR=${OUTDIR}/a04.Histogram
 a05DIR=${OUTDIR}/a05.MakeTravelTimeData
 a06DIR=${OUTDIR}/a06.BigProfile
 a07DIR=${OUTDIR}/a07.BigProfileComb
+a08DIR=${OUTDIR}/a08.BigProfileDistinctSum
+a09DIR=${OUTDIR}/a09.ZoomProfile
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

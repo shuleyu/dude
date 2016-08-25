@@ -8,8 +8,8 @@
 
 echo ""
 echo "--> `basename $0` is running. `date`"
-mkdir -p ${a07DIR}
-cd ${a07DIR}
+mkdir -p ${a08DIR}
+cd ${a08DIR}
 
 # ==================================================
 #              ! Work Begin !
@@ -20,7 +20,7 @@ for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 
 	# Ctrl+C action.
-	trap "rm -f ${a07DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${a08DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 	# A. Check the exist of list file.
@@ -29,7 +29,7 @@ do
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
 	else
-		echo "    ==> Making BigProfileComb plot(s) of ${EQ}."
+		echo "    ==> Making BigProfileDistinctSum plot(s) of ${EQ}."
 	fi
 
 	# B. Pull information.
@@ -48,7 +48,7 @@ do
 
 	# C. Enter the plot loop.
 	Num=0
-	while read PlotGap COMP DISTMIN DISTMAX TIMEMIN TIMEMAX F1 F2 Normalize TravelCurve NetWork PlotOrient
+	while read BinSize BinInc COMP DISTMIN DISTMAX TIMEMIN TIMEMAX F1 F2 Normalize TravelCurve NetWork PlotOrient
 	do
 
 
@@ -63,7 +63,7 @@ do
 
 
 		# Clean dir.
-		rm -f ${a07DIR}/${EQ}*
+		rm -f ${a08DIR}/${EQ}*
 
 		# set up SAC operator.
 		if [ `echo "${F1}==0.0" | bc` -eq 1 ] && [ `echo "${F2}==0.0" | bc` -eq 1 ]
@@ -85,7 +85,7 @@ do
 
 
 		# Ctrl+C action.
-		trap "rm -f ${a07DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+		trap "rm -f ${a08DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 		# a. Select network and gcp distance window.
@@ -154,7 +154,7 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_BPC}
+interp d ${Delta_BPDS}
 w junk.sac
 cut O ${TIMEMIN} ${TIMEMAX}
 r junk.sac
@@ -192,7 +192,7 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_BPC}
+interp d ${Delta_BPDS}
 w junk.sac
 cut O ${TIMEMIN} ${TIMEMAX}
 r junk.sac
@@ -232,7 +232,7 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_BPC}
+interp d ${Delta_BPDS}
 w junk.sac
 cut O ${TIMEMIN} ${TIMEMAX}
 r junk.sac
@@ -258,7 +258,9 @@ EOF
 
 		# tighten the Distance range, take amplitude in consideration.
 		[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
-		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C | awk -v D=${Amplitude_BPC} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
+		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C \
+		| awk -v D=${BinSize} '{print $1-D,$2+D}'     \
+		| awk -v D=${Amplitude_BPDS} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
 		read DISTMIN DISTMAX < tmpfile_$$
         if [ `echo "${DISTMIN}==${DISTMAX}"|bc` -eq 1 ]
         then
@@ -271,20 +273,25 @@ EOF
 		# Decide the amplitude scale (in deg),
 		# in this c++ code, sac files are converted into a big ascii file.
 
-		AmpScale=`echo "${Amplitude_BPC}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
+		AmpScale=`echo "${Amplitude_BPDS}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
 
-		${EXECDIR}/BigProfileComb.out 1 3 2 << EOF
+		${EXECDIR}/BigProfileDistinctSum.out 1 4 6 << EOF
 ${Normalize}
 ${EQ}_PlotList_Gcarc
 ${EQ}_PlotFile.txt
 ${EQ}_ValidTraceNum.txt
+${EQ}_TraceCount.txt
 ${AmpScale}
-${PlotGap}
+${BinSize}
+${BinInc}
+${TIMEMIN}
+${TIMEMAX}
+${Delta_BPDS}
 EOF
 		if [ $? -ne 0 ]
 		then
 			echo "    !=> BigProfile.out C++ code failed on ${EQ}, plot ${Num} ..."
-			rm -f ${a07DIR}/${EQ}* ${PLOTFILE}
+			rm -f ${a08DIR}/${EQ}* ${PLOTFILE}
 			exit 1
 		fi
 
@@ -344,7 +351,7 @@ EOF
 			if [ $? -ne 0 ]
 			then
 				echo "    !=> TextPosition.out C++ code failed on ${EQ}, plot ${Num} ..."
-				rm -f ${a07DIR}/${EQ}* tmpfile_$$ ${PLOTFILE}
+				rm -f ${a08DIR}/${EQ}* tmpfile_$$ ${PLOTFILE}
 				exit 1
 			fi
 
@@ -383,7 +390,7 @@ EOF
 EOF
 
 			# plot basemap.
-			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
+			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX5.3i/-${PlotHeight}i" || PROJ="-JX7.8i/-${PlotHeight}i"
 
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
@@ -417,12 +424,61 @@ EOF
 
 			# plot seismogram.
 			cp ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
-			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -O >> ${PLOTFILE}
-			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -O >> ${PLOTFILE}_WithTC
+			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -K -O >> ${PLOTFILE}
+			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -K -O >> ${PLOTFILE}_WithTC
 
 
 			# plot a arrival page, with phase name, without seismogram. (_TCandText)
-			pstext ${EQ}_Phases.txt -J -R -N -O >> ${PLOTFILE}_TCandText
+			pstext ${EQ}_Phases.txt -J -R -N -K -O >> ${PLOTFILE}_TCandText
+
+
+			# plot a histogram of TraceNum count in each bin.
+
+			# count maximum binN.
+			XMAX=`awk '{print $2}' ${EQ}_TraceCount.txt | minmax -C | awk '{print $2}'`
+
+			[ ${PlotOrient} = "Portrait" ] && XP="-X5.6i" || XP="-X8.3i"
+			PROJ="-JX1.1i/-${PlotHeight}i"
+			REG="-R0/${XMAX}/${DISTMIN}/${DISTMAX}"
+			XLABEL="Count"
+			[ `echo "(${XMAX})>=50" | bc` -eq 1 ] && XAXIS="a20f10"
+			[ `echo "(${XMAX})<50" | bc` -eq 1 ] && XAXIS="a10f2"
+			[ `echo "(${XMAX})<10" | bc` -eq 1 ] && XAXIS="a5f1"
+
+			# plot histogram (by hand)
+			psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE} << EOF
+EOF
+			psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE}_WithTC << EOF
+EOF
+			psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE}_TCandText << EOF
+EOF
+			while read BinCenter TraceNum
+			do
+				cat > tmpfile_$$ << EOF
+`echo "${TraceNum} ${XMAX} ${BinCenter} ${BinInc} ${DISTMIN} ${DISTMAX} ${PlotHeight}" | awk '{print $1/2,$3,$1/$2*1.1"i",$4/($6-$5)*$7"i"}'`
+EOF
+				psxy tmpfile_$$ -J -R -Sr -W1p,black -G200 -N -K -O >> ${PLOTFILE}
+				psxy tmpfile_$$ -J -R -Sr -W1p,black -G200 -N -K -O >> ${PLOTFILE}_WithTC
+				psxy tmpfile_$$ -J -R -Sr -W1p,black -G200 -N -K -O >> ${PLOTFILE}_TCandText
+
+			done < ${EQ}_TraceCount.txt
+
+			while read BinCenter TraceNum
+			do
+				cat > tmpfile_$$ << EOF
+`echo "${TraceNum} ${BinCenter} ${BinSize}" | awk '{print $1/2,$2+$3/2}'`
+`echo "${TraceNum} ${BinCenter} ${BinSize}" | awk '{print $1/2,$2-$3/2}'`
+EOF
+				psxy tmpfile_$$ -J -R -Wfaint,red -N -K -O >> ${PLOTFILE}
+				psxy tmpfile_$$ -J -R -Wfaint,red -N -K -O >> ${PLOTFILE}_WithTC
+				psxy tmpfile_$$ -J -R -Wfaint,red -N -K -O >> ${PLOTFILE}_TCandText
+
+			done < ${EQ}_TraceCount.txt
+			rm -f tmpfile_$$
+
+			psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}
+			psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}_WithTC
+			psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}_TCandText
 
 
 			# get rid of traveltime plots if we don't want plot it.
@@ -463,7 +519,7 @@ EOF
 
 
 			# plot basemap.
-			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
+			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX5.3i/-${PlotHeight}i" || PROJ="-JX7.8i/-${PlotHeight}i"
 
 			[ `echo "(${TIMEMAX}-${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
 			[ `echo "(${TIMEMAX}-${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
@@ -498,13 +554,62 @@ EOF
 
 			# plot seismogram.
 			cp ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
-			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O >> ${PLOTFILE}
-			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O >> ${PLOTFILE}_WithTC
+			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O -K >> ${PLOTFILE}
+			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O -K >> ${PLOTFILE}_WithTC
 
 
 			# plot a arrival page, with phase name, without seismogram. (_TCandText)
 			awk '{print $1,$2,$7}' ${EQ}_Phases.txt > ${EQ}_plottext.txt
-			gmt pstext ${EQ}_plottext.txt -J -R -F+jLM+f12p,Helvetica-Narrow-Bold,black -N -O >> ${PLOTFILE}_TCandText
+			gmt pstext ${EQ}_plottext.txt -J -R -F+jLM+f12p,Helvetica-Narrow-Bold,black -N -O -K >> ${PLOTFILE}_TCandText
+
+
+			# plot a histogram of TraceNum count in each bin.
+
+			# count maximum binN.
+			XMAX=`awk '{print $2}' ${EQ}_TraceCount.txt | minmax -C | awk '{print $2}'`
+
+			[ ${PlotOrient} = "Portrait" ] && XP="-X5.6i" || XP="-X8.3i"
+			PROJ="-JX1.1i/-${PlotHeight}i"
+			REG="-R0/${XMAX}/${DISTMIN}/${DISTMAX}"
+			XLABEL="Count"
+			[ `echo "(${XMAX})>=50" | bc` -eq 1 ] && XAXIS="a20f10"
+			[ `echo "(${XMAX})<50" | bc` -eq 1 ] && XAXIS="a10f2"
+			[ `echo "(${XMAX})<10" | bc` -eq 1 ] && XAXIS="a5f1"
+
+			# plot histogram (by hand)
+			gmt psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE} << EOF
+EOF
+			gmt psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE}_WithTC << EOF
+EOF
+			gmt psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE}_TCandText << EOF
+EOF
+			while read BinCenter TraceNum
+			do
+				cat > tmpfile_$$ << EOF
+`echo "${TraceNum} ${XMAX} ${BinCenter} ${BinInc} ${DISTMIN} ${DISTMAX} ${PlotHeight}" | awk '{print $1/2,$3,$1/$2*1.1"i",$4/($6-$5)*$7"i"}'`
+EOF
+				gmt psxy tmpfile_$$ -J -R -Sr -W1p,black -G200 -N -K -O >> ${PLOTFILE}
+				gmt psxy tmpfile_$$ -J -R -Sr -W1p,black -G200 -N -K -O >> ${PLOTFILE}_WithTC
+				gmt psxy tmpfile_$$ -J -R -Sr -W1p,black -G200 -N -K -O >> ${PLOTFILE}_TCandText
+
+			done < ${EQ}_TraceCount.txt
+
+			while read BinCenter TraceNum
+			do
+				cat > tmpfile_$$ << EOF
+`echo "${TraceNum} ${BinCenter} ${BinSize}" | awk '{print $1/2,$2+$3/2}'`
+`echo "${TraceNum} ${BinCenter} ${BinSize}" | awk '{print $1/2,$2-$3/2}'`
+EOF
+				gmt psxy tmpfile_$$ -J -R -Wfaint,red -N -K -O >> ${PLOTFILE}
+				gmt psxy tmpfile_$$ -J -R -Wfaint,red -N -K -O >> ${PLOTFILE}_WithTC
+				gmt psxy tmpfile_$$ -J -R -Wfaint,red -N -K -O >> ${PLOTFILE}_TCandText
+
+			done < ${EQ}_TraceCount.txt
+			rm -f tmpfile_$$
+
+			gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}
+			gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}_WithTC
+			gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}_TCandText
 
 
 			# get rid of traveltime plots if we don't want plot it.
@@ -512,7 +617,7 @@ EOF
 
 		fi
 
-	done < ${OUTDIR}/tmpfile_BPC_${RunNumber} # End of plot loop.
+	done < ${OUTDIR}/tmpfile_BPDS_${RunNumber} # End of plot loop.
 
 done # End of EQ loop.
 

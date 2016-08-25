@@ -37,10 +37,18 @@
 # a01. =========================================================================
 
 # a02.
+# Note: Dependent on a01.
+#
 # a03.
+# Note: Dependent on a01.
+#
 # a04.
+# Note: Dependent on a01.
 
 # a05. =========================================================================
+# Note: Dependent on a01.
+# Note: see a pre-prepared phase list in .PhaseList.txt
+
 <Model_TT>                   prem
 
 <PhaseList_BEGIN>
@@ -125,12 +133,14 @@ SH 4.5kmps
 # a05. =========================================================================
 
 # a06. =========================================================================
+# Note: Dependent on a01,a05(for traveltime plot).
+
 <Delta_BP>                   0.05
 <Amplitude_BP>               0.375
 
 <BP_BEGIN>
 
-T    0    180    200    1800    0.03    0.3    All    ALL    3E    Portrait
+Z    0    180    0    1800    0.03    0.3    Global    P    AllSt    Portrait
 
 <BP_END>
 
@@ -144,7 +154,7 @@ T    0    180    200    1800    0.03    0.3    All    ALL    3E    Portrait
 #    each line will result in one plot.
 #    sections within each line is documented as followed:
 #
-#    A. Component. (choose from "T","R","Z","E","N")
+#    A. Component. (choose from "T","R","Z","E","N", will do rotation on components in scripts)
 #    B. GCP Distance min. (in deg)
 #    C. GCP Distance max. (in deg)
 #    D. Time window min. (relative to origin time, in sec.)
@@ -152,10 +162,10 @@ T    0    180    200    1800    0.03    0.3    All    ALL    3E    Portrait
 #    F. Filter lower corner. (if set to 0.0, apply a low-pass butterworth filter using upper corner)
 #    G. Filter upper corner. (if set to 0.0, apply a high-pass butterworth filter using lower corner)
 #       ( if both lower and upper corner are set to 0.0, don't apply the filter. )
-#    H. Normalize. (choose from "Own","All"
+#    H. Normalize. (choose from "Own","Global"
 #                               -- "Own" means the maximum amplitude of each trace will be set to "1".
-#                               -- "All" means preserve the relative amplitude between each trace, and
-#                                  the maximum ampiltude across all traces is set to "1".)
+#                               -- "Global" means preserve the relative amplitude between each trace,
+#                                  and the maximum ampiltude across all traces is set to "1".)
 #    I. TravelTime (choose from "P","PSV","SV","SVSH","SH","NO","ALL"
 #                               -- "P" will add "P"&"PSV" phase group travel-time curve.
 #                               -- "PSV" will add "PSV" phase group travel-time curve.
@@ -164,27 +174,89 @@ T    0    180    200    1800    0.03    0.3    All    ALL    3E    Portrait
 #                               -- "SH" will add "SH" phase group travel-time curve.
 #                               -- "NO" means plot none travel-time curve.
 #                               -- "ALL" means plot all groups.)
-#    J. Choose one network. (choose from network names. for all data, use "All")
+#    J. Choose one network. (choose from network names. for all data, use "AllSt")
 #    K. Plot orientation. (choose from "Landscape","Portrait")
 #
 # a06. =========================================================================
 
 # a07. =========================================================================
+# Note: Dependent on a01,a05(for traveltime plot).
+
 <Delta_BPC>                   0.05
 <Amplitude_BPC>               0.375
 
 <BPC_BEGIN>
 
-0.5    Z    0    180    200    1800    0.03    0.3    All    ALL    All    Portrait
+0.5    T    0    180    200    1800    0.03    0.3    Global    ALL    TA    Portrait
 
 <BPC_END>
+
+#  Most of the parameter explanation see a06.
+#  There's only one difference, the first parameter in BPC_BEGIN_END:
 #
-#
-#
-#
+#    A. Gap distance. Will select trace apart from each other (in gcarc) >= this value.
+#    B. see a06.
 #
 # a07. =========================================================================
 
+
+
+
+# a08. =========================================================================
+# Note: Dependent on a01,a05(for traveltime plot).
+
+<Delta_BPDS>                   0.05
+<Amplitude_BPDS>               0.375
+
+<BPDS_BEGIN>
+
+1    0.5    T    0    180    200    1800    0.03    0.3    Global    ALL    TA    Portrait
+
+<BPDS_END>
+
+#  Most of the parameter explanation see a06.
+#  There's only two differences, the first and the second parameter in BPDS_BEGIN_END:
+#
+#    A. Gcarc bin width. Will sum-average traces within each bin with this gcarc size.
+#    B. Bin increment. Bin center position in gcarc is seperated by this value.
+#    C. see a06.
+#
+# a08. =========================================================================
+
+
+
+
+
+
+
+# a09. =========================================================================
+# Note: Dependent on a01,a05(for traveltime plot).
+
+<Delta_ZP>                   0.05
+<Amplitude_ZP>               0.375
+
+<ZP_BEGIN>
+
+PKKP    Z    0    180    -100    200    0.03    0.3    Global    P    AllSt    Portrait
+
+<ZP_END>
+
+#  Most of the parameter explanation see a06.
+#  There's only one difference, the first parameter in ZP_BEGIN_END:
+#
+#    A. One chosen phase to align the profile to.
+#    B.
+#    C.
+#    D. See a06.
+#    E. Cut around the chosen phase t1. (usually a negative value, in sec.)
+#    F. Cut around the chosen phase t2. (usually a positive value, in sec.)
+#    G.
+#    H.
+#    I.
+#    J.
+#    K. See a06.
+#
+# a09. =========================================================================
 
 # EQs.
 <EQs_BEGIN>

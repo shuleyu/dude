@@ -93,7 +93,7 @@ do
 		${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
 		| awk -v T1=${TIMEMIN} -v T2=${TIMEMAX} '{if (T2<=($5-$4) || T1>=($6-$4)) ; else print $1,$2,$3}' \
 		| awk -v D1=${DISTMIN} -v D2=${DISTMAX} '{if (D1<=$3 && $3<=D2) print $1,$2}' \
-		| awk -v N=${NetWork} '{if (N=="All") print $1; else if ($2==N) print $1}' \
+		| awk -v N=${NetWork} '{if (N=="AllSt") print $1; else if ($2==N) print $1}' \
 		> ${EQ}_SelectedFiles
 
 		if ! [ -s ${EQ}_SelectedFiles ]
@@ -279,7 +279,7 @@ ${AmpScale}
 EOF
 		if [ $? -ne 0 ]
 		then
-			echo "    ~=> BigProfile.out C++ code failed on ${EQ}, plot ${Num} ..."
+			echo "    !=> BigProfile.out C++ code failed on ${EQ}, plot ${Num} ..."
 			rm -f ${a06DIR}/${EQ}* ${PLOTFILE}
 			exit 1
 		fi
@@ -340,7 +340,7 @@ EOF
 			if [ $? -ne 0 ]
 			then
 				echo "    !=> TextPosition.out C++ code failed on ${EQ}, plot ${Num} ..."
-				rm -f ${a06DIR}/${EQ}* ${PLOTFILE}
+				rm -f ${a06DIR}/${EQ}* tmpfile_$$ ${PLOTFILE}
 				exit 1
 			fi
 
@@ -461,9 +461,9 @@ EOF
 			# plot basemap.
 			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
 
-			[ `echo "(${TIMEMAX}-${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
-			[ `echo "(${TIMEMAX}-${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
-			[ `echo "(${TIMEMAX}-${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
+			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
 			XLABEL="Time after earthquake origin time (sec)"
 
 			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`

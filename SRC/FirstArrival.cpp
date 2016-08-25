@@ -189,6 +189,7 @@ int main(int argc, char **argv){
 		}
 	}
 
+
 	// Small fix for exotic phases "reflect" at 180 deg.
 	// Add the last section, if there's no "reflect" section.
 	if (TravelDist[LastIndex]<174){
@@ -212,20 +213,20 @@ int main(int argc, char **argv){
 	}
 
 
-	// For each unique distance data point, seek (interpolate) the first
+	// For new unique distance data point, seek (interpolate) the first
 	// arrival in different sections.
 	// Output to a two column dist-time file.
 
 	ofstream fpout;
+	double newdist=0;
 
-	sort(TravelDist.begin(),TravelDist.end());
-	auto it_end=unique(TravelDist.begin(),TravelDist.end());
 
 	// Loop through unique dist data point.
 	fpout.open(PS[outfile].c_str());
-	for (auto it=TravelDist.begin();it<it_end;it++){
+	for (newdist=0;newdist<=180;newdist+=0.01){
 
 		double LeastTime=1/0.0;
+		double flag=0;
 
 		for (size_t index=0;index<TriDist.size();index++){
 
@@ -233,15 +234,17 @@ int main(int argc, char **argv){
 			auto item2=TriTime[index];
 
 			// Find the section contains this dist value.
-			if ( ( (*(item1.begin()))-(*it) ) *
-				 ( (*(item1.end()-1))-(*it) ) <=0  ){
+			if ( ( (*(item1.begin()))-newdist ) *
+				 ( (*(item1.end()-1))-newdist ) <=0  ){
+
+				flag=1;
 
 				double *x=&item1[0];
 				double *y=&item2[0];
 
 				// Interpolate in this section, get the travel time
 				// for this dist value within this section.
-				double ThisTime,ThisDist=(*it);
+				double ThisTime,ThisDist=newdist;
 				wiginterpd(x,y,item1.size(),&ThisDist,&ThisTime,1,1);
 
 
@@ -252,7 +255,9 @@ int main(int argc, char **argv){
 			}
 		}
 
-		fpout << *it << " " << LeastTime << endl;
+		if (flag==1){
+			fpout << newdist << " " << LeastTime << endl;
+		}
 	}
 
 	fpout.close();
