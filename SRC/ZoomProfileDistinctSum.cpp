@@ -166,7 +166,6 @@ int main(int argc, char **argv){
 		shift_array_f(rawdata,MAXL,
 		              (int)((rawbeg-P[TimeMin]-NewPhaseTime)/P[delta]));
 
-
 		// If this new read-in trace stays at this bin.
 		if ( BinCenter-P[BinSize]/2<=NewGcarc &&
 			 NewGcarc<BinCenter+P[BinSize]/2  ){

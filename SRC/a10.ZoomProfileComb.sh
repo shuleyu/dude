@@ -389,7 +389,7 @@ EOF
 # 		DepthPhase=""
 
 		case "${TravelCurve}" in
-			ALL )
+			NO | ALL )
 				ls ${a05DIR}/${EQ}_*_${DepthPhase}*.gmt > ${EQ}_PhaseArrivalFiles.txt
 				;;
 			* )
@@ -505,7 +505,7 @@ EOF
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-			XLABEL="Time after earthquake origin time (sec)"
+			XLABEL="Time after ${Model_TT} ${Phase}-wave time (sec)"
 
 			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
 			[ `echo "(${DISTMAX}-${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
@@ -585,7 +585,7 @@ EOF
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-			XLABEL="Time after earthquake origin time (sec)"
+			XLABEL="Time after ${Model_TT} ${Phase}-wave time (sec)"
 
 			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
 			[ `echo "(${DISTMAX}-${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"

@@ -447,6 +447,7 @@ EOF
 			[ `echo "(${XMAX})>=50" | bc` -eq 1 ] && XAXIS="a20f10"
 			[ `echo "(${XMAX})<50" | bc` -eq 1 ] && XAXIS="a10f2"
 			[ `echo "(${XMAX})<10" | bc` -eq 1 ] && XAXIS="a5f1"
+			[ `echo "(${XMAX})<5" | bc` -eq 1 ] && XAXIS="a1f1"
 
 			# plot histogram (by hand)
 			psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE} << EOF
@@ -578,6 +579,7 @@ EOF
 			[ `echo "(${XMAX})>=50" | bc` -eq 1 ] && XAXIS="a20f10"
 			[ `echo "(${XMAX})<50" | bc` -eq 1 ] && XAXIS="a10f2"
 			[ `echo "(${XMAX})<10" | bc` -eq 1 ] && XAXIS="a5f1"
+			[ `echo "(${XMAX})<5" | bc` -eq 1 ] && XAXIS="a1f1"
 
 			# plot histogram (by hand)
 			gmt psxy ${PROJ} ${REG} ${XP} -O -K >> ${PLOTFILE} << EOF

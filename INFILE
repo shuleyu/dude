@@ -14,9 +14,9 @@
 <CCODEDIR>                   /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                 /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                    /home/shule/PROJ/t041.DATA/NorthAmerican
+<DATADIR>                    /NAS/shule/PROJ/t053.ULVZ_1D.ULVZ_Flat
 <CMTFILE>                    /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
-<OUTDIR>                     /home/shule/PROJ/t001.ScS_CA
+<OUTDIR>                     /home/shule/PROJ/t001.ULVZ_1D_REFL
 
 <GMTVERSION>                 5
 							 -- select GMT verion: 4 or 5.
@@ -263,12 +263,12 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 <ZPC_BEGIN>
 
 0.5    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
-0.5    ScS    T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
 0.5    S      T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
-0.5    ScS    T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
 0.5    S      T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
-0.5    ScS    T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
 0.5    S      T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
+0.5    ScS    T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
+0.5    ScS    T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
+0.5    ScS    T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
 0.5    ScS    T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
 
 <ZPC_END>
@@ -292,7 +292,7 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 <ZPDS_BEGIN>
 
-1    0.5    S    T    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portraitt
+1    0.5    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
 
 <ZPDS_END>
 
@@ -310,63 +310,6 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 # EQs.
 <EQs_BEGIN>
 
-200608250044
-200609220232
-200610232100
-200611130126
-200705251747
-200707120523
-200707211327
-200707211534
-200711160313
-200711180540
-200802161445
-200803242039
-200807080913
-200808262100
-200809031125
-200810122055
-200901170257
-200907120612
-200907141838
-200909050358
-200911130727
-200911141944
-201001252252
-201001280804
-201003042239
-201005190415
-201005241618
-201007120011
-201009130715
-201010221931
-201101010956
-201103061231
-201104170158
-201106080306
-201106201636
-201108150253
-201109021347
-201111221848
-201205141000
-201205280507
-201206020752
-201206071603
-201208020938
-201210080150
-201211101457
-201211221307
-201302221201
-201308230834
-201408242321
-201409241116
-201410261045
-201502021049
-201502111857
-201503230451
-201506101352
-201509281528
-201511260545
-201601140325
+201500000001
 
 <EQs_END>
