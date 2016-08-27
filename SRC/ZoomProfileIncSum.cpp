@@ -117,28 +117,22 @@ int main(int argc, char **argv){
 		cout << "MAXL not long enough in BigProfileDistinctSum.out ..." << endl;
 		return 1;
 	}
-
 	float *AuxSum=new float [TotalLength];
-	for (int index=0;index<TotalLength;index++){
-		AuxSum[index]=0;
-	}
 
 
 	ifstream fpin;
-	ofstream fpout;
 	string sacfile;
 	float rawdata[MAXL],rawbeg,rawdel;
-	int rawnpts,maxl=MAXL,nerr,BinCount=0,TotalValid=0;
-	double Amplitude,MaxAmplitude=0,BinCenter=0,MaxBin=0,NewGcarc,NewPhaseTime;
+	int rawnpts,maxl=MAXL,nerr,TotalValid=0;
+	double Amplitude;
 	char sacfile_char[300];
 	Record tmp_record;
 	vector<Record> Data;
 
 	// read from sac file list.
 	fpin.open(PS[infile].c_str());
-	fpout.open(PS[bincount].c_str());
 
-	while (fpin >> sacfile >> NewGcarc >> NewPhaseTime){
+	while (fpin >> sacfile >> tmp_record.gcarc >> tmp_record.phasetime){
 
 		strcpy(sacfile_char,sacfile.c_str());
 		rsac1(sacfile_char,rawdata,&rawnpts,&rawbeg,&rawdel,&maxl,&nerr,
@@ -146,13 +140,16 @@ int main(int argc, char **argv){
 
 		Amplitude=amplitude(rawdata,rawnpts);
 
-
 		// Check data amplitude.
 		if (std::isnan(Amplitude) || Amplitude<=1e-20 ){
 			cout << "SAC File: " << sacfile
 			<< " has small amplitude, skipping ... " << endl;
 			continue;
 		}
+
+		tmp_record.BeginTime=rawbeg;
+		tmp_record.NPTS=rawnpts;
+		tmp_record.Delta=rawdel;
 
 		TotalValid++;
 
@@ -164,26 +161,68 @@ int main(int argc, char **argv){
 
 		// Shift array to the correct time.
 		shift_array_f(rawdata,MAXL,
-		              (int)((rawbeg-P[TimeMin]-NewPhaseTime)/P[delta]));
+		              (int)((rawbeg-P[TimeMin]-tmp_record.phasetime)/P[delta]));
 
-		// If this new read-in trace stays at this bin.
-		if ( BinCenter-P[BinSize]/2<=NewGcarc &&
-			 NewGcarc<BinCenter+P[BinSize]/2  ){
+		// Record this trace.
+		tmp_record.data=new float [TotalLength];
 
-
-			// do summation-average.
-			for (int index=0;index<TotalLength;index++){
-				AuxSum[index]=(AuxSum[index]*BinCount+rawdata[index])
-				              /(BinCount+1);
-			}
-
-			BinCount++;
-			continue;
+		for (int index=0;index<TotalLength;index++){
+			tmp_record.data[index]=rawdata[index];
 		}
 
-		// If this new read-in trace belongs to next bin:
-		// Record current stack.
-		// Initialize the loop.
+		Data.push_back(tmp_record);
+
+	}
+
+	fpin.close();
+
+
+	// Output how many valid data. (after small amplitude selection)
+	ofstream fpout;
+
+	fpout.open(PS[validnum].c_str());
+	fpout << TotalValid << endl;
+	fpout.close();
+
+
+	// For each bin, find the traces belong to this bin (count),
+	// do the stack, note down the maximum amplitude (if required),
+	// and push the stack trace into Data_Stack.
+	
+	vector<Record> Data_Stack;
+	int BinCount;
+	double MaxAmplitude=0,BinCenter,MaxBin=0;
+
+	fpout.open(PS[bincount].c_str());
+
+	for (BinCenter=0;BinCenter<=180;BinCenter+=P[BinInc]){
+
+		// Initialize the count and the stack.
+		BinCount=0;
+
+		for (int index=0;index<TotalLength;index++){
+			AuxSum[index]=0;
+		}
+
+	
+		// Loop through traces to see if they locate in this bin.
+		for (auto item:Data){
+
+			if ( BinCenter-P[BinSize]/2<=item.gcarc &&
+			     item.gcarc<BinCenter+P[BinSize]/2  ){
+
+				// Stack the new trace.
+				for (int index=0;index<TotalLength;index++){
+					AuxSum[index]=(AuxSum[index]*BinCount+rawdata[index])
+			                      /(BinCount+1);
+				}
+
+				BinCount++;
+			}
+		}
+
+		// If this bin is not empty, measure the amplitude of the stack,
+		// and push the stack to Data_Stack.
 
 		if (BinCount!=0){
 
@@ -214,65 +253,15 @@ int main(int argc, char **argv){
 			tmp_record.NPTS=TotalLength;
 			tmp_record.gcarc=BinCenter;
 
-			Data.push_back(tmp_record);
+			Data_Stack.push_back(tmp_record);
 
 
-			// Output count;
+			// Output Bin Trace count;
 			fpout << BinCenter << " " << BinCount << endl;
 
 		}
-
-		BinCount=1;
-
-		// Find next bin this new read-in trace belong to.
-		while (NewGcarc>BinCenter+P[BinSize]/2){
-			BinCenter+=P[BinInc];
-		}
-
-
-		// Clear/Intial the stack.
-		for (int index=0;index<TotalLength;index++){
-			AuxSum[index]=rawdata[index];
-		}
-
 	}
 
-
-	// Deal with the last bin.
-	// Normalize each trace; or noted down maximum amplitude and
-	// will do the normalize later.
-
-	Amplitude=amplitude(AuxSum,TotalLength);
-
-	if (PI[NormalizeFlag]==1){
-		normalize(AuxSum,TotalLength);
-		MaxAmplitude=1;
-	}
-	else{
-		if (MaxAmplitude<Amplitude){
-			MaxAmplitude=Amplitude;
-			MaxBin=BinCenter;
-		}
-	}
-
-	// record this summation.
-	tmp_record.data=new float [TotalLength];
-	for (int index=0;index<TotalLength;index++){
-		tmp_record.data[index]=AuxSum[index];
-	}
-
-	tmp_record.BeginTime=P[TimeMin];
-	tmp_record.Delta=P[delta];
-	tmp_record.NPTS=TotalLength;
-	tmp_record.gcarc=BinCenter;
-
-	Data.push_back(tmp_record);
-
-
-	// Output count;
-	fpout << BinCenter << " " << BinCount << endl;
-
-	fpin.close();
 	fpout.close();
 
 	if (PI[NormalizeFlag]!=1){
@@ -280,17 +269,11 @@ int main(int argc, char **argv){
 		     << " deg" << endl;
 	}
 
-	// Count how many valid data. (after small amplitude selection)
-
-	fpout.open(PS[validnum].c_str());
-	fpout << TotalValid << endl;
-	fpout.close();
-
 
 	// output the big profile ascii file.
 	fpout.open(PS[plotfile].c_str());
 
-	for (auto item: Data){
+	for (auto item: Data_Stack){
 		double Time=item.BeginTime;
 		for (size_t index=0;index<item.NPTS;index++){
 
@@ -308,6 +291,9 @@ int main(int argc, char **argv){
 
 	// Free spaces.
 	for (auto item: Data){
+		delete[] item.data;
+	}
+	for (auto item: Data_Stack){
 		delete[] item.data;
 	}
 	delete [] AuxSum;

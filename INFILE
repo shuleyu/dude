@@ -25,6 +25,13 @@
 #                               ! parameters !
 # ==============================================================================
 
+# Run.sh ----
+
+<FreshPlot>                  1
+<CleanSAC>                   1
+
+# ----
+
 # a01. =========================================================================
 <UseBH>                      1
 
@@ -263,8 +270,8 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 <ZPC_BEGIN>
 
 0.5    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
-0.5    S      T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
 0.5    S      T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
+0.5    S      T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
 0.5    S      T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
 0.5    ScS    T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
 0.5    ScS    T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
@@ -288,11 +295,18 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 # Note: Dependent on a01,a05(for traveltime plot).
 
 <Delta_ZPDS>                   0.05
-<Amplitude_ZPDS>               0.375
+<Amplitude_ZPDS>               0.2
 
 <ZPDS_BEGIN>
 
-1    0.5    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
+1    1    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
+1    1    S      T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
+1    1    S      T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
+1    1    S      T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
+1    1    ScS    T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
+1    1    ScS    T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
+1    1    ScS    T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
+1    1    ScS    T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
 
 <ZPDS_END>
 
@@ -311,5 +325,22 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 <EQs_BEGIN>
 
 201500000001
+201500000002
+201500000003
+201500000004
+201500000005
+201500000006
+201500000007
+201500000008
+201500000009
+201500000010
+201500000011
+201500000012
+201500000013
+201500000014
+201500000015
+201500000016
+201500000017
+201500000018
 
 <EQs_END>

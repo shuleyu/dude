@@ -29,7 +29,7 @@ do
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
 	else
-		echo "    ==> Making ZoomProfileDistinctSum plot(s) of ${EQ}."
+		echo "    ==> Making ZoomProfileIncSum plot(s) of ${EQ}."
 	fi
 
 	# B. Pull information.
@@ -363,7 +363,7 @@ EOF
 
 		AmpScale=`echo "${Amplitude_ZPDS}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
 
-		${EXECDIR}/ZoomProfileDistinctSum.out 1 4 6 << EOF
+		${EXECDIR}/ZoomProfileIncSum.out 1 4 6 << EOF
 ${Normalize}
 ${EQ}_PlotList_Gcarc
 ${EQ}_PlotFile.txt
@@ -378,7 +378,7 @@ ${Delta_ZPDS}
 EOF
 		if [ $? -ne 0 ]
 		then
-			echo "    1=> ZoomProfileDistinctSum.out C++ code failed on ${EQ}, plot ${Num} ..."
+			echo "    1=> ZoomProfileIncSum.out C++ code failed on ${EQ}, plot ${Num} ..."
 			rm -f ${a11DIR}/${EQ}* ${PLOTFILE}
 			exit 1
 		fi

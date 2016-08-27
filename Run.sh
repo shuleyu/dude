@@ -91,12 +91,20 @@ a04DIR=${OUTDIR}/a04.Histogram
 a05DIR=${OUTDIR}/a05.MakeTravelTimeData
 a06DIR=${OUTDIR}/a06.BigProfile
 a07DIR=${OUTDIR}/a07.BigProfileComb
-a08DIR=${OUTDIR}/a08.BigProfileDistinctSum
+a08DIR=${OUTDIR}/a08.BigProfileIncSum
 a09DIR=${OUTDIR}/a09.ZoomProfile
 a10DIR=${OUTDIR}/a10.ZoomProfileComb
-a11DIR=${OUTDIR}/a11.ZoomProfileDistinctSum
+a11DIR=${OUTDIR}/a11.ZoomProfileIncSum
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
+
+if [ ${FreshPlot} -eq 1 ]
+then
+	for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
+	do
+		rm -f ${PLOTDIR}/${EQ}*
+	done
+fi
 
 #======================================================
 #            ! Test Software Dependencies !
@@ -260,5 +268,13 @@ EOF
 
 # Clean up.
 rm -f ${OUTDIR}/*_$$
+if [ ${CleanSAC} -eq 1 ]
+then
+
+	for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
+	do
+		find ${OUTDIR}/ -iname "${EQ}*sac" -exec rm -f '{}' \;
+	done
+fi
 
 exit 0
