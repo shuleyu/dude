@@ -160,8 +160,7 @@ int main(int argc, char **argv){
 
 
 		// Shift array to the correct time.
-		shift_array_f(rawdata,MAXL,
-		              (int)((rawbeg-P[TimeMin])/P[delta]));
+		shift_array_f(rawdata,MAXL,(int)((rawbeg-P[TimeMin])/P[delta]));
 
 		// Record this trace.
 		tmp_record.data=new float [TotalLength];
