@@ -24,7 +24,7 @@ do
 
 
 	# A. Check the exist of list file.
-	if ! [ -s ${a01DIR}/${EQ}_FileList ]
+	if ! [ -s "${a01DIR}/${EQ}_FileList" ]
 	then
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
@@ -53,7 +53,7 @@ do
 		Num=$((Num+1))
 
 		# Check phase file.
-		if ! [ -s `ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped` ]
+		if ! [ -s "`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped` 2>/dev/null" ]
 		then
 			echo "        ~=> Plot ${Num}: can't find Firsta Arrival file !"
 			continue
@@ -130,7 +130,7 @@ EOF
 		mv tmpfile_$$ ${EQ}_SelectedFiles
 
 
-		if ! [ -s ${EQ}_SelectedFiles ]
+		if ! [ -s "${EQ}_SelectedFiles" ]
 		then
 			echo "        ~=> No selected files for parameter line ${Num}..."
 			continue
@@ -200,7 +200,7 @@ EOF
 		rm -f tmpfile_$$
 
 		# c**.get (by interpolate) the first arrival for this phase.
-		if [ -s ${EQ}_List2 ]
+		if [ -s "${EQ}_List2" ]
 		then
 			awk '{print $7}' ${EQ}_List2 > ${EQ}_gcarc_$$
 

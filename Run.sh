@@ -95,6 +95,7 @@ a08DIR=${OUTDIR}/a08.BigProfileIncSum
 a09DIR=${OUTDIR}/a09.ZoomProfile
 a10DIR=${OUTDIR}/a10.ZoomProfileComb
 a11DIR=${OUTDIR}/a11.ZoomProfileIncSum
+a12DIR=${OUTDIR}/a12.MakeRadPatData
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 
@@ -267,7 +268,6 @@ End Date: `date`
 EOF
 
 # Clean up.
-rm -f ${OUTDIR}/*_$$
 if [ ${CleanSAC} -eq 1 ]
 then
 
@@ -276,5 +276,16 @@ then
 		find ${OUTDIR}/ -iname "${EQ}*sac" -exec rm -f '{}' \;
 	done
 fi
+
+if [ ${CleanPlotFile} -eq 1 ]
+then
+
+	for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
+	do
+		find ${OUTDIR}/ -iname "${EQ}*PlotFile*" -exec rm -f '{}' \;
+	done
+fi
+
+rm -f ${OUTDIR}/*_$$
 
 exit 0

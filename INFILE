@@ -3,23 +3,23 @@
 #                             ! DIRs and files !
 # ==============================================================================
 
-<FCOMP>                      f95
-<CCOMP>                      gcc
-<CPPCOMP>                    c++
-<CFLAG>                      -Wall
-<CPPFLAG>                    -std=c++14 -Wall
+<FCOMP>                       f95
+<CCOMP>                       gcc
+<CPPCOMP>                     c++
+<CFLAG>                       -Wall
+<CPPFLAG>                     -std=c++14 -Wall
 
-<SACDIR>                     /opt/sac
-<BASHCODEDIR>                /home/shule/Research/Fun.Bash.c001
-<CCODEDIR>                   /home/shule/Research/Fun.C.c002
-<CPPCODEDIR>                 /home/shule/Research/Fun.C++.c003
+<SACDIR>                      /opt/sac
+<BASHCODEDIR>                 /home/shule/Research/Fun.Bash.c001
+<CCODEDIR>                    /home/shule/Research/Fun.C.c002
+<CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                    /NAS/shule/PROJ/t053.ULVZ_1D.ULVZ_Flat
-<CMTFILE>                    /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
-<OUTDIR>                     /home/shule/PROJ/t001.ULVZ_1D_REFL
+<DATADIR>                     /NAS/shule/PROJ/t003.RTZ/20111122_20111122
+<CMTFILE>                     /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
+<OUTDIR>                      /home/shule/PROJ/t001.DUDE4
 
-<GMTVERSION>                 5
-							 -- select GMT verion: 4 or 5.
+<GMTVERSION>                  5
+							  -- select GMT verion: 4 or 5.
 
 # ==============================================================================
 #                               ! parameters !
@@ -27,13 +27,14 @@
 
 # Run.sh ----
 
-<FreshPlot>                  1
-<CleanSAC>                   1
+<FreshPlot>                   1
+<CleanSAC>                    1
+<CleanPlotFile>               1
 
 # ----
 
 # a01. =========================================================================
-<UseBH>                      1
+<UseBH>                       1
 
 #  UseBH:
 #    value choose from "1","0"
@@ -56,7 +57,7 @@
 # Note: Dependent on a01.
 # Note: see a pre-prepared phase list in .PhaseList.txt
 
-<Model_TT>                   prem
+<Model_TT>                    prem
 
 <PhaseList_BEGIN>
 
@@ -69,6 +70,7 @@ P PKP
 P PKKP
 P PKIKP
 P PKiKP
+P PKPPKP
 P pP
 P pPdiff
 
@@ -142,8 +144,8 @@ SH 4.5kmps
 # a06. =========================================================================
 # Note: Dependent on a01,a05(for traveltime plot).
 
-<Delta_BP>                   0.05
-<Amplitude_BP>               0.375
+<Delta_BP>                    0.05
+<Amplitude_BP>                0.375
 
 <BP_BEGIN>
 
@@ -182,7 +184,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 #                               -- "NO" means plot none travel-time curve.
 #                               -- "ALL" means plot all groups.)
 #    J. Choose one network. (choose from network names. for all data, use "AllSt")
-#    K. Plot orientation. (choose from "Landscape","Portraitt")
+#    K. Plot orientation. (choose from "Landscape","Portrait")
 #
 # a06. =========================================================================
 
@@ -214,8 +216,8 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 # a08. =========================================================================
 # Note: Dependent on a01,a05(for traveltime plot).
 
-<Delta_BPDS>                   0.05
-<Amplitude_BPDS>               0.375
+<Delta_BPDS>                  0.05
+<Amplitude_BPDS>              0.375
 
 <BPDS_BEGIN>
 
@@ -235,10 +237,10 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 
 # a09. =========================================================================
-# Note: Dependent on a01,a05(for traveltime plot).
+# Note: Dependent on a01,a05.
 
-<Delta_ZP>                   0.05
-<Amplitude_ZP>               0.375
+<Delta_ZP>                    0.05
+<Amplitude_ZP>                0.375
 
 <ZP_BEGIN>
 
@@ -262,7 +264,7 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 
 # a10. =========================================================================
-# Note: Dependent on a01,a05(for traveltime plot).
+# Note: Dependent on a01,a05.
 
 <Delta_ZPC>                   0.05
 <Amplitude_ZPC>               0.375
@@ -270,8 +272,8 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 <ZPC_BEGIN>
 
 0.5    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
-0.5    S      T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
 0.5    S      T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
+0.5    S      T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
 0.5    S      T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
 0.5    ScS    T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
 0.5    ScS    T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
@@ -292,10 +294,10 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 
 # a11. =========================================================================
-# Note: Dependent on a01,a05(for traveltime plot).
+# Note: Dependent on a01,a05.
 
-<Delta_ZPDS>                   0.05
-<Amplitude_ZPDS>               0.2
+<Delta_ZPDS>                  0.05
+<Amplitude_ZPDS>              0.2
 
 <ZPDS_BEGIN>
 
@@ -321,26 +323,42 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 
 
+
+
+# a12. =========================================================================
+# Note: Dependent on a01,a05.
+
+<ChosenPhase_BEGIN>
+
+P          P
+PcP        P
+PP         P
+PKiKP      P
+PKP        P
+PKPPKP     P
+S          SH
+SS         SH
+ScS        SH
+S          SV
+SKS        SV
+SKKS       SV
+
+<ChosenPhase_END>
+
+#
+#
+#
+#
+#
+#
+# a12. =========================================================================
+
+
+
+
 # EQs.
 <EQs_BEGIN>
 
-201500000001
-201500000002
-201500000003
-201500000004
-201500000005
-201500000006
-201500000007
-201500000008
-201500000009
-201500000010
-201500000011
-201500000012
-201500000013
-201500000014
-201500000015
-201500000016
-201500000017
-201500000018
+201111221848
 
 <EQs_END>

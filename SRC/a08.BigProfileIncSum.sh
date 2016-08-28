@@ -24,7 +24,7 @@ do
 
 
 	# A. Check the exist of list file.
-	if ! [ -s ${a01DIR}/${EQ}_FileList ]
+	if ! [ -s "${a01DIR}/${EQ}_FileList" ]
 	then
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
@@ -96,7 +96,7 @@ do
 		| awk -v N=${NetWork} '{if (N=="AllSt") print $1; else if ($2==N) print $1}' \
 		> ${EQ}_SelectedFiles
 
-		if ! [ -s ${EQ}_SelectedFiles ]
+		if ! [ -s "${EQ}_SelectedFiles" ]
 		then
 			echo "        ~=> No selected files for parameter line ${Num}..."
 			continue

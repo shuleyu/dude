@@ -24,7 +24,7 @@ do
 	trap "rm -f ${a02DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 	# A. Check the existance of list file.
-	if ! [ -s ${a01DIR}/${EQ}_FileList ]
+	if ! [ -s "${a01DIR}/${EQ}_FileList" ]
 	then
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
