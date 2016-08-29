@@ -83,13 +83,13 @@ do
 		case "${COMP}" in 
 
 			P ) 
-				COMP=1
+				COMP1=1
 				;;
 			SV )
-				COMP=2
+				COMP1=2
 				;;
 			SH )
-				COMP=3
+				COMP1=3
 				;;
 			* )
 				echo "        !=> Wrong COMP input ! "
@@ -175,7 +175,7 @@ EOF
 
 		# Convert ray parameter to takeoff angle and radpat.
 		${EXECDIR}/MakeRadPat.out 1 2 4 << EOF
-${COMP}
+${COMP1}
 tmpfile_in_$$
 tmpfile_rayp_takeoff_radpat_$$
 ${EVDP}
@@ -186,12 +186,10 @@ EOF
 
 		# Prepare the final file.
 
-		echo "<NETWK> <STNM> <RayP> <TakeOff> <RadPat>" > ${EQ}_${Phase}_RayP.txt
+		echo "<NETWK> <STNM> <Gcarc> <Az> <RayP> <TakeOff> <RadPat>" > ${EQ}_${Phase}_${COMP}_RadPat.txt
+		paste ${EQ}_netwk_stnm_gcarc_az tmpfile_rayp_takeoff_radpat_$$ >> ${EQ}_${Phase}_${COMP}_RadPat.txt
 
-		awk '{print $1,$2}' ${EQ}_netwk_stnm_gcarc_az > tmpfile_$$
-		paste tmpfile_$$ tmpfile_rayp_takeoff_radpat_$$ >> ${EQ}_${Phase}_RayP.txt
-
-		rm -f tmpfile*$$
+		rm -f tmpfile*$$ ${EQ}_netwk_stnm_gcarc_az
 
 	done < ${OUTDIR}/tmpfile_ChosenPhase_${RunNumber}
 

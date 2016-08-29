@@ -45,16 +45,16 @@
 # a01. =========================================================================
 
 # a02.
-# Note: Dependent on a01.
+# Note: Need results from a01.
 #
 # a03.
-# Note: Dependent on a01.
+# Note: Need results from a01.
 #
 # a04.
-# Note: Dependent on a01.
+# Note: Need results from a01.
 
 # a05. =========================================================================
-# Note: Dependent on a01.
+# Note: Need results from a01.
 # Note: see a pre-prepared phase list in .PhaseList.txt
 
 <Model_TT>                    prem
@@ -142,7 +142,7 @@ SH 4.5kmps
 # a05. =========================================================================
 
 # a06. =========================================================================
-# Note: Dependent on a01,a05(for traveltime plot).
+# Note: Need results from a01,a05.
 
 <Delta_BP>                    0.05
 <Amplitude_BP>                0.375
@@ -160,7 +160,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 #    choose a plot size for maximum amplitude ("1"). (in inch.)
 #
 #  BP_BEGIN_END:
-#    each line will result in one plot.
+#    each line will results in one plot.
 #    sections within each line is documented as followed:
 #
 #    A. Component. (choose from "T","R","Z","E","N", will do rotation on components in scripts)
@@ -191,7 +191,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 
 # a07. =========================================================================
-# Note: Dependent on a01,a05(for traveltime plot).
+# Note: Need results from a01,a05.
 
 <Delta_BPC>                   0.05
 <Amplitude_BPC>               0.375
@@ -214,7 +214,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 
 # a08. =========================================================================
-# Note: Dependent on a01,a05(for traveltime plot).
+# Note: Need results from a01,a05.
 
 <Delta_BPDS>                  0.05
 <Amplitude_BPDS>              0.375
@@ -237,7 +237,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 
 # a09. =========================================================================
-# Note: Dependent on a01,a05.
+# Note: Need results from a01,a05.
 
 <Delta_ZP>                    0.05
 <Amplitude_ZP>                0.375
@@ -264,7 +264,7 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 
 # a10. =========================================================================
-# Note: Dependent on a01,a05.
+# Note: Need results from a01,a05.
 
 <Delta_ZPC>                   0.05
 <Amplitude_ZPC>               0.375
@@ -294,7 +294,7 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 
 # a11. =========================================================================
-# Note: Dependent on a01,a05.
+# Note: Need results from a01,a05.
 
 <Delta_ZPDS>                  0.05
 <Amplitude_ZPDS>              0.2
@@ -326,7 +326,8 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 
 # a12. =========================================================================
-# Note: Dependent on a01,a05.
+# Note: Need results from a01,a05.
+#       Because we use the lower hemisphere formula, no depth phase here.
 
 <ChosenPhase_BEGIN>
 
@@ -346,15 +347,45 @@ SKKS       SV
 <ChosenPhase_END>
 
 #
+#  ChosenPhase_BEGIN_END:
+#    each line will results in one file named ${EQ}_${Phase}_${COMP}_RadPat.txt:
 #
-#
-#
-#
+#    A. Phase Name.
+#    B. Choose which component this phase is received. (from "P","SV","SH")
 #
 # a12. =========================================================================
 
 
+# a13. =========================================================================
+# Note: Need results form a01,a12.
 
+<RP_BEGIN>
+
+P          P
+PcP        P
+PP         P
+PKiKP      P
+PKP        P
+PKPPKP     P
+S          SH
+SS         SH
+ScS        SH
+S          SV
+SKS        SV
+SKKS       SV
+
+<RP_END>
+
+
+#
+#  RP_BEGIN_END:
+#    each line will results in one plot showing stations az-takeoff distribution
+#    on the radiation pattern lower hemisphere.
+#
+#    A. Phase Name.
+#    B. Choose which component this phase is received. (from "P","SV","SH")
+#
+# a13. =========================================================================
 
 # EQs.
 <EQs_BEGIN>

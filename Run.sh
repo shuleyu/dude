@@ -96,6 +96,7 @@ a09DIR=${OUTDIR}/a09.ZoomProfile
 a10DIR=${OUTDIR}/a10.ZoomProfileComb
 a11DIR=${OUTDIR}/a11.ZoomProfileIncSum
 a12DIR=${OUTDIR}/a12.MakeRadPatData
+a13DIR=${OUTDIR}/a13.PlotRadPat
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 
