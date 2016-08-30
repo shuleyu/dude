@@ -80,28 +80,28 @@ do
 
 	# b. calculate grid value for P,SV,SH.
 
-# 	${EXECDIR}/MakeGridRadPat.out 0 1 4 << EOF
-# ${EQ}_az_takeoff_P_SV_SH.txt
-# ${EVDP}
-# ${Strike}
-# ${Dip}
-# ${Rake}
-# EOF
-# 
-# 	awk '{print $1,$2,$3}' ${EQ}_az_takeoff_P_SV_SH.txt > P.ascii
-# 	awk '{print $1,$2,$4}' ${EQ}_az_takeoff_P_SV_SH.txt > SV.ascii
-# 	awk '{print $1,$2,$5}' ${EQ}_az_takeoff_P_SV_SH.txt > SH.ascii
-# 
-# 	if [ ${GMTVERSION} -eq 4 ]
-# 	then
-# 		xyz2grd P.ascii -GP.grd -I0.05 -R0/360/0/90
-# 		xyz2grd SV.ascii -GSV.grd -I0.05 -R0/360/0/90
-# 		xyz2grd SH.ascii -GSH.grd -I0.05 -R0/360/0/90
-# 	else
-# 		gmt xyz2grd P.ascii -GP.grd -I0.05 -R0/360/0/90
-# 		gmt xyz2grd SV.ascii -GSV.grd -I0.05 -R0/360/0/90
-# 		gmt xyz2grd SH.ascii -GSH.grd -I0.05 -R0/360/0/90
-# 	fi
+	${EXECDIR}/MakeGridRadPat.out 0 1 4 << EOF
+${EQ}_az_takeoff_P_SV_SH.txt
+${EVDP}
+${Strike}
+${Dip}
+${Rake}
+EOF
+
+	awk '{print $1,$2,$3}' ${EQ}_az_takeoff_P_SV_SH.txt > P.ascii
+	awk '{print $1,$2,$4}' ${EQ}_az_takeoff_P_SV_SH.txt > SV.ascii
+	awk '{print $1,$2,$5}' ${EQ}_az_takeoff_P_SV_SH.txt > SH.ascii
+
+	if [ ${GMTVERSION} -eq 4 ]
+	then
+		xyz2grd P.ascii -GP.grd -I0.05 -R0/360/0/90
+		xyz2grd SV.ascii -GSV.grd -I0.05 -R0/360/0/90
+		xyz2grd SH.ascii -GSH.grd -I0.05 -R0/360/0/90
+	else
+		gmt xyz2grd P.ascii -GP.grd -I0.05 -R0/360/0/90
+		gmt xyz2grd SV.ascii -GSV.grd -I0.05 -R0/360/0/90
+		gmt xyz2grd SH.ascii -GSH.grd -I0.05 -R0/360/0/90
+	fi
 
 	rm -f ${EQ}_az_takeoff_P_SV_SH.txt P.ascii SV.ascii SH.ascii
 
@@ -340,7 +340,7 @@ EOF
 
 	done # End of plot loop.
 
-# 	rm -f P.grd SV.grd SH.grd
+	rm -f P.grd SV.grd SH.grd
 
 done # End of EQ loop.
 

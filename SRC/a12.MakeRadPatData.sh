@@ -71,6 +71,10 @@ do
 	Dip=`echo "${CMTInfo}" | awk '{print $4}'`
 	Rake=`echo "${CMTInfo}" | awk '{print $5}'`
 
+	echo "<Strike1> <Dip1> <Rake1> <Strike2> <Dip2> <Rake2>" > ${EQ}_CMT.txt
+	echo "${CMTInfo}" | awk '{print $3,$4,$5,$6,$7,$8}' >> ${EQ}_CMT.txt
+
+
 	rm -f tmpfile_$$
 
 
@@ -80,9 +84,9 @@ do
 	while read Phase COMP
 	do
 
-		case "${COMP}" in 
+		case "${COMP}" in
 
-			P ) 
+			P )
 				COMP1=1
 				;;
 			SV )

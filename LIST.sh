@@ -12,7 +12,7 @@
 # ${SRCDIR}/a09.ZoomProfile.sh
 # ${SRCDIR}/a10.ZoomProfileComb.sh
 # ${SRCDIR}/a11.ZoomProfileIncSum.sh
-# ${SRCDIR}/a12.MakeRadPatData.sh
+${SRCDIR}/a12.MakeRadPatData.sh
 ${SRCDIR}/a13.PlotRadPat.sh
 # ${SRCDIR}/a14.MakeSNRData.sh
 # ${SRCDIR}/a50.MakePDF.sh

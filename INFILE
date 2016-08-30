@@ -15,7 +15,6 @@
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
 <DATADIR>                     /NAS/shule/PROJ/t003.RTZ/20111122_20111122
-<CMTFILE>                     /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
 <OUTDIR>                      /home/shule/PROJ/t001.DUDE4
 
 <GMTVERSION>                  5
@@ -329,6 +328,8 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 # Note: Need results from a01,a05.
 #       Because we use the lower hemisphere formula, no depth phase here.
 
+<CMTFILE>                     /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
+
 <ChosenPhase_BEGIN>
 
 P          P
@@ -346,6 +347,11 @@ SKKS       SV
 
 <ChosenPhase_END>
 
+#  CMTFILE:
+#    This file is the CMT search result saved from http://www.globalcmt.org/CMTsearch.html
+#    using "GMT psvelomeca input". Therefore strike/dip/rake will occur on column 3/4/5
+#    Alternatively, this can be left blank, the program will try to fetch each
+#    CMT info from this website automatically.
 #
 #  ChosenPhase_BEGIN_END:
 #    each line will results in one file named ${EQ}_${Phase}_${COMP}_RadPat.txt:
@@ -376,7 +382,6 @@ SKKS       SV
 
 <RP_END>
 
-
 #
 #  RP_BEGIN_END:
 #    each line will results in one plot showing stations az-takeoff distribution
@@ -386,6 +391,10 @@ SKKS       SV
 #    B. Choose which component this phase is received. (from "P","SV","SH")
 #
 # a13. =========================================================================
+
+
+# a14. 
+# Note: Need results form a01.
 
 # EQs.
 <EQs_BEGIN>
