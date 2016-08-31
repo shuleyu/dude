@@ -57,7 +57,11 @@ EOF
 	trap "rm -f ${a01DIR}/${EQ}_FileList_Info ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 	echo "<FileName> <STNM> <NETWK> <OMarker> <BeginTime> <EndTime> <COMP> <Gcarc> <Az> <BAz> <STLO> <STLA>" > ${a01DIR}/${EQ}_FileList_Info
-	saclst kstnm knetwk o b npts delta kcmpnm gcarc az baz stlo stla f `cat ${a01DIR}/${EQ}_FileList` \
+
+	# The ridiculous repeating kcmpnm here is needed
+	# because sometimes two numveric outputs of saclst has no white seperation characters between them.
+	saclst kstnm knetwk o kcmpnm b kcmpnm npts kcmpnm delta kcmpnm gcarc kcmpnm az kcmpnm baz kcmpnm stlo kcmpnm stla f `cat ${a01DIR}/${EQ}_FileList` \
+	| awk '{$5="";$7="";$9="";$13="";$15="";$17="";$19=""; print $0}' \
 	| awk '{$6=$5+$6*$7;$7=""; print $0}' >> ${a01DIR}/${EQ}_FileList_Info
 
 

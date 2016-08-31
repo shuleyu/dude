@@ -260,6 +260,7 @@ EOF
 		[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
 		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C | awk -v D=${Amplitude_BPC} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
 		read DISTMIN DISTMAX < tmpfile_$$
+
         if [ `echo "${DISTMIN}==${DISTMAX}"|bc` -eq 1 ]
         then
             DISTMIN=`echo "${DISTMIN}" | awk '{print $1-1}'`
@@ -267,11 +268,11 @@ EOF
         fi
 		rm -f tmpfile_$$
 
-
 		# Decide the amplitude scale (in deg),
 		# in this c++ code, sac files are converted into a big ascii file.
 
-		AmpScale=`echo "${Amplitude_BPC}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
+
+		AmpScale=`echo "${Amplitude_BPC}/${PlotHeight}*(${DISTMAX}- ${DISTMIN})" | bc -l`
 
 		${EXECDIR}/BigProfileComb.out 1 3 2 << EOF
 ${Normalize}
@@ -281,9 +282,10 @@ ${EQ}_ValidTraceNum.txt
 ${AmpScale}
 ${PlotGap}
 EOF
+
 		if [ $? -ne 0 ]
 		then
-			echo "    !=> BigProfile.out C++ code failed on ${EQ}, plot ${Num} ..."
+			echo "    !=> BigProfileComb.out C++ code failed on ${EQ}, plot ${Num} ..."
 			rm -f ${a07DIR}/${EQ}* ${PLOTFILE}
 			exit 1
 		fi
@@ -393,9 +395,9 @@ EOF
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
 			XLABEL="Time after earthquake origin time (sec)"
 
-			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
-			[ `echo "(${DISTMAX}-${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
-			[ `echo "(${DISTMAX}-${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
+			[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
 			YLABEL="Distance (deg)"
 
 			[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"
@@ -473,9 +475,9 @@ EOF
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
 			XLABEL="Time after earthquake origin time (sec)"
 
-			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
-			[ `echo "(${DISTMAX}-${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
-			[ `echo "(${DISTMAX}-${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
+			[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
 			YLABEL="Distance (deg)"
 
 			[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # ====================================================================
-# This script make profile plot of data.
+# This script plot phases piercing positions on according lower hemisphere
+# radiation patten.
 #
 # Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
@@ -130,7 +131,7 @@ EOF
 			RadPatFile="${a12DIR}/${EQ}_${Phase}_${COMP}_RadPat.txt"
 			if ! [ -s "${RadPatFile}" ]
 			then
-				echo "    ~=> ${EQ}, phase ${Phase} has 0 stations ..."
+				echo "        ~=> ${EQ}, phase ${Phase} has 0 stations ..."
 				continue
 			fi
 			NSTA=`wc -l < ${RadPatFile}`

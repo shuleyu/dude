@@ -108,36 +108,29 @@ int main(int argc, char **argv){
 
 	fpin.close();
 
-
-	int NPTS_gcarc=filenr(PS[gcarcfile].c_str());
-	double *gcarc=new double [NPTS_gcarc];
-
-
-	fpin.open(PS[gcarcfile].c_str());
-	for (int index=0;index<NPTS_gcarc;index++){
-		fpin >> gcarc[index];
-	}
-
-	fpin.close();
-
-	// Interpolate.
+	// LinearFit.
 	
-	double *Arrival=new double [NPTS_gcarc];
+	double slope,intercept;
+	linear_fitting(Gcarc,Time,NPTS,&slope,&intercept);
 
-	wiginterpd(Gcarc,Time,NPTS,gcarc,Arrival,NPTS_gcarc,1);
 
 	// Output.
 	ofstream fpout;
+	int NPTS_gcarc=filenr(PS[gcarcfile].c_str());
+	double gcarc;
+
+	fpin.open(PS[gcarcfile].c_str());
 	fpout.open(PS[outfile].c_str());
 	for (int index=0;index<NPTS_gcarc;index++){
-		fpout << Arrival[index] << endl;
+		fpin >> gcarc;
+		fpout << gcarc << " " << slope*gcarc+intercept << endl;
 	}
+
+	fpin.close();
 	fpout.close();
 	
 	delete [] Gcarc;
 	delete [] Time;
-	delete [] gcarc;
-	delete [] Arrival;
 
     return 0;
 }

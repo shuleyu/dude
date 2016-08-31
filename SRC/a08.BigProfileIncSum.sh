@@ -273,7 +273,7 @@ EOF
 		# Decide the amplitude scale (in deg),
 		# in this c++ code, sac files are converted into a big ascii file.
 
-		AmpScale=`echo "${Amplitude_BPDS}/${PlotHeight}*(${DISTMAX}-${DISTMIN})" | bc -l`
+		AmpScale=`echo "${Amplitude_BPDS}/${PlotHeight}*(${DISTMAX}- ${DISTMIN})" | bc -l`
 
 		${EXECDIR}/BigProfileIncSum.out 1 4 6 << EOF
 ${Normalize}
@@ -400,9 +400,9 @@ EOF
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
 			XLABEL="Time after earthquake origin time (sec)"
 
-			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
-			[ `echo "(${DISTMAX}-${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
-			[ `echo "(${DISTMAX}-${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
+			[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
 			YLABEL="Distance (deg)"
 
 			[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"
@@ -530,9 +530,9 @@ EOF
 			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
 			XLABEL="Time after earthquake origin time (sec)"
 
-			[ `echo "(${DISTMAX}-${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
-			[ `echo "(${DISTMAX}-${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
-			[ `echo "(${DISTMAX}-${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
+			[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
+			[ `echo "(${DISTMAX}- ${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
 			YLABEL="Distance (deg)"
 
 			[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"

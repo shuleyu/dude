@@ -14,7 +14,7 @@
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                     /NAS/shule/PROJ/t003.RTZ/20111122_20111122
+<DATADIR>                     /NAS/soduser/Merge.Mw6.50km
 <OUTDIR>                      /home/shule/PROJ/t001.DUDE4
 
 <GMTVERSION>                  5
@@ -27,7 +27,7 @@
 # Run.sh ----
 
 <FreshPlot>                   1
-<CleanSAC>                    1
+<CleanSAC>                    0
 <CleanPlotFile>               1
 
 # ----
@@ -148,7 +148,7 @@ SH 4.5kmps
 
 <BP_BEGIN>
 
-T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portraitt
+T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BP_END>
 
@@ -197,7 +197,9 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPC_BEGIN>
 
-0.5    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portraitt
+0.5    R    0    180    0    1000    0.01    0    Global    NO    AllSt    Portraitt
+0.5    T    0    180    0    1000    0.01    0    Global    NO    AllSt    Portraitt
+0.5    Z    0    180    0    1000    0.01    0    Global    NO    AllSt    Portraitt
 
 <BPC_END>
 
@@ -220,7 +222,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPDS_BEGIN>
 
-1    0.5    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portraitt
+1    0.5    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPDS_END>
 
@@ -243,8 +245,8 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <ZP_BEGIN>
 
-S    T    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portraitt
-S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portraitt
+S    T    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portrait
+S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Portrait
 
 <ZP_END>
 
@@ -270,14 +272,9 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 <ZPC_BEGIN>
 
-0.5    S      T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
-0.5    S      T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
-0.5    S      T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
-0.5    S      T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
-0.5    ScS    T    40    90    -200    400    0.03    0.3    Global    NO    AllSt    Portrait
-0.5    ScS    T    40    90    -200    400    0.03    0.2    Global    NO    AllSt    Portrait
-0.5    ScS    T    40    90    -200    400    0.03    0.15   Global    NO    AllSt    Portrait
-0.5    ScS    T    40    90    -200    400    0.03    0.1    Global    NO    AllSt    Portrait
+0.5    S      R    0    180    -500    400    0.01    0    Global    NO    AllSt    Portraitt
+0.5    S      T    0    180    -500    400    0.01    0    Global    NO    AllSt    Portraitt
+0.5    P      Z    0    180    -300    400    0.01    0    Global    NO    AllSt    Portraitt
 
 <ZPC_END>
 
@@ -393,12 +390,34 @@ SKKS       SV
 # a13. =========================================================================
 
 
-# a14. 
-# Note: Need results form a01.
+
+# a14.
+# Note: Need results form a01,a05.
+#
+# Measure SNR on R,T,Z component.
+# Tp,Ts represent P,Pdiff arrivals and S,Sdiff arrivals.
+# Energy is measured on velocity: take the envelope of the waveform, then
+# take the area under the curve. Then the width of time window is divided.
+#
+# Time windows are:
+#   Z comp noise  == Tp(prem)-3 min   to  Tp(prem)-1 min
+#   Z comp signal == Tp(prem)-30 sec  to  Tp(prem)+30 sec
+#
+#   R comp noise  == Tp(prem)-3 min   to  Tp(prem)-1 min
+#   R comp signal == Ts(prem)-30 sec  to  Ts(prem)+30 sec
+#
+#   T comp noise  == Tp(prem)-3 min   to  Tp(prem)-1 min
+#   T comp signal == Ts(prem)-30 sec  to  Ts(prem)+30 sec
+#
+# Therefore only data completely covered the time window are used.
+#
+# Output file: ${EQ}_SNR.txt
+# <NETWK> <STNM> <SNR_R> <SNR_T> <SNR_Z>
+#
 
 # EQs.
 <EQs_BEGIN>
 
-201111221848
+201104071311
 
 <EQs_END>
