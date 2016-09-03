@@ -427,7 +427,7 @@ SKKS       SV
 # Note: Need results form a01.
 #
 # a22.
-# Note: Need results form a01.
+# Note: Need results form a01,a05(to select stations have ScS phases).
 
 # EQs.
 <EQs_BEGIN>

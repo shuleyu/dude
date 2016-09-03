@@ -15,8 +15,8 @@
 # ${SRCDIR}/a12.MakeRadPatData.sh
 # ${SRCDIR}/a13.PlotRadPat.sh
 # ${SRCDIR}/a14.MakeSNRData.sh
-${SRCDIR}/a20.MapTA.sh
-# ${SRCDIR}/a22.MapScSBounce.sh
+# ${SRCDIR}/a20.MapTA.sh
+${SRCDIR}/a22.MapScSBounce.sh
 
 # ${SRCDIR}/a50.MakePDF.sh
 

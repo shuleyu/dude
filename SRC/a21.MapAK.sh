@@ -9,8 +9,8 @@
 
 echo ""
 echo "--> `basename $0` is running. `date`"
-mkdir -p ${a20DIR}
-cd ${a20DIR}
+mkdir -p ${a21DIR}
+cd ${a21DIR}
 
 
 # ==================================================
@@ -22,7 +22,7 @@ do
 	PLOTFILE="${PLOTDIR}/${EQ}.`basename ${0%.sh}`.ps"
 
 	# Ctrl+C action.
-	trap "rm -f ${a20DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${a21DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 	# A. Check the exist of list file.
 	if ! [ -s "${a01DIR}/${EQ}_FileList" ]
