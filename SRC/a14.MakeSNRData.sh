@@ -200,8 +200,9 @@ EOF
 			saclst kstnm knetwk f `cat tmpfile1_$$` | awk '{print $2"_"$3,$1}' > tmpfile1_net_st_file_$$
 			saclst kstnm knetwk f `cat tmpfile2_$$` | awk '{print $2"_"$3,$1}' > tmpfile2_net_st_file_$$
 
-			${BASHCODEDIR}/Findrow.sh tmpfile1_net_st_file_$$ tmpfile_keep_net_st_$$ > tmpfile1_$$
-			${BASHCODEDIR}/Findrow.sh tmpfile2_net_st_file_$$ tmpfile_keep_net_st_$$ > tmpfile2_$$
+			${BASHCODEDIR}/Findrow.sh tmpfile1_net_st_file_$$ tmpfile_keep_net_st_$$ | awk '{print $2}' > tmpfile1_$$
+			${BASHCODEDIR}/Findrow.sh tmpfile2_net_st_file_$$ tmpfile_keep_net_st_$$ | awk '{print $2}' > tmpfile2_$$
+
 
 			# Deal with rotation npts problem. (List2 has more info than List1)
 
@@ -214,6 +215,7 @@ EOF
 			[ ${COMP} = "R" ] && ReadIn="junk.R" || ReadIn="junk.T"
 
 		fi
+
 
 
 		# d.get (by interpolate) the cut time t1 ( Tp - 180 sec )
@@ -351,7 +353,7 @@ w ${EQ}.${netwk}.${stnm}.Signal.sac
 EOF
 			done < ${EQ}_List2
 
-			if [-s ${EQ}_SACMacro2.m ]
+			if [ -s "${EQ}_SACMacro2.m" ]
 			then
 
 				sac >/dev/null 2>&1 << EOF
@@ -381,7 +383,7 @@ EOF
 	done # Done component loop.
 
 	# I. Merge measurements on 3 component into 1 file.
-	OUTFILE=${a14DIR}/${EQ}_SNR.txt
+	OUTFILE=${a14DIR}/${EQ}_SNR.List
 	echo "<NETWK> <STNM> <SNR_R> <SNR_T> <SNR_Z>" > ${OUTFILE}
 
 	# a. stations which have all 3 SNR measurements.

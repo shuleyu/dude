@@ -98,6 +98,7 @@ a11DIR=${OUTDIR}/a11.ZoomProfileIncSum
 a12DIR=${OUTDIR}/a12.MakeRadPatData
 a13DIR=${OUTDIR}/a13.PlotRadPat
 a14DIR=${OUTDIR}/a14.MakeSNRData
+a20DIR=${OUTDIR}/a20.MapTA
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

@@ -14,7 +14,7 @@
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                     /NAS/soduser/Merge.Mw6.50km
+<DATADIR>                     /NAS/shule/PROJ/t003.NEZ/20111122_20111122
 <OUTDIR>                      /home/shule/PROJ/t001.DUDE4
 
 <GMTVERSION>                  5
@@ -27,7 +27,7 @@
 # Run.sh ----
 
 <FreshPlot>                   1
-<CleanSAC>                    0
+<CleanSAC>                    1
 <CleanPlotFile>               1
 
 # ----
@@ -415,9 +415,23 @@ SKKS       SV
 # <NETWK> <STNM> <SNR_R> <SNR_T> <SNR_Z>
 #
 
+
+
+
+
+#
+# a20.
+# Note: Need results form a01.
+#
+# a21.
+# Note: Need results form a01.
+#
+# a22.
+# Note: Need results form a01.
+
 # EQs.
 <EQs_BEGIN>
 
-201104071311
+201111221848
 
 <EQs_END>

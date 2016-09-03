@@ -128,7 +128,7 @@ EOF
 		# a. check the existance of radiation pattern data file.
 		if [ ${Num} -ne 0 ]
 		then
-			RadPatFile="${a12DIR}/${EQ}_${Phase}_${COMP}_RadPat.txt"
+			RadPatFile="${a12DIR}/${EQ}_${Phase}_${COMP}_RadPat.List"
 			if ! [ -s "${RadPatFile}" ]
 			then
 				echo "        ~=> ${EQ}, phase ${Phase} has 0 stations ..."

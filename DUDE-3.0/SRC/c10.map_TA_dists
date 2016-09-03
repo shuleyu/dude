@@ -177,7 +177,7 @@ set MIN  = ` echo $EVENT | cut -c11-12 `
 # plot a title above the top of the globe
 # and plot a big title of the date higher up:
 pstext -Jx1i -R0/6/0/9 -N -O -K << END >> $OUTFILE
-3.0 9.3 20 0 0 CB USArray Transportable Array Stations
+3.0 9.3 20 0 0 CB 
 3.0 9.0 15 0 0 CB ${MM}/${DD}/$YYYY ${HH}:${MIN} LAT=$ELAT LON=$ELON Z=$EZ Mb=$EMAG NSTA=$NSTA
 END
 

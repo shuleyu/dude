@@ -190,8 +190,8 @@ EOF
 
 		# Prepare the final file.
 
-		echo "<NETWK> <STNM> <Gcarc> <Az> <RayP> <TakeOff> <RadPat>" > ${EQ}_${Phase}_${COMP}_RadPat.txt
-		paste ${EQ}_netwk_stnm_gcarc_az tmpfile_rayp_takeoff_radpat_$$ >> ${EQ}_${Phase}_${COMP}_RadPat.txt
+		echo "<NETWK> <STNM> <Gcarc> <Az> <RayP> <TakeOff> <RadPat>" > ${EQ}_${Phase}_${COMP}_RadPat.List
+		paste ${EQ}_netwk_stnm_gcarc_az tmpfile_rayp_takeoff_radpat_$$ >> ${EQ}_${Phase}_${COMP}_RadPat.List
 
 		rm -f tmpfile*$$ ${EQ}_netwk_stnm_gcarc_az
 
