@@ -53,7 +53,7 @@ do
 		Num=$((Num+1))
 
 		# Check phase file.
-		if ! [ -s "`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped` 2>/dev/null" ]
+		if ! [ -s "`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped 2>/dev/null`" ]
 		then
 			echo "        ~=> Plot ${Num}: can't find Firsta Arrival file !"
 			continue

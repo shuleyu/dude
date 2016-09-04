@@ -50,7 +50,7 @@ do
 	| sort | uniq \
 	| awk '{if ($1=="TA") print $2,$3}' > ${EQ}_stlo_stla
 
-	if ! [ -s ${EQ}_stlo_stla ]
+	if ! [ -s "${EQ}_stlo_stla" ]
 	then
 		echo "    ~=> ${EQ} doesn't have TA stations..."
 		continue

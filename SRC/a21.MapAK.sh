@@ -49,7 +49,7 @@ do
 	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | uniq \
 	| awk '{if (-115<=$1 && $1<=-109 && 32<=$2 && $2<=37) print $1,$2}' > ${EQ}_stlo_stla
 
-	if ! [ -s ${EQ}_stlo_stla ]
+	if ! [ -s "${EQ}_stlo_stla" ]
 	then
 		echo "    ~=> ${EQ} doesn't have TA stations..."
 		continue

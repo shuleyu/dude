@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # ====================================================================
-# This script make ScS bouncing points (using TauP), then plot the
-# bouncing points on a map.
+# This script make PKIKP In-N-Out CMB points (using TauP), then plot the
+# piercing points on a map.
 #
 # Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
 
 echo ""
 echo "--> `basename $0` is running. `date`"
-mkdir -p ${a22DIR}
-cd ${a22DIR}
+mkdir -p ${a26DIR}
+cd ${a26DIR}
 
 # ==================================================
 #              ! Work Begin !
@@ -25,7 +25,7 @@ for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 
 	# Ctrl+C action.
-	trap "rm -f ${a22DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${a26DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 	# A. Check the exist of list file.
@@ -34,7 +34,7 @@ do
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
 	else
-		echo "    ==> Making ScS bouncing points map of ${EQ}."
+		echo "    ==> Making PKIKP In-N-Out points map of ${EQ}."
 	fi
 
 	# B. Pull information.
@@ -53,12 +53,12 @@ do
 
 	# C. Check phase file.
 
-    if ! [ -s "`ls ${a05DIR}/${EQ}_*_ScS.gmt_Enveloped 2>/dev/null`" ]
+    if ! [ -s "`ls ${a05DIR}/${EQ}_*_PKIKP.gmt_Enveloped 2>/dev/null`" ]
     then
         echo "        ~=> Can't find Firsta Arrival file !"
         continue
     else
-        PhaseFile=`ls ${a05DIR}/${EQ}_*_ScS.gmt_Enveloped`
+        PhaseFile=`ls ${a05DIR}/${EQ}_*_PKIKP.gmt_Enveloped`
         PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
         PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
     fi
@@ -67,10 +67,10 @@ do
     PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`.ps
 
     # Clean dir.
-    rm -f ${a22DIR}/${EQ}*
+    rm -f ${a26DIR}/${EQ}*
 
     # Ctrl+C action.
-    trap "rm -f ${a22DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+    trap "rm -f ${a26DIR}/${EQ}* ${a26DIR}/tmpfile_$$ ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
     # D. Select gcp distance window.
@@ -80,27 +80,32 @@ do
 
 	if ! [ -s "${EQ}_net_stn_stlo_stla" ]
 	then
-		echo "        ~=>${EQ} has 0 ScS phase recorded in this data set..."
+		echo "        ~=>${EQ} has 0 PKIKP phase recorded in this data set..."
 		continue
 	fi
 
 
     # E. Call TauP to get bouncing point lon/lat.
-    echo "<NETWK> <STNM> <STLO> <STLA> <ScS_HitLO> <ScS_HitLA>" > ${EQ}_ScSHit.List
+    echo "<NETWK> <STNM> <STLO> <STLA> <PKIKP_LO_In> <PKIKP_LA_In> <PKIKP_LO_Out> <PKIKP_LA_Out>" > ${EQ}_PKIKP.List
     while read netwk stnm STLO STLA
     do
-        taup_path -ph ScS -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -o stdout | awk -v stlo=${STLO} -v stla=${STLA} -v net=${netwk} -v stn=${stnm} '{if ($2==3480 && $3!="") print net,stn,stlo,stla,$4,$3}' >> ${EQ}_ScSHit.List
+        taup_path -ph PKIKP -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -o stdout | awk '{if ($2==3480 && $3!="") print $4,$3}' | awk 'NR==1; END {print $0}' > tmpfile_$$
+		echo "${netwk} ${stnm} ${STLO} ${STLA} `head -n 1 tmpfile_$$` `tail -n 1 tmpfile_$$`" >> ${EQ}_PKIKP.List
     done < ${EQ}_net_stn_stlo_stla
+	rm -f tmpfile_$$
 
-    NSTA=`wc -l < ${EQ}_ScSHit.List`
+    NSTA=`wc -l < ${EQ}_PKIKP.List`
     NSTA=$((NSTA-1))
 
 	# F. make a great circle path file.
 	keys="<STLO> <STLA>"
-	${BASHCODEDIR}/Findfield.sh ${EQ}_ScSHit.List "${keys}" > ${EQ}_stlo_stla
+	${BASHCODEDIR}/Findfield.sh ${EQ}_PKIKP.List "${keys}" > ${EQ}_stlo_stla
 
-	keys="<ScS_HitLO> <ScS_HitLA>"
-	${BASHCODEDIR}/Findfield.sh ${EQ}_ScSHit.List "${keys}" > ${EQ}_hitlo_hitla
+	keys="<PKIKP_LO_In> <PKIKP_LA_In>"
+	${BASHCODEDIR}/Findfield.sh ${EQ}_PKIKP.List "${keys}" | awk '{printf ">\n%f %f\n",$1,$2}' > ${EQ}_piercing_in
+
+	keys="<PKIKP_LO_Out> <PKIKP_LA_Out>"
+	${BASHCODEDIR}/Findfield.sh ${EQ}_PKIKP.List "${keys}" | awk '{printf ">\n%f %f\n",$1,$2}' > ${EQ}_piercing_out
 
 	rm -f ${EQ}_gcpfile
 	while read stlo stla
@@ -127,7 +132,7 @@ do
 
         # plot title and tag.
         pstext -JX11i/1i -R-100/100/-1/1 -N -X0i -Y7i -K > ${PLOTFILE} << EOF
-0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  ScS CMB bounce points
+0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  PKIKP In-N-Out piercing point.
 0 0.5 15 0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}
 0 0 12 0 0 CB Tomography model:  S20RTS (Ritsema) Z=2880 km
 EOF
@@ -151,10 +156,11 @@ EOF
 		psxy ${REG} ${PROJ} -Sa0.12i -K -O -W1/0/0/0 -G0 >> ${PLOTFILE} << EOF
 ${EVLO} ${EVLA}
 EOF
-		psxy ${EQ}_stlo_stla ${REG} ${PROJ} -St0.03i -K -O -W1/0/0/0 -G0 >> ${PLOTFILE}
+		psxy ${EQ}_stlo_stla ${REG} ${PROJ} -St0.05i -K -O -W1/0/0/0 -G0 >> ${PLOTFILE}
 
-		# now plot the ScS bounce points:
-		psxy ${EQ}_hitlo_hitla ${REG} ${PROJ} -Sx+0.15i -O -W3/yellow >> ${PLOTFILE}
+		# now plot the PKIKP piercing points on CMB.
+		psxy ${EQ}_piercing_in ${REG} ${PROJ} -m -Sx0.15i -K -O -W1p/yellow >> ${PLOTFILE}
+		psxy ${EQ}_piercing_out ${REG} ${PROJ} -m -Sx0.15i -O -W1p/green >> ${PLOTFILE}
 
     fi
 
@@ -177,7 +183,7 @@ EOF
 
         # plot title and tag.
         cat > ${EQ}_plottext.txt << EOF
-0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  ScS CMB bounce points
+0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  PKIKP In-N-Out piercing point.
 0 0.5 @:15:${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}@::
 0 0 @:12:Tomography model:  S20RTS (Ritsema) Z=2880 km@::
 EOF
@@ -206,10 +212,11 @@ EOF
 		gmt psxy ${REG} ${PROJ} -Sa0.12i -K -O -W1,0/0/0 -G0 >> ${PLOTFILE} << EOF
 ${EVLO} ${EVLA}
 EOF
-		gmt psxy ${EQ}_stlo_stla ${REG} ${PROJ} -St0.03i -K -O -W1,0/0/0 -G0 >> ${PLOTFILE}
+		gmt psxy ${EQ}_stlo_stla ${REG} ${PROJ} -St0.05i -K -O -W1,0/0/0 -G0 >> ${PLOTFILE}
 
-		# now plot the ScS bounce points:
-		gmt psxy ${EQ}_hitlo_hitla ${REG} ${PROJ} -Sx+0.15i -O -W1,yellow >> ${PLOTFILE}
+		# now plot the PKIKP piercing points on CMB.
+		gmt psxy ${EQ}_piercing_in ${REG} ${PROJ} -Sx0.15i -K -O -W1p,yellow >> ${PLOTFILE}
+		gmt psxy ${EQ}_piercing_out ${REG} ${PROJ} -Sx0.15i -O -W1p,green >> ${PLOTFILE}
 
 
     fi

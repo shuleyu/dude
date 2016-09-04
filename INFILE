@@ -14,7 +14,7 @@
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                     /NAS/shule/PROJ/t003.NEZ/20111122_20111122
+<DATADIR>                     /NAS/soduser/Merge.Mw6.50km
 <OUTDIR>                      /home/shule/PROJ/t001.DUDE4
 
 <GMTVERSION>                  5
@@ -432,6 +432,6 @@ SKKS       SV
 # EQs.
 <EQs_BEGIN>
 
-201111221848
+200601022213
 
 <EQs_END>
