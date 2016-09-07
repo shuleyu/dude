@@ -15,21 +15,21 @@
 # ${SRCDIR}/a12.MakeRadPatData.sh
 # ${SRCDIR}/a13.PlotRadPat.sh
 # ${SRCDIR}/a14.MakeSNRData.sh
+# ${SRCDIR}/a15.EmpiricalSourceWavelets.sh
+${SRCDIR}/a16.AlignedProfile.sh
 # ${SRCDIR}/a20.MapTA.sh
-${SRCDIR}/a22.MapScSBounce.sh
-${SRCDIR}/a23.MapSSReflect.sh
-${SRCDIR}/a24.MapSdiffPath.sh
-${SRCDIR}/a25.MapSKSInOutCMB.sh
-${SRCDIR}/a26.MapPKIKPInOutCMB.sh
-
-${SRCDIR}/a50.MakePDF.sh
+# ${SRCDIR}/a21.MapAK.sh
+# ${SRCDIR}/a22.MapScSBounce.sh
+# ${SRCDIR}/a23.MapSSReflect.sh
+# ${SRCDIR}/a24.MapSdiffPath.sh
+# ${SRCDIR}/a25.MapSKSInOutCMB.sh
+# ${SRCDIR}/a26.MapPKIKPInOutCMB.sh
+# ${SRCDIR}/a50.MakePDF.sh
 
 # ========= under construction =============
-# ${SRCDIR}/a15.EmpiricalSourceWavelets.sh
-# ${SRCDIR}/a16.AlignedProfile.sh
 # ${SRCDIR}/a17.AlignedProfileComb.sh
 # ${SRCDIR}/a18.AlignedProfileIncSum.sh
+# ${SRCDIR}/a19.AlignedProfileIncSumWeighted.sh
 
-# ${SRCDIR}/a21.MapAK.sh
 
 exit 0

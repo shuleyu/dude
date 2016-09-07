@@ -210,7 +210,7 @@ EOF
 			saclst kstnm knetwk npts gcarc f `cat tmpfile2_$$` > tmpfile4_$$
 			paste tmpfile3_$$ tmpfile4_$$ | sort -g -k 7,7 > ${EQ}_List2
 
-			rm -f tmpfile1_$$ tmpfile1_$$ tmpfile3_$$ tmpfile4_$$ tmpfile1_net_st_$$ tmpfile2_net_st_$$ tmpfile1_net_st_file_$$ tmpfile2_net_st_file_$$
+			rm -f tmpfile1_$$ tmpfile2_$$ tmpfile3_$$ tmpfile4_$$ tmpfile1_net_st_$$ tmpfile2_net_st_$$ tmpfile1_net_st_file_$$ tmpfile2_net_st_file_$$
 
 			[ ${COMP} = "R" ] && ReadIn="junk.R" || ReadIn="junk.T"
 

@@ -55,7 +55,7 @@ do
 
 	if [ -z "${CMTInfo}" ]
 	then
-		SearchURL="http://www.globalcmt.org/cgi-bin/globalcmt-cgi-bin/CMT4/form?itype=ymd&yr=${YYYY}&mo=${MM}&day=${MM}&otype=ymd&oyr=${YYYY}&omo=${MM}&oday=${DD}&jyr=1976&jday=1&ojyr=1976&ojday=1&nday=1&lmw=0&umw=10&lms=0&ums=10&lmb=0&umb=10&llat=-90&ulat=90&llon=-180&ulon=180&lhd=0&uhd=1000&lts=-9999&uts=9999&lpe1=0&upe1=90&lpe2=0&upe2=90&list=2"
+		SearchURL="http://www.globalcmt.org/cgi-bin/globalcmt-cgi-bin/CMT4/form?itype=ymd&yr=${YYYY}&mo=${MM}&day=${DD}&otype=ymd&oyr=${YYYY}&omo=${MM}&oday=${DD}&jyr=1976&jday=1&ojyr=1976&ojday=1&nday=1&lmw=0&umw=10&lms=0&ums=10&lmb=0&umb=10&llat=-90&ulat=90&llon=-180&ulon=180&lhd=0&uhd=1000&lts=-9999&uts=9999&lpe1=0&upe1=90&lpe2=0&upe2=90&list=2"
 		curl ${SearchURL} > tmpfile_$$ 2>/dev/null
 		CMTInfo=`grep ${EQ} tmpfile_$$ | head -n 1`
 	fi
@@ -126,7 +126,8 @@ do
 
 		if ! [ -s "${EQ}_netwk_stnm_gcarc_az" ]
 		then
-			echo "        ~=> RadPat: no valid stations for phase ${Phase} !"
+			echo "        ~=> RadPat: no selected stations for phase ${Phase} !"
+			echo "<NETWK> <STNM> <Gcarc> <Az> <RayP> <TakeOff> <RadPat>" > ${EQ}_${Phase}_${COMP}_RadPat.List
 			continue
 		fi
 
@@ -153,18 +154,18 @@ do
 		done
 
 		# make up for the final distance.
-		if [ `echo "${DISTMAX}>gcarc"|bc` -eq 1 ]
+		if [ `echo "${DISTMAX}>${gcarc}"|bc` -eq 1 ]
 		then
 			RayP=""
-			RayP=`taup_time -mod ${Model_TT} -ph ${Phase} -h ${EVDP} -deg ${gcarc} --rayp | awk '{print $1}'`
+			RayP=`taup_time -mod ${Model_TT} -ph ${Phase} -h ${EVDP} -deg ${DISTMAX} --rayp | awk '{print $1}'`
 
 			if [ -z "${RayP}" ]
 			then
-				echo "        !=> An error shouldn't occur happened: PREM ${Phase} @ ${gcarc} deg for ${EVDP} km doesn't exist! "
+				echo "        !=> An error shouldn't occur happened: PREM ${Phase} @ ${DISTMAX} deg for ${EVDP} km doesn't exist! "
 				exit 1
 			fi
 
-			echo "${gcarc} ${RayP}" >> tmpfile_$$
+			echo "${DISTMAX} ${RayP}" >> tmpfile_$$
 		fi
 
 

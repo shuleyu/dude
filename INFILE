@@ -15,9 +15,10 @@
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
 <DATADIR>                     /NAS/soduser/Merge.Mw6.50km
+DATADIR>                     /NAS/shule/PROJ/t003.NEZ/20111122_20111122
 <OUTDIR>                      /home/shule/PROJ/t001.DUDE4
 
-<GMTVERSION>                  5
+<GMTVERSION>                  4
 							  -- select GMT verion: 4 or 5.
 
 # ==============================================================================
@@ -26,9 +27,8 @@
 
 # Run.sh ----
 
-<FreshPlot>                   1
+<NewPlots>                    1
 <CleanSAC>                    1
-<CleanPlotFile>               1
 
 # ----
 
@@ -197,16 +197,16 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPC_BEGIN>
 
-0.5    R    0    180    0    1000    0.01    0    Global    NO    AllSt    Portraitt
-0.5    T    0    180    0    1000    0.01    0    Global    NO    AllSt    Portraitt
-0.5    Z    0    180    0    1000    0.01    0    Global    NO    AllSt    Portraitt
+0.5    R    0    180    0    1000    0.01    0    Global    NO    AllSt    Portrait
+0.5    T    0    180    0    1000    0.01    0    Global    NO    AllSt    Portrait
+0.5    Z    0    180    0    1000    0.01    0    Global    NO    AllSt    Portrait
 
 <BPC_END>
 
 #  Most of the parameter explanation see a06.
 #  There's only one difference, the first parameter in BPC_BEGIN_END:
 #
-#    A. Gap distance. Will select trace apart from each other (in gcarc) >= this value.
+#    A. Gap distance. Will select trace apart from each other (in gcarc) -ge this value.
 #    B-End. see a06.
 #
 # a07. =========================================================================
@@ -272,16 +272,14 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 
 <ZPC_BEGIN>
 
-0.5    S      R    0    180    -500    400    0.01    0    Global    NO    AllSt    Portraitt
-0.5    S      T    0    180    -500    400    0.01    0    Global    NO    AllSt    Portraitt
-0.5    P      Z    0    180    -300    400    0.01    0    Global    NO    AllSt    Portraitt
+0.5    SKKS      R    0    180    -500    400    0.03    0.3    Global    SV    AllSt    Portrait
 
 <ZPC_END>
 
 #  Most of the parameter explanation see a09.
 #  There's only one difference, the first parameter in ZPC_BEGIN_END:
 #
-#    A. Gap distance. Will select trace apart from each other (in gcarc) >= this value.
+#    A. Gap distance. Will select trace apart from each other (in gcarc) -ge this value.
 #    B-End. see a09.
 #
 # a10. =========================================================================
@@ -330,10 +328,10 @@ S    R    0    180    -100    200    0.03    0.3    Global    SH    AllSt    Por
 <ChosenPhase_BEGIN>
 
 P          P
+PKP        P
 PcP        P
 PP         P
 PKiKP      P
-PKP        P
 PKPPKP     P
 S          SH
 SS         SH
@@ -411,12 +409,75 @@ SKKS       SV
 #
 # Therefore only data completely covered the time window are used.
 #
-# Output file: ${EQ}_SNR.txt
-# <NETWK> <STNM> <SNR_R> <SNR_T> <SNR_Z>
+# Output file: ${EQ}_SNR.List with headers:
+#                NETWK,STNM,SNR_R,SNR_T,SNR_Z
 #
 
+# a15. =========================================================================
+# Note: Need results form a01,a05,a12(use radpat to flip the records)
+#                         ,a14(if UseSNR section is set to "1").
 
+<Delta_ESW>                   0.025
 
+<PhaseESW_BEGIN>
+
+P          Z    1    10    80    0.03    0.3    -15    20    0
+P          Z    1    10    80    0.03    0.4    -15    20    0
+P          Z    1    10    80    0.03    0.5    -15    20    0
+PcP        Z    1    40    80    0.03    0.3    -15    20    0
+PcP        Z    1    40    80    0.03    0.4    -15    20    0
+PcP        Z    1    40    80    0.03    0.5    -15    20    0
+PP         Z    1    10    80    0.03    0.3    -15    20    0
+PP         Z    1    10    80    0.03    0.4    -15    20    0
+PP         Z    1    10    80    0.03    0.5    -15    20    0
+PKiKP      Z    1    40    80    0.03    0.3    -15    20    0
+PKiKP      Z    1    40    80    0.03    0.4    -15    20    0
+PKiKP      Z    1    40    80    0.03    0.5    -15    20    0
+PKP        Z    1    0     180   0.03    0.3    -15    20    0
+PKP        Z    1    0     180   0.03    0.4    -15    20    0
+PKP        Z    1    0     180   0.03    0.5    -15    20    0
+PKPPKP     Z    1    40    80    0.03    0.3    -15    20    0
+PKPPKP     Z    1    40    80    0.03    0.4    -15    20    0
+PKPPKP     Z    1    40    80    0.03    0.5    -15    20    0
+S          T    1    20    80    0.03    0.3    -20    40    0
+SS         T    1    40    80    0.03    0.3    -20    40    0
+ScS        T    1    40    80    0.03    0.3    -20    40    0
+S          R    1    20    80    0.03    0.3    -20    40    0
+SKS        R    1    0     180   0.03    0.3    -20    40    0
+SKKS       R    1    0     180   0.03    0.3    -20    40    0
+
+<PhaseESW_END>
+
+#
+#  PhaseESW_BEGIN_END:
+#    each line is one input for Empirical Source Wavelets making,
+#    the result is plotted on one page showing the empirical wavelets,
+#    cross-correlation coefficient histogram and time shift histogram.
+#    Also, a file named:
+#    ${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}.List
+#    can be found for each line in ${a15DIR} with headers:
+#    EQ,NETWK,STNM,DT,CCC,Weight
+#
+#    A. Phase Name. (diffraction phases are viewed as individual phases)
+#    B. Component of the seismogram from which the ESW is constructed.
+#       ( choose from "R","T","Z" )
+#    C. UseSNR. Indicate whether to use SNR measurement as a weight factor
+#       when the traces are stacked. ( choose from "0","1" )
+#       The formula convert SNR to a weight is subjective, currently we use
+#       a ramp function between SNR=1~3: f(SNR)=0,SNR -le 1;f(SNR)=1,SNR -ge 3.
+#    D. DistMin. The distance range minimum. ( Can be used to avoid traffic )
+#    E. DistMax. The distance range maximum. ( Can be used to avoid traffic )
+#    	Suggestion: run either a09,a10,a11 to visually decide the traffic distance intervals.
+#    F. Filter lower corner. (if set to 0.0, apply a low-pass butterworth filter using upper corner)
+#    G. Filter upper corner. (if set to 0.0, apply a high-pass butterworth filter using lower corner)
+#       ( if both lower and upper corner are set to 0.0, don't apply the filter. )
+#    H. ESW left window (in seconds, relative to anchored arrival).
+#    I. ESW right window (in seconds, relative to anchored arrival).
+#    J. PREM initial bias. (in seconds, the initial overall PREM prediction bias
+#       caused by origin time error, model simplicity and etc. This value can be
+#       visually decided from according plots like a09,a10,a11)
+#
+# a15. =========================================================================
 
 
 #
@@ -427,11 +488,34 @@ SKKS       SV
 # Note: Need results form a01.
 #
 # a22.
-# Note: Need results form a01,a05(to select stations have ScS phases).
+# Note: Need results form a01,a05.
+#
+# a23.
+# Note: Need results form a01,a05.
+#
+# a24.
+# Note: Need results form a01,a05.
+#
+# a25.
+# Note: Need results form a01,a05.
+#
+# a26.
+# Note: Need results form a01,a05.
+#
+# a50.
+#   Join all ps file for one EQ together in the order of plotting,
+#   then convert the big ps file into a pdf file.
+#   The big ps file is deleted.
+
+
+
 
 # EQs.
+#   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
 200601022213
 
 <EQs_END>
+
+201111221848

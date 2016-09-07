@@ -98,6 +98,7 @@ a11DIR=${OUTDIR}/a11.ZoomProfileIncSum
 a12DIR=${OUTDIR}/a12.MakeRadPatData
 a13DIR=${OUTDIR}/a13.PlotRadPat
 a14DIR=${OUTDIR}/a14.MakeSNRData
+a15DIR=${OUTDIR}/a15.EmpiricalSourceWavelets
 a20DIR=${OUTDIR}/a20.MapTA
 a21DIR=${OUTDIR}/a21.MapAK
 a22DIR=${OUTDIR}/a22.MapScSBounce
@@ -108,7 +109,7 @@ a26DIR=${OUTDIR}/a26.MapPKIKPInOutCMB
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 
-if [ ${FreshPlot} -eq 1 ]
+if [ ${NewPlots} -eq 1 ]
 then
 	for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 	do
@@ -120,7 +121,7 @@ fi
 #            ! Test Software Dependencies !
 #======================================================
 
-CommandList="${FCOMP} ${CCOMP} ${CPPCOMP} sac saclst taup_time"
+CommandList="${FCOMP} ${CCOMP} ${CPPCOMP} sac saclst taup_time tac"
 
 case "${GMTVERSION}" in
 	4 )
@@ -277,23 +278,15 @@ End Date: `date`
 EOF
 
 # Clean up.
-if [ ${CleanSAC} -eq 1 ]
-then
+for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
+do
+	find ${OUTDIR}/ -iname "${EQ}*PlotFile*" -exec rm -f '{}' \;
 
-	for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
-	do
+	if [ ${CleanSAC} -eq 1 ]
+	then
 		find ${OUTDIR}/ -iname "${EQ}*sac" -exec rm -f '{}' \;
-	done
-fi
-
-if [ ${CleanPlotFile} -eq 1 ]
-then
-
-	for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
-	do
-		find ${OUTDIR}/ -iname "${EQ}*PlotFile*" -exec rm -f '{}' \;
-	done
-fi
+	fi
+done
 
 rm -f ${OUTDIR}/*_$$
 

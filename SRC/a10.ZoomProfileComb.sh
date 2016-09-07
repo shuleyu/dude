@@ -51,6 +51,7 @@ do
 	while read PlotGap Phase COMP DISTMIN DISTMAX TIMEMIN TIMEMAX F1 F2 Normalize TravelCurve NetWork PlotOrient
 	do
 		Num=$((Num+1))
+		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
 
 		# Check phase file.
 		if ! [ -s "`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped 2>/dev/null`" ]
@@ -64,7 +65,6 @@ do
 		fi
 
 
-		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
 		if [ "${Normalize}" = Own ]
 		then
 			Normalize=1

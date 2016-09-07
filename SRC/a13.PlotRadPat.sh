@@ -61,7 +61,7 @@ do
 
 	if [ -z "${CMTInfo}" ]
 	then
-		SearchURL="http://www.globalcmt.org/cgi-bin/globalcmt-cgi-bin/CMT4/form?itype=ymd&yr=${YYYY}&mo=${MM}&day=${MM}&otype=ymd&oyr=${YYYY}&omo=${MM}&oday=${DD}&jyr=1976&jday=1&ojyr=1976&ojday=1&nday=1&lmw=0&umw=10&lms=0&ums=10&lmb=0&umb=10&llat=-90&ulat=90&llon=-180&ulon=180&lhd=0&uhd=1000&lts=-9999&uts=9999&lpe1=0&upe1=90&lpe2=0&upe2=90&list=2"
+		SearchURL="http://www.globalcmt.org/cgi-bin/globalcmt-cgi-bin/CMT4/form?itype=ymd&yr=${YYYY}&mo=${MM}&day=${DD}&otype=ymd&oyr=${YYYY}&omo=${MM}&oday=${DD}&jyr=1976&jday=1&ojyr=1976&ojday=1&nday=1&lmw=0&umw=10&lms=0&ums=10&lmb=0&umb=10&llat=-90&ulat=90&llon=-180&ulon=180&lhd=0&uhd=1000&lts=-9999&uts=9999&lpe1=0&upe1=90&lpe2=0&upe2=90&list=2"
 		curl ${SearchURL} > tmpfile_$$ 2>/dev/null
 		CMTInfo=`grep ${EQ} tmpfile_$$ | head -n 1`
 	fi
