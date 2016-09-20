@@ -114,7 +114,7 @@ int main(int argc, char **argv){
 	// Calc some paratemeter.
 	int TotalLength=meshsize(P[TimeMin],P[TimeMax],P[delta],0);
 	if (TotalLength>MAXL){
-		cout << "MAXL not long enough in BigProfileDistinctSum.out ..." << endl;
+		cout << "MAXL not long enough in ZoomProfileIncSum.out ..." << endl;
 		return 1;
 	}
 	float *AuxSum=new float [TotalLength];
@@ -213,7 +213,7 @@ int main(int argc, char **argv){
 
 				// Stack the new trace.
 				for (int index=0;index<TotalLength;index++){
-					AuxSum[index]=(AuxSum[index]*BinCount+rawdata[index])
+					AuxSum[index]=(AuxSum[index]*BinCount+item.data[index])
 			                      /(BinCount+1);
 				}
 

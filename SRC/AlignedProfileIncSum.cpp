@@ -24,15 +24,14 @@ using namespace std;
 
 struct Record{
 	float *data;
-	double BeginTime,Delta,gcarc;
-	size_t NPTS;
+	double gcarc,dt;
 };
 
 int main(int argc, char **argv){
 
-    enum PIenum{NormalizeFlag,FLAG1};
+    enum PIenum{NormalizeFlag,UseWeight,FLAG1};
     enum PSenum{infile,plotfile,validnum,bincount,FLAG2};
-    enum Penum{AmpScale,BinSize,BinInc,TimeMin,TimeMax,delta,FLAG3};
+    enum Penum{AmpScale,BinSize,BinInc,TimeMin,TimeMax,Delta,FLAG3};
 
     /****************************************************************
 
@@ -112,9 +111,9 @@ int main(int argc, char **argv){
     ****************************************************************/
 
 	// Calc some paratemeter.
-	int TotalLength=meshsize(P[TimeMin],P[TimeMax],P[delta],0);
+	int TotalLength=meshsize(P[TimeMin],P[TimeMax],P[Delta],0);
 	if (TotalLength>MAXL){
-		cout << "MAXL not long enough in BigProfileIncSum.out ..." << endl;
+		cout << "MAXL not long enough in AlignedProfileIncSum.out ..." << endl;
 		return 1;
 	}
 	float *AuxSum=new float [TotalLength];
@@ -124,21 +123,25 @@ int main(int argc, char **argv){
 	string sacfile;
 	float rawdata[MAXL],rawbeg,rawdel;
 	int rawnpts,maxl=MAXL,nerr,TotalValid=0;
-	double Amplitude;
+	int FirstOnSet=(int)(-P[TimeMin]/P[Delta]);
+	double Amplitude,tmpweight,Weight;
 	char sacfile_char[300];
 	Record tmp_record;
 	vector<Record> Data;
 
+
 	// read from sac file list.
 	fpin.open(PS[infile].c_str());
 
-	while (fpin >> sacfile >> tmp_record.gcarc){
+	while (fpin >> sacfile >> tmp_record.dt
+		        >> tmpweight >> tmp_record.gcarc){
 
 		strcpy(sacfile_char,sacfile.c_str());
 		rsac1(sacfile_char,rawdata,&rawnpts,&rawbeg,&rawdel,&maxl,&nerr,
 		      sacfile.size());
 
 		Amplitude=amplitude(rawdata,rawnpts);
+
 
 		// Check data amplitude.
 		if (std::isnan(Amplitude) || Amplitude<=1e-20 ){
@@ -147,11 +150,12 @@ int main(int argc, char **argv){
 			continue;
 		}
 
-		tmp_record.BeginTime=rawbeg;
-		tmp_record.NPTS=rawnpts;
-		tmp_record.Delta=rawdel;
-
 		TotalValid++;
+
+		// Normalize near the prem+shift
+		Amplitude=amplitude( rawdata+FirstOnSet-
+		                     (int)((5+tmp_record.dt)/P[Delta]),
+		                     (int)(10/P[Delta]) );
 
 		// Pad rawdata with zero.
 		for (int index=rawnpts;index<MAXL;index++){
@@ -160,13 +164,15 @@ int main(int argc, char **argv){
 
 
 		// Shift array to the correct time.
-		shift_array_f(rawdata,MAXL,(int)((rawbeg-P[TimeMin])/P[delta]));
+		shift_array_f(rawdata,MAXL,(int)(tmp_record.dt/P[Delta]));
 
 		// Record this trace.
 		tmp_record.data=new float [TotalLength];
 
+		Weight=(PI[UseWeight]==1)?tmpweight:1;
+
 		for (int index=0;index<TotalLength;index++){
-			tmp_record.data[index]=rawdata[index];
+			tmp_record.data[index]=rawdata[index]*Weight;
 		}
 
 		Data.push_back(tmp_record);
@@ -175,8 +181,7 @@ int main(int argc, char **argv){
 
 	fpin.close();
 
-
-	// Output how many valid data. (after small amplitude selection)
+	// Count how many valid data. (after small amplitude selection)
 	ofstream fpout;
 
 	fpout.open(PS[validnum].c_str());
@@ -187,7 +192,7 @@ int main(int argc, char **argv){
 	// For each bin, find the traces belong to this bin (count),
 	// do the stack, note down the maximum amplitude (if required),
 	// and push the stack trace into Data_Stack.
-	
+
 	vector<Record> Data_Stack;
 	int BinCount;
 	double MaxAmplitude=0,BinCenter,MaxBin=0;
@@ -203,7 +208,7 @@ int main(int argc, char **argv){
 			AuxSum[index]=0;
 		}
 
-	
+
 		// Loop through traces to see if they locate in this bin.
 		for (auto item:Data){
 
@@ -247,9 +252,6 @@ int main(int argc, char **argv){
 				tmp_record.data[index]=AuxSum[index];
 			}
 
-			tmp_record.BeginTime=P[TimeMin];
-			tmp_record.Delta=P[delta];
-			tmp_record.NPTS=TotalLength;
 			tmp_record.gcarc=BinCenter;
 
 			Data_Stack.push_back(tmp_record);
@@ -268,20 +270,17 @@ int main(int argc, char **argv){
 		     << " deg" << endl;
 	}
 
-
 	// output the big profile ascii file.
 	fpout.open(PS[plotfile].c_str());
 
 	for (auto item: Data_Stack){
-		double Time=item.BeginTime;
-		for (size_t index=0;index<item.NPTS;index++){
+		for (int index=0;index<TotalLength;index++){
 
 			// Calculate the y-axis position.
 			// Do normalize for the option "ALL".
-			fpout << Time << " " <<
-			item.gcarc-P[AmpScale]*item.data[index]/MaxAmplitude << endl;
+			fpout << P[TimeMin]+P[Delta]*index << " "
+			      << item.gcarc-P[AmpScale]*item.data[index]/MaxAmplitude << endl;
 
-			Time+=item.Delta;
 		}
 		fpout << ">" << endl;
 	}
@@ -292,9 +291,11 @@ int main(int argc, char **argv){
 	for (auto item: Data){
 		delete[] item.data;
 	}
+
 	for (auto item: Data_Stack){
 		delete[] item.data;
 	}
+
 	delete [] AuxSum;
 
     return 0;

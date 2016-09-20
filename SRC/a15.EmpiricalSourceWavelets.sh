@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -a
+
 # ====================================================================
 # This script make ESW for each choosen phase.
 #
@@ -47,17 +49,17 @@ do
 
 	# Enter the ESW making loop.
 	Num=0
-	while read Phase COMP UseSNR DistMin DistMax F1 F2 TimeMin TimeMax PREMBias
+	while read Phase COMP UseSNR DistMin DistMax F1 F2 NETWK TimeMin TimeMax
 	do
 		Num=$((Num+1))
 		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
-		OUTFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}.List
+		OUTFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
 		OUTFILE_ESW=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}.ESW
 		trap "rm -f ${a15DIR}/${EQ}* ${PLOTFILE} ${OUTFILE} ${a15DIR}/tmpfile*$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 		echo "    ==> Making ESW of ${EQ}, Line ${Num}..."
 
 		# Clean dir.
-		for file in `ls ${a15DIR}/${EQ}* | grep -v List | grep -v ESW`
+		for file in `ls ${a15DIR}/${EQ}* 2>/dev/null | grep -v List | grep -v ESW`
 		do
 			rm -f ${file}
 		done
@@ -141,6 +143,7 @@ do
 		# a. select according to min/max distance.
 		keys="<FileName> <NETWK> <STNM> <Gcarc> <BeginTime> <EndTime>"
 		${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
+		| awk -v N=${NETWK} '{if (N=="AllSt" || (N!="AllSt" && $2==N)) print $0}' \
 		| awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$4 && $4<=D2) print $0}' \
 		| awk -v D1=${DistMin} -v D2=${DistMax} '{if (D1<=$4 && $4<=D2) {A=$0;print $2"_"$3" "A}}' \
 		> ${EQ}_label_SelectedFiles
@@ -302,7 +305,7 @@ EOF
 			# radpat,snr,arrivals,fileE,nptsE,fileN,kstnm,knetwk,nptsN
 
 
-			rm -f tmpfile1_$$ tmpfile2_$$ tmpfile3_$$ tmpfile4_$$ tmpfile1_label_$$ tmpfile2_label_$$ tmpfile1_label_file_$$ tmpfile2_label_file_$$
+			rm -f tmpfile1_$$ tmpfile2_$$ tmpfile3_$$ tmpfile4_$$ tmpfile1_label_$$ tmpfile2_label_$$ tmpfile1_label_file_$$ tmpfile2_label_file_$$ tmpfile_keep_label_$$
 
 			[ ${COMP} = "R" ] && ReadIn="junk.R" || ReadIn="junk.T"
 
@@ -328,7 +331,7 @@ EOF
 			T1=`echo "${arrival}+3*${TimeMin}" | bc -l`
 			T2=`echo "${arrival}+3*${TimeMax}" | bc -l`
 			echo "${EQ}.${netwk}.${stnm}.sac ${radpat} ${snr}" >> ${EQ}_ESW_infile
-			echo "${EQ} ${netwk} ${stnm}" >> ${EQ}_eq_netwk_stnm
+			echo "${EQ} ${netwk} ${stnm} ${arrival}" >> ${EQ}_eq_netwk_stnm
 
 			cat >> ${EQ}_SACMacro1.m << EOF
 cut off
@@ -373,7 +376,7 @@ EOF
 				T1=`echo "${arrival}+3*${TimeMin}" | bc -l`
 				T2=`echo "${arrival}+3*${TimeMax}" | bc -l`
 				echo "${EQ}.${netwk}.${stnm}.sac ${radpat} ${snr}" >> ${EQ}_ESW_infile
-			    echo "${EQ} ${netwk} ${stnm}" >> ${EQ}_eq_netwk_stnm
+			    echo "${EQ} ${netwk} ${stnm} ${arrival}" >> ${EQ}_eq_netwk_stnm
 
 				cat >> ${EQ}_SACMacro2.m << EOF
 ${SACCut}
@@ -404,8 +407,26 @@ EOF
 			fi
 		fi
 
-		# G. Make ESW from the cut (therefore aligned) SAC data.
-		${EXECDIR}/ESW.out 0 4 4 << EOF
+		# G. Find the PREMbias and Normalize window for this EQ,phase.
+		#    Will also plot an auxilliary plot, which is same as a09, execpt that this window is added.
+		keys="<EQ> <${Phase}_${COMP}> <${Phase}_${COMP}_B> <${Phase}_${COMP}_E>"
+		Info=`${BASHCODEDIR}/Findfield.sh ${CODEDIR}/INFILE_ESW_Window "${keys}" 2>/dev/null | grep "${EQ}"`
+
+		PREMBias=""
+		NormalizeBegin=""
+		NormalizeEnd=""
+
+		PREMBias=`echo "${Info}" | awk '{print $2}'`
+		NormalizeBegin=`echo "${Info}" | awk '{print $3}'`
+		NormalizeEnd=`echo "${Info}" | awk '{print $4}'`
+
+		[ -z ${PREMBias} ] && PREMBias=0
+		[ -z ${NormalizeBegin} ] && NormalizeBegin="-5"
+		[ -z ${NormalizeEnd} ] && NormalizeEnd="5"
+
+
+		# H. Make ESW from the cut (therefore aligned) SAC data.
+		${EXECDIR}/ESW.out 0 4 6 << EOF
 ${EQ}_ESW_infile
 tmpfile_out_$$
 ${OUTFILE_ESW}
@@ -413,6 +434,8 @@ tmpfile_NSTA_$$
 ${TimeMin}
 ${TimeMax}
 ${PREMBias}
+${NormalizeBegin}
+${NormalizeEnd}
 ${Delta_ESW}
 EOF
 
@@ -423,12 +446,12 @@ EOF
 			exit 1
 		fi
 
-		echo "<EQ> <NETWK> <STNM> <DT> <CCC> <Weight>" > ${OUTFILE}
+		echo "<EQ> <NETWK> <STNM> <Arrival> <PREMBias> <DT> <CCC> <Weight> <PeakTime> <PeakAmp>" > ${OUTFILE}
 		paste ${EQ}_eq_netwk_stnm tmpfile_out_$$ >> ${OUTFILE}
 		read NSTA < tmpfile_NSTA_$$
 		rm -f tmpfile_out_$$ tmpfile_NSTA_$$
 
-		# H. Plot. (GMT-4)
+		# I. Plot. (GMT-4)
 		if [ ${GMTVERSION} -eq 4 ]
 		then
 
@@ -444,7 +467,7 @@ EOF
 			# plot title and tag.
 
 			pstext -JX8.5i/1i -R-100/100/-1/1 -N -X0i -Y9.5i -P -K > ${PLOTFILE} << EOF
-0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} ESW Phase: ${Phase} Comp: ${COMP}
+0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} ESW NetWork: ${NETWK} Phase: ${Phase} Comp: ${COMP}
 0 0.5 12 0 0 CB @;red;${FrequencyContent}@;;
 0 0 15  0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}
 EOF
@@ -512,7 +535,7 @@ EOF
 15 -11 10 0 0 LM 1st Stack
 15 -13.5 11 0 12 LM \261 1 \163
 EOF
-			
+
 
 			# plot basemap.
 			XAXIS="a5f1"
@@ -536,8 +559,8 @@ EOF
 
 			YMIN=0
 			YMAX=`minmax -C ${EQ}_Count_CCC | awk '{print $4}'`
-			YMAX=` echo ${YMAX} | awk '{print 10*int(1.2*$1/10) }' `
-			YNUM=` echo ${YMAX} | awk '{print 20*int(1.0*$1/100.0)}' `
+			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
+			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
 
 			XLABEL='Cross correlation coefficient between each record and the 2nd stack'
@@ -563,8 +586,8 @@ EOF
 
 			YMIN=0
 			YMAX=`minmax -C ${EQ}_Count_DT | awk '{print $4}'`
-			YMAX=` echo ${YMAX} | awk '{print 10*int(1.2*$1/10) }' `
-			YNUM=` echo ${YMAX} | awk '{print 20*int(1.0*$1/100.0)}' `
+			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
+			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
 
 			XLABEL='Time shift of each record to construct the 2nd stack (sec)'
@@ -580,7 +603,7 @@ EOF
 		fi
 
 
-		# H*. Plot. (GMT-5)
+		# I*. Plot. (GMT-5)
 		if [ ${GMTVERSION} -eq 5 ]
 		then
 
@@ -690,8 +713,8 @@ EOF
 
 			YMIN=0
 			YMAX=`minmax -C ${EQ}_Count_CCC | awk '{print $4}'`
-			YMAX=` echo ${YMAX} | awk '{print 10*int(1.2*$1/10) }' `
-			YNUM=` echo ${YMAX} | awk '{print 20*int(1.0*$1/100.0)}' `
+			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
+			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
 
 			XLABEL='Cross correlation coefficient between each record and the 2nd stack'
@@ -717,8 +740,8 @@ EOF
 
 			YMIN=0
 			YMAX=`minmax -C ${EQ}_Count_DT | awk '{print $4}'`
-			YMAX=` echo ${YMAX} | awk '{print 10*int(1.2*$1/10) }' `
-			YNUM=` echo ${YMAX} | awk '{print 20*int(1.0*$1/100.0)}' `
+			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
+			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
 
 			XLABEL='Time shift of each record to construct the 2nd stack (sec)'
@@ -732,6 +755,8 @@ EOF
 			rm -f tmpfile_dt_$$
 
 		fi
+
+		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Aux.sh
 
 	done < ${OUTDIR}/tmpfile_PhaseESW_${RunNumber}
 

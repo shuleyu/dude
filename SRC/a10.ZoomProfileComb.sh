@@ -341,7 +341,7 @@ EOF
 		saclst gcarc t1 f `ls ${EQ}*sac` > ${EQ}_PlotList_Gcarc
 
 		sort -g -k 2,2 ${EQ}_PlotList_Gcarc > tmpfile_$$
-		mv tmpfile_$$ ${EQ}_PlotList_Gcarc 
+		mv tmpfile_$$ ${EQ}_PlotList_Gcarc
 
 
 		# tighten the Distance range, take amplitude in consideration.
@@ -411,6 +411,7 @@ ${PhaseFile}
 ${EQ}_gcarc_$$
 ${EQ}_FirstArrival_$$
 EOF
+
 			paste ${file} ${EQ}_FirstArrival_$$ | grep -v "nan" | awk '{printf "%.3lf %.3lf\n",$1,$2-$3}' > ${NewFile}
 
 			awk '{print $1}' ${file}_Enveloped > ${EQ}_gcarc_$$
@@ -521,6 +522,32 @@ EOF
 
 			# add travel time curve (or not). (_WithTC)
 			cp ${PLOTFILE} ${PLOTFILE}_WithTC
+			cp ${PLOTFILE} ${PLOTFILE}_TCandText
+
+
+			# add 5 sec + 10 sec + 5 sec time window around PREM.
+
+			psxy -J -R -L -Glightyellow -K -O >> ${PLOTFILE}_WithTC << EOF
+-10 ${DISTMIN}
+-10 ${DISTMAX}
+-5 ${DISTMAX}
+-5 ${DISTMIN}
+EOF
+
+			psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE}_WithTC << EOF
+-5 ${DISTMIN}
+-5 ${DISTMAX}
+5 ${DISTMAX}
+5 ${DISTMIN}
+EOF
+			psxy -J -R -L -Glightgreen -K -O >> ${PLOTFILE}_WithTC << EOF
+5 ${DISTMIN}
+5 ${DISTMAX}
+10 ${DISTMAX}
+10 ${DISTMIN}
+EOF
+
+			# plot arrival lines.
 
 			for file in `cat ${EQ}_PhaseArrivalFiles.txt`
 			do
@@ -529,11 +556,11 @@ EOF
 				Polarity=${Polarity%%_*}
 				PenColor=`grep -w ${Polarity} ${EQ}_PlotPen.txt | awk '{print $2}'`
 				psxy ${file} -J -R -W1p/${PenColor} -: -K -O >> ${PLOTFILE}_WithTC
+				psxy ${file} -J -R -W1p/${PenColor} -: -K -O >> ${PLOTFILE}_TCandText
 			done
 
 
 			# plot seismogram.
-			cp ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
 			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -O >> ${PLOTFILE}
 			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -O >> ${PLOTFILE}_WithTC
 
@@ -602,7 +629,32 @@ EOF
 
 			# add travel time curve (or not). (_WithTC)
 			cp ${PLOTFILE} ${PLOTFILE}_WithTC
+			cp ${PLOTFILE} ${PLOTFILE}_TCandText
 
+
+			# add 5 sec + 10 sec + 5 sec time window around PREM.
+
+			gmt psxy -J -R -L -Glightyellow -K -O >> ${PLOTFILE}_WithTC << EOF
+-10 ${DISTMIN}
+-10 ${DISTMAX}
+-5 ${DISTMAX}
+-5 ${DISTMIN}
+EOF
+
+			gmt psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE}_WithTC << EOF
+-5 ${DISTMIN}
+-5 ${DISTMAX}
+5 ${DISTMAX}
+5 ${DISTMIN}
+EOF
+			gmt psxy -J -R -L -Glightgreen -K -O >> ${PLOTFILE}_WithTC << EOF
+5 ${DISTMIN}
+5 ${DISTMAX}
+10 ${DISTMAX}
+10 ${DISTMIN}
+EOF
+
+			# plot arrival lines.
 			for file in `cat ${EQ}_PhaseArrivalFiles.txt`
 			do
 				Polarity=`basename ${file}`
@@ -610,11 +662,11 @@ EOF
 				Polarity=${Polarity%%_*}
 				PenColor=`grep -w ${Polarity} ${EQ}_PlotPen.txt | awk '{print $2}'`
 				gmt psxy ${file} -J -R -W1p,${PenColor} -: -K -O >> ${PLOTFILE}_WithTC
+				gmt psxy ${file} -J -R -W1p,${PenColor} -: -K -O >> ${PLOTFILE}_TCandText
 			done
 
 
 			# plot seismogram.
-			cp ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
 			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O >> ${PLOTFILE}
 			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O >> ${PLOTFILE}_WithTC
 

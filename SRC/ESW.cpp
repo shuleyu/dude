@@ -16,7 +16,7 @@ using namespace std;
 
 struct Record{
 	string filename;
-	double radpat,snr,*data;
+	double radpat,snr,*data,PP,Peak;
 };
 
 
@@ -24,7 +24,7 @@ int main(int argc, char **argv){
 
     enum PIenum{FLAG1};
     enum PSenum{infile,outfile,stackout,nstaout,FLAG2};
-    enum Penum{E1,E2,PREMbias,Delta,FLAG3};
+    enum Penum{E1,E2,PREMbias,NBegin,NEnd,Delta,FLAG3};
 
     /****************************************************************
 
@@ -104,10 +104,10 @@ int main(int argc, char **argv){
     ****************************************************************/
 
 	// Note: Implicit setting 1: SAC files are pre-cut to this time window:
-	//       |    PERM+3*TimeMin(E1)  <-->  PREM+4*TimeMax(E2)    |
+	//       |    PERM+3*TimeMin(E1)  <-->  PREM+3*TimeMax(E2)    |
 	//
 	//       Implicit setting 2: will normalise each waveform near the PREM
-	//       arrival (a -/+ 5 seconds window around FirstOnSet).
+	//       arrival (windowing around FirstOnSet).
 
 
 	// 1. Read in data.
@@ -115,7 +115,7 @@ int main(int argc, char **argv){
 	vector<Record> Data;
 	Record tmpdata;
 	int MaxLength=200000,rawnpts,nerr,MinNpts=MaxLength,
-	    FirstOnSet=(int)((P[PREMbias]-3*P[E1])/P[Delta]);
+	    FirstOnSet=(int)((P[PREMbias]-3*P[E1])/P[Delta]),pp;
 	float rawdel,rawbeg,maxdata[200000];
 	char tmpchar[300];
 	double Amplitude;
@@ -130,9 +130,12 @@ int main(int argc, char **argv){
 
 
 		// Normalize amplitude.
-		Amplitude=amplitude( maxdata+FirstOnSet-(int(5/P[Delta])),
-		                     (int(10/P[Delta])) );
+		max_ampf( maxdata+FirstOnSet+(int(P[NBegin]/P[Delta])),
+				  (int)((P[NEnd]-P[NBegin])/P[Delta]),&pp);
+		tmpdata.Peak=maxdata[FirstOnSet+(int(P[NBegin]/P[Delta]))+pp];
+		tmpdata.PP=rawbeg+(FirstOnSet+(int(P[NBegin]/P[Delta]))+pp)*P[Delta];
 
+		Amplitude=fabs(tmpdata.Peak);
 
 		// Check data amplitude.
 		if (std::isnan(Amplitude) || Amplitude<=1e-20 ){
@@ -244,8 +247,10 @@ int main(int argc, char **argv){
 
 	fpout.open(PS[outfile].c_str());
 	for (size_t index=0;index<Data.size();index++){
-		fpout << P[Delta]*Shift[index] << " " << CCC[index]
-		      << " " << Weight[index] << endl;
+		fpout << P[PREMbias] << " " << P[Delta]*Shift[index]
+		      << " " << CCC[index] << " " << Weight[index]
+		      << " " << Data[index].PP << " " << Data[index].Peak
+			  << endl;
 	}
 	fpout.close();
 

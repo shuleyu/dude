@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # ====================================================================
-# This script make SS surface reflection points (using TauP), then plot
-# the reflection points on a map.
+# This script make ScS bouncing points (using TauP), then plot the
+# bouncing points on a map.
 #
 # Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
 
 echo ""
 echo "--> `basename $0` is running. `date`"
-mkdir -p ${a23DIR}
-cd ${a23DIR}
+mkdir -p ${a21DIR}
+cd ${a21DIR}
 
 # ==================================================
 #              ! Work Begin !
@@ -25,7 +25,7 @@ for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 
 	# Ctrl+C action.
-	trap "rm -f ${a23DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${a21DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 	# A. Check the exist of list file.
@@ -34,7 +34,7 @@ do
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
 	else
-		echo "    ==> Making SS surface reflection points map of ${EQ}."
+		echo "    ==> Making ScS bouncing points map of ${EQ}."
 	fi
 
 	# B. Pull information.
@@ -53,12 +53,12 @@ do
 
 	# C. Check phase file.
 
-    if ! [ -s "`ls ${a05DIR}/${EQ}_*_SS.gmt_Enveloped 2>/dev/null`" ]
+    if ! [ -s "`ls ${a05DIR}/${EQ}_*_ScS.gmt_Enveloped 2>/dev/null`" ]
     then
         echo "        ~=> Can't find Firsta Arrival file !"
         continue
     else
-        PhaseFile=`ls ${a05DIR}/${EQ}_*_SS.gmt_Enveloped`
+        PhaseFile=`ls ${a05DIR}/${EQ}_*_ScS.gmt_Enveloped`
         PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
         PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
     fi
@@ -67,10 +67,10 @@ do
     PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`.ps
 
     # Clean dir.
-    rm -f ${a23DIR}/${EQ}*
+    rm -f ${a21DIR}/${EQ}*
 
     # Ctrl+C action.
-    trap "rm -f ${a23DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+    trap "rm -f ${a21DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
     # D. Select gcp distance window.
@@ -80,29 +80,27 @@ do
 
 	if ! [ -s "${EQ}_net_stn_stlo_stla" ]
 	then
-		echo "        ~=>${EQ} has 0 SS phase recorded in this data set..."
+		echo "        ~=>${EQ} has 0 ScS phase recorded in this data set..."
 		continue
 	fi
 
 
-    # E. Call TauP to get reflection point lon/lat.
-    echo "<NETWK> <STNM> <STLO> <STLA> <SS_HitLO> <SS_HitLA>" > ${EQ}_SSHit.List
+    # E. Call TauP to get bouncing point lon/lat.
+    echo "<NETWK> <STNM> <STLO> <STLA> <ScS_HitLO> <ScS_HitLA>" > ${EQ}_ScSHit.List
     while read netwk stnm STLO STLA
     do
-        taup_path -ph SS -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -o stdout \
-		| awk -v stlo=${STLO} -v stla=${STLA} -v net=${netwk} -v stn=${stnm} '{if (NR>2 && $2==6371 && $3!="") print net,stn,stlo,stla,$4,$3}' \
-		| head -n 1 >> ${EQ}_SSHit.List
+        taup_path -ph ScS -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -o stdout | awk -v stlo=${STLO} -v stla=${STLA} -v net=${netwk} -v stn=${stnm} '{if ($2==3480 && $3!="") print net,stn,stlo,stla,$4,$3}' >> ${EQ}_ScSHit.List
     done < ${EQ}_net_stn_stlo_stla
 
-    NSTA=`wc -l < ${EQ}_SSHit.List`
+    NSTA=`wc -l < ${EQ}_ScSHit.List`
     NSTA=$((NSTA-1))
 
 	# F. make a great circle path file.
 	keys="<STLO> <STLA>"
-	${BASHCODEDIR}/Findfield.sh ${EQ}_SSHit.List "${keys}" > ${EQ}_stlo_stla
+	${BASHCODEDIR}/Findfield.sh ${EQ}_ScSHit.List "${keys}" > ${EQ}_stlo_stla
 
-	keys="<SS_HitLO> <SS_HitLA>"
-	${BASHCODEDIR}/Findfield.sh ${EQ}_SSHit.List "${keys}" > ${EQ}_hitlo_hitla
+	keys="<ScS_HitLO> <ScS_HitLA>"
+	${BASHCODEDIR}/Findfield.sh ${EQ}_ScSHit.List "${keys}" > ${EQ}_hitlo_hitla
 
 	rm -f ${EQ}_gcpfile
 	while read stlo stla
@@ -129,16 +127,16 @@ do
 
         # plot title and tag.
         pstext -JX11i/1i -R-100/100/-1/1 -N -X0i -Y7i -K > ${PLOTFILE} << EOF
-0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  SS surface reflection points
+0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  ScS CMB bounce points
 0 0.5 15 0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}
-0 0 12 0 0 CB Tomography model:  S20RTS (Ritsema) Z=150 km
+0 0 12 0 0 CB Tomography model:  S20RTS (Ritsema) Z=2880 km
 EOF
         pstext -J -R -N -Wored -G0 -Y-0.5i -O -K >> ${PLOTFILE} << EOF
 0 0.5 10 0 0 CB SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`
 EOF
         # plot S20RTS @ 2891 km.
-        xyz2grd ${SRCDIR}/ritsema.0150 -G0150.grd -I2 ${REG} -:
-        grdimage 0150.grd ${CPT} ${REG} ${PROJ} -E40 -K -O -X1i -Y-5.3i >> ${PLOTFILE}
+        xyz2grd ${SRCDIR}/ritsema.2880 -G2880.grd -I2 ${REG} -:
+        grdimage 2880.grd ${CPT} ${REG} ${PROJ} -E40 -K -O -X1i -Y-5.3i >> ${PLOTFILE}
 
         # add a color scale for the tomography map
         psscale ${CPT} -D4.5i/-0.2i/3.0i/0.13ih -B2/:"@~\144@~Vs (%)": -O -K -N300 >> ${PLOTFILE}
@@ -155,8 +153,8 @@ ${EVLO} ${EVLA}
 EOF
 		psxy ${EQ}_stlo_stla ${REG} ${PROJ} -St0.03i -K -O -W1/0/0/0 -G0 >> ${PLOTFILE}
 
-		# now plot the SS reflection points:
-		psxy ${EQ}_hitlo_hitla ${REG} ${PROJ} -S+0.15i -O -W3/yellow >> ${PLOTFILE}
+		# now plot the ScS bounce points:
+		psxy ${EQ}_hitlo_hitla ${REG} ${PROJ} -Sx+0.15i -O -W3/yellow >> ${PLOTFILE}
 
     fi
 
@@ -179,9 +177,9 @@ EOF
 
         # plot title and tag.
         cat > ${EQ}_plottext.txt << EOF
-0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  SS surface reflection points
+0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  ScS CMB bounce points
 0 0.5 @:15:${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}@::
-0 0 @:12:Tomography model:  S20RTS (Ritsema) Z=150 km@::
+0 0 @:12:Tomography model:  S20RTS (Ritsema) Z=2880 km@::
 EOF
         gmt pstext ${EQ}_plottext.txt -JX11i/1i -R-100/100/-1/1 -F+jCB+f20p,Helvetica,black -N -Xf0i -Yf7i -K > ${PLOTFILE}
 
@@ -191,8 +189,8 @@ EOF
         gmt pstext ${EQ}_plottext.txt -J -R -F+jCB+f10p,Helvetica,black -N -Wred -Y-0.5i -O -K >> ${PLOTFILE}
 
         # plot S20RTS @ 2891 km.
-        gmt xyz2grd ${SRCDIR}/ritsema.0150 -G0150.grd -I2 ${REG} -:
-        gmt grdimage 0150.grd ${CPT} ${REG} ${PROJ} -E40 -K -O -X1i -Y-5.3i >> ${PLOTFILE}
+        gmt xyz2grd ${SRCDIR}/ritsema.2880 -G2880.grd -I2 ${REG} -:
+        gmt grdimage 2880.grd ${CPT} ${REG} ${PROJ} -E40 -K -O -X1i -Y-5.3i >> ${PLOTFILE}
 
         # add a color scale for the tomography map
         gmt psscale ${CPT} -D4.5i/-0.2i/3.0i/0.13ih -B2/:"@~\144@~Vs (%)": -O -K -N300 >> ${PLOTFILE}
@@ -210,8 +208,8 @@ ${EVLO} ${EVLA}
 EOF
 		gmt psxy ${EQ}_stlo_stla ${REG} ${PROJ} -St0.03i -K -O -W1,0/0/0 -G0 >> ${PLOTFILE}
 
-		# now plot the SS reflection points:
-		gmt psxy ${EQ}_hitlo_hitla ${REG} ${PROJ} -S+0.15i -O -W1,yellow >> ${PLOTFILE}
+		# now plot the ScS bounce points:
+		gmt psxy ${EQ}_hitlo_hitla ${REG} ${PROJ} -Sx+0.15i -O -W1,yellow >> ${PLOTFILE}
 
 
     fi

@@ -27,7 +27,7 @@
 
 # Run.sh ----
 
-<NewPlots>                    1
+<NewPlots>                    0
 <CleanSAC>                    1
 
 # ----
@@ -148,7 +148,9 @@ SH 4.5kmps
 
 <BP_BEGIN>
 
+R    0    180    400    1900    0.03    0.3    Global    SV    AllSt    Portrait
 T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
+Z    0    180    200    1800    0.01    1.0    Global    P     AllSt    Portrait
 
 <BP_END>
 
@@ -197,7 +199,9 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPC_BEGIN>
 
+0.5    R    0    180    200    1800    0.03    0.3    Global    SV    AllSt    Portrait
 0.5    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
+0.5    Z    0    180    200    1800    0.01    1.0    Global    P     AllSt    Portrait
 
 <BPC_END>
 
@@ -220,7 +224,9 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPDS_BEGIN>
 
+1    1    R    0    180    200    1800    0.03    0.3    Global    SV    AllSt    Portrait
 1    1    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
+1    1    Z    0    180    200    1800    0.01    1.0    Global    P     AllSt    Portrait
 
 <BPDS_END>
 
@@ -245,6 +251,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 S    R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
 S    T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
+P    Z    0     180    -100    100    0.01    1.0    Own    P     AllSt    Portrait
 
 <ZP_END>
 
@@ -272,6 +279,7 @@ S    T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portr
 
 0.5    S    R    0    180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
 0.5    S    T    0    180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
+0.5    P    Z    0    180    -100    100    0.01    1.0    Own    P     AllSt    Portrait
 
 <ZPC_END>
 
@@ -296,6 +304,7 @@ S    T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portr
 
 1    1    S      R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
 1    1    S      T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
+1    1    P      Z    0     180    -100    100    0.01    1.0    Own    P     AllSt    Portrait
 
 <ZPDS_END>
 
@@ -416,6 +425,7 @@ SKKS       SV
 
 S    R    0    0    180    0.03    0.3    AllSt    -15    20
 S    T    0    0    180    0.03    0.3    AllSt    -15    20
+P    Z    0    0    180    0.01    1.0    AllSt    -10    15
 
 <PhaseESW_END>
 
@@ -473,6 +483,7 @@ S    T    0    0    180    0.03    0.3    AllSt    -15    20
 
 S    R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
 S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+P    Z    0    0    180    0.01    1.0    AllSt    -100    100    P    Portrait
 
 <AP_END>
 
@@ -515,6 +526,7 @@ S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 
 0.5    S    R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
 0.5    S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+0.5    P    Z    0    0    180    0.01    1.0    AllSt    -100    100    P    Portrait
 
 <APC_END>
 
@@ -541,6 +553,7 @@ S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 
 1    1    S    R    0    0    180    0.03    0.3    AllSt     Own    0    -100    100    SV   Portrait
 1    1    S    T    0    0    180    0.03    0.3    AllSt     Own    0    -100    100    SH   Portrait
+1    1    P    Z    0    0    180    0.01    1.0    AllSt     Own    0    -100    100    P    Portrait
 
 <APDS_END>
 
@@ -590,7 +603,7 @@ S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 #   The big ps file is deleted.
 
 # a50. =========================================================================
-<ByWhich>                     Task
+<ByWhich>                     EQ
 
 #  ByWhich:
 #    choose from "EQ","Task"
@@ -605,6 +618,6 @@ S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 #   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
-200711160313
+200705251747
 
 <EQs_END>

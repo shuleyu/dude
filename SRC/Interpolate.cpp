@@ -126,6 +126,17 @@ int main(int argc, char **argv){
 
 	wiginterpd(Gcarc,Time,NPTS,gcarc,Arrival,NPTS_gcarc,1);
 
+	// Make the out-of-range Arrival into nan.
+	int PP;
+	double DistMax=max_vald(Gcarc,NPTS,&PP);
+	double DistMin=min_vald(Gcarc,NPTS,&PP);
+	
+	for (int index=0;index<NPTS_gcarc;index++){
+		if (gcarc[index]<DistMin || gcarc[index]>DistMax){
+			Arrival[index]=0.0/0.0;
+		}
+	}
+
 	// Output.
 	ofstream fpout;
 	fpout.open(PS[outfile].c_str());

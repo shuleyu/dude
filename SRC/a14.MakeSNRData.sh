@@ -387,6 +387,7 @@ EOF
 	echo "<NETWK> <STNM> <SNR_R> <SNR_T> <SNR_Z>" > ${OUTFILE}
 
 	# a. stations which have all 3 SNR measurements.
+	touch R_netwk_stnm_snr.txt T_netwk_stnm_snr.txt Z_netwk_stnm_snr.txt
 	awk '{print $1"_"$2}' R_netwk_stnm_snr.txt | sort > R_netwk_stnm.txt
 	awk '{print $1"_"$2}' T_netwk_stnm_snr.txt | sort > T_netwk_stnm.txt
 	awk '{print $1"_"$2}' Z_netwk_stnm_snr.txt | sort > Z_netwk_stnm.txt

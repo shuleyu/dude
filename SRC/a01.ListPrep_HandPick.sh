@@ -43,6 +43,7 @@ ${a01DIR}/${EQ}_FileList
 EOF
 	rm -f tmpfile_$$
 
+
 	if [ $? -ne 0 ]
 	then
 		echo "    !=> ListPrep.out C++ code failed on ${EQ} ..."
@@ -53,11 +54,11 @@ EOF
 	# Hand selected traces.
 
 	mysql -N ScS_CP > tmpfile_$$  << EOF
-select eq,netwk,stnm from Master_a06 where wantit=1 and eq=${EQ};
+select eq,netwk,stnm from Master_a13 where wantit=1 and eq=${EQ};
 EOF
 	awk '{printf "%s\\.%s\\.%s\\.\n",$1,$2,$3}' tmpfile_$$ > tmpfile1_$$
 
-	rm -f tmpfile_$$
+	rm -f tmpfile_$$ tmpfileZ_$$ tmpfileE_$$ tmpfileN_$$ tmpfileR_$$ tmpfileT_$$
 	while read File
 	do
 		grep "${File}" ${a01DIR}/${EQ}_FileList   >> tmpfile_$$
@@ -82,7 +83,11 @@ EOF
 	trap "rm -f ${a01DIR}/${EQ}_FileList_Info ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 	echo "<FileName> <STNM> <NETWK> <OMarker> <BeginTime> <EndTime> <COMP> <Gcarc> <Az> <BAz> <STLO> <STLA>" > ${a01DIR}/${EQ}_FileList_Info
-	saclst kstnm knetwk o b npts delta kcmpnm gcarc az baz stlo stla f `cat ${a01DIR}/${EQ}_FileList` \
+
+	# The ridiculous repeating kcmpnm here is needed
+	# because sometimes two numveric outputs of saclst has no white seperation characters between them.
+	saclst kstnm knetwk o kcmpnm b kcmpnm npts kcmpnm delta kcmpnm gcarc kcmpnm az kcmpnm baz kcmpnm stlo kcmpnm stla f `cat ${a01DIR}/${EQ}_FileList` \
+	| awk '{$5="";$7="";$9="";$13="";$15="";$17="";$19=""; print $0}' \
 	| awk '{$6=$5+$6*$7;$7=""; print $0}' >> ${a01DIR}/${EQ}_FileList_Info
 
 

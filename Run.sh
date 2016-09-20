@@ -99,13 +99,16 @@ a12DIR=${OUTDIR}/a12.MakeRadPatData
 a13DIR=${OUTDIR}/a13.PlotRadPat
 a14DIR=${OUTDIR}/a14.MakeSNRData
 a15DIR=${OUTDIR}/a15.EmpiricalSourceWavelets
-a20DIR=${OUTDIR}/a20.MapTA
-a21DIR=${OUTDIR}/a21.MapAK
-a22DIR=${OUTDIR}/a22.MapScSBounce
-a23DIR=${OUTDIR}/a23.MapSSReflect
-a24DIR=${OUTDIR}/a24.MapSdiffPath
-a25DIR=${OUTDIR}/a25.MapSKSInOutCMB
-a26DIR=${OUTDIR}/a26.MapPKIKPInOutCMB
+a16DIR=${OUTDIR}/a16.AlignedProfile
+a17DIR=${OUTDIR}/a17.AlignedProfileComb
+a18DIR=${OUTDIR}/a18.AlignedProfileIncSum
+a19DIR=${OUTDIR}/a19.MapTA
+a20DIR=${OUTDIR}/a20.MapAK
+a21DIR=${OUTDIR}/a21.MapScSBounce
+a22DIR=${OUTDIR}/a22.MapSSReflect
+a23DIR=${OUTDIR}/a23.MapSdiffPath
+a24DIR=${OUTDIR}/a24.MapSKSInOutCMB
+a25DIR=${OUTDIR}/a25.MapPKIKPInOutCMB
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

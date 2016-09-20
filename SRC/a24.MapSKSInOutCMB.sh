@@ -9,8 +9,8 @@
 
 echo ""
 echo "--> `basename $0` is running. `date`"
-mkdir -p ${a25DIR}
-cd ${a25DIR}
+mkdir -p ${a24DIR}
+cd ${a24DIR}
 
 # ==================================================
 #              ! Work Begin !
@@ -25,7 +25,7 @@ for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 
 	# Ctrl+C action.
-	trap "rm -f ${a25DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${a24DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 	# A. Check the exist of list file.
@@ -67,10 +67,10 @@ do
     PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`.ps
 
     # Clean dir.
-    rm -f ${a25DIR}/${EQ}*
+    rm -f ${a24DIR}/${EQ}*
 
     # Ctrl+C action.
-    trap "rm -f ${a25DIR}/${EQ}* ${a25DIR}/tmpfile_$$ ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+    trap "rm -f ${a24DIR}/${EQ}* ${a24DIR}/tmpfile_$$ ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
     # D. Select gcp distance window.

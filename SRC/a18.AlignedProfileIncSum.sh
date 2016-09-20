@@ -1,41 +1,38 @@
 #!/bin/bash
 
 # ====================================================================
-# This script make profile plot of data.
+# This script plot aligned profile.
 #
 # Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
 
 echo ""
 echo "--> `basename $0` is running. `date`"
-mkdir -p ${a11DIR}
-cd ${a11DIR}
+mkdir -p ${a18DIR}
+cd ${a18DIR}
 
 # ==================================================
 #              ! Work Begin !
 # ==================================================
 
-
 for EQ in `cat ${OUTDIR}/tmpfile_EQs_${RunNumber}`
 do
 
 	# Ctrl+C action.
-	trap "rm -f ${a11DIR}/${EQ}* ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
-
+	trap "rm -f ${a18DIR}/${EQ}* ${a18DIR}/tmpfile*$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 	# A. Check the exist of list file.
 	if ! [ -s "${a01DIR}/${EQ}_FileList" ]
 	then
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
-	else
-		echo "    ==> Making ZoomProfileIncSum plot(s) of ${EQ}."
 	fi
 
-	# B. Pull information.
+
+	# A*. Pull information.
 	keys="<EQ> <EVLA> <EVLO> <EVDP> <MAG>"
 	${BASHCODEDIR}/Findfield.sh ${a01DIR}/EQInfo.txt "${keys}" | grep ${EQ} > ${EQ}_Info
-	read EQ EVLA EVLO EVDP MAG < ${EQ}_Info
+	read EQ1 EVLA EVLO EVDP MAG < ${EQ}_Info
 
 	YYYY=`echo ${EQ} | cut -c1-4 `
 	MM=`  echo ${EQ} | cut -c5-6 `
@@ -46,23 +43,28 @@ do
 	NSTA_All=`wc -l < ${a01DIR}/${EQ}_FileList_Info`
 	NSTA_All=$((NSTA_All/3))
 
-	# C. Enter the plot loop.
+
+	# Enter the ESW making loop.
 	Num=0
-	while read BinSize BinInc Phase COMP DISTMIN DISTMAX TIMEMIN TIMEMAX F1 F2 Normalize TravelCurve NetWork PlotOrient
+	while read BinSize BinInc Phase COMP UseSNR DistMin DistMax F1 F2 NETWK Normalize UseWeight TimeMin TimeMax TravelCurve PlotOrient
 	do
 		Num=$((Num+1))
 		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
+		INFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
 
-		# Check phase file.
-		if ! [ -s "`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped 2>/dev/null`" ]
+		# A**. Check a15 ESW file.
+		if ! [ -s ${INFILE} ] || [ `wc -l < ${INFILE}` -eq 1 ]
 		then
-			echo "        ~=> Plot ${Num}: can't find Firsta Arrival file !"
+			echo "    ~=> ${EQ} can't find a15 result file on Line ${Num}..."
 			continue
 		else
-			PhaseFile=`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped`
-			PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
-			PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
+			echo "    ==> Making AlignedProfileIncSum plot(s) of ${EQ}, Line ${Num}..."
 		fi
+
+		trap "rm -f ${a18DIR}/${EQ}* ${PLOTFILE} ${a18DIR}/tmpfile*$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+
+		# Clean dir.
+		rm -f ${a18DIR}/${EQ}*
 
 
 		if [ "${Normalize}" = Own ]
@@ -73,8 +75,22 @@ do
 		fi
 
 
-		# Clean dir.
-		rm -f ${a11DIR}/${EQ}*
+		# Convert COMP to RadPat component name.
+		case ${COMP} in
+			"R" )
+				COMP1="SV"
+				;;
+			"T" )
+				COMP1="SH"
+				;;
+			"Z" )
+				COMP1="P"
+				;;
+			* )
+				echo "        ~=> component error of input line # ${Num}..."
+				continue
+		esac
+
 
 		# set up SAC operator.
 		if [ `echo "${F1}==0.0" | bc` -eq 1 ] && [ `echo "${F2}==0.0" | bc` -eq 1 ]
@@ -95,142 +111,255 @@ do
 		fi
 
 
-		# Ctrl+C action.
-		trap "rm -f ${a11DIR}/${EQ}* ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+		# B. Check pre-calculated files.
 
-
-		# a. Select network and gcp distance window.
-		keys="<FileName> <NETWK> <Gcarc> <BeginTime> <EndTime>"
-		${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
-		| awk -v D1=${DISTMIN} -v D2=${DISTMAX} '{if (D1<=$3 && $3<=D2) print $0}' \
-		| awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$3 && $3<=D2) print $0}' \
-		| awk -v N=${NetWork} '{if (N=="AllSt") print $0; else if ($2==N) print $0}' \
-		| sort -g -k 3,3 > ${EQ}_SelectedFiles
-
-
-		# a*. select time window TIMEMIN TIMEMAX with respect to Phase arrival time.
-		awk '{print $3}' ${EQ}_SelectedFiles > ${EQ}_gcarc_$$
-
-		${EXECDIR}/Interpolate.out 0 3 0 << EOF
-${PhaseFile}
-${EQ}_gcarc_$$
-${EQ}_FirstArrival_$$
-EOF
-
-		if [ $? -ne 0 ]
+		# a. check the existance of the phase arrival file.
+		if ! [ -s "`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped 2>/dev/null`" ]
 		then
-			echo "    !=> Interpolate.out C++ code failed on ${EQ}, plot ${Num} ..."
-			rm -f ${a11DIR}/${EQ}* ${PLOTFILE}
-			exit 1
+			echo "        ~=> Can't find Firsta Arrival file for ${EQ}!"
+			continue
+		else
+			PhaseFile=`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped`
+			PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
+			PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
 		fi
 
-		paste ${EQ}_SelectedFiles ${EQ}_FirstArrival_$$ \
-		| awk -v T1=${TIMEMIN} -v T2=${TIMEMAX} '{if (T2<=($4-$6) || T1>=($5-$6)) ; else print $1}' > tmpfile_$$
 
-		mv tmpfile_$$ ${EQ}_SelectedFiles
-
-
-		if ! [ -s "${EQ}_SelectedFiles" ]
+		# b. check the existance of the radiation prediction file for this phase.
+		if ! [ -s "`ls ${a12DIR}/${EQ}_${Phase}_${COMP1}_RadPat.List 2>/dev/null`" ]
 		then
-			echo "        ~=> No selected files for parameter line ${Num}..."
+			echo "        ~=> Can't find radiation pattern prediction file for ${EQ}!"
+			continue
+		else
+			RadPatFile=`ls ${a12DIR}/${EQ}_${Phase}_${COMP1}_RadPat.List`
+		fi
+
+
+		# c. check the existance of the SNR measurement (optional).
+
+		if [ ${UseSNR} -eq 1 ] && ! [ -s "${a14DIR}/${EQ}_SNR.List" ]
+		then
+			echo "        ~=> Can't find SNR measurement file for ${EQ}!"
+			continue
+		else
+			SNRFile="${a14DIR}/${EQ}_SNR.List"
+		fi
+
+
+		# C. Select stations which have the phase arrival using distance window (a),
+		#    have radpat prediction(b),
+		#    have a none-"nan" SNR measurement (c) (if required).
+
+
+		# a. select according to min/max distance.
+		keys="<FileName> <NETWK> <STNM> <Gcarc> <BeginTime> <EndTime>"
+		${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
+		| awk -v N=${NETWK} '{if (N=="AllSt" || (N!="AllSt" && $2==N)) print $0}' \
+		| awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$4 && $4<=D2) print $0}' \
+		| awk -v D1=${DistMin} -v D2=${DistMax} '{if (D1<=$4 && $4<=D2) {A=$0;print $2"_"$3" "A}}' \
+		> ${EQ}_label_SelectedFiles
+
+		NSTA=`wc -l < ${EQ}_label_SelectedFiles`
+		if [ ${NSTA} -eq 0 ]
+		then
+			echo "        Number of records: ${NSTA}..."
+			continue
+		fi
+
+		# b. select stations have radpat prediction.
+		keys="<NETWK> <STNM> <RadPat>"
+		${BASHCODEDIR}/Findfield.sh ${RadPatFile} "${keys}" | awk '{print $1"_"$2,$3}' > tmpfile_$$
+
+		awk '{print $1}' ${EQ}_label_SelectedFiles | sort > tmpfile_label1_$$
+		awk '{print $1}' tmpfile_$$ | sort > tmpfile_label2_$$
+		comm -1 -2 tmpfile_label1_$$ tmpfile_label2_$$ > tmpfile_common_label_$$
+
+		${BASHCODEDIR}/Findrow.sh ${EQ}_label_SelectedFiles tmpfile_common_label_$$ > tmpfile1_$$
+		${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_common_label_$$ > tmpfile2_$$
+
+		rm -f ${EQ}_label_SelectedFiles
+		touch ${EQ}_label_SelectedFiles
+		while read label radpat
+		do
+			grep "^${label}\ " tmpfile1_$$ | awk -v R=${radpat} '{print $0,R}' >> ${EQ}_label_SelectedFiles
+		done < tmpfile2_$$
+
+		rm -f tmpfile1_$$ tmpfile2_$$ tmpfile_common_label_$$ tmpfile_$$ tmpfile_label1_$$ tmpfile_label2_$$
+
+
+		NSTA=`wc -l < ${EQ}_label_SelectedFiles`
+		if [ ${NSTA} -eq 0 ]
+		then
+			echo "        Number of records: ${NSTA}..."
+			continue
+		fi
+
+		# c. a none-"nan" SNR measurement.
+
+		if [ ${UseSNR} -eq 1 ]
+		then
+
+			keys="<NETWK> <STNM> <SNR_${COMP}>"
+			${BASHCODEDIR}/Findfield.sh ${SNRFile} "${keys}" | awk '{if ($3!="nan") print $1"_"$2,$3}' > tmpfile_$$
+
+			awk '{print $1}' ${EQ}_label_SelectedFiles | sort > tmpfile_label1_$$
+			awk '{print $1}' tmpfile_$$ | sort > tmpfile_label2_$$
+			comm -1 -2 tmpfile_label1_$$ tmpfile_label2_$$ > tmpfile_common_label_$$
+
+			${BASHCODEDIR}/Findrow.sh ${EQ}_label_SelectedFiles tmpfile_common_label_$$ > tmpfile1_$$
+			${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_common_label_$$ > tmpfile2_$$
+			touch tmpfile2_$$
+
+			rm -f ${EQ}_label_SelectedFiles
+			while read label radpat
+			do
+				grep "^${label}\ " tmpfile1_$$ | awk -v R=${radpat} '{print $0,R}' >> ${EQ}_label_SelectedFiles
+			done < tmpfile2_$$
+
+			rm -f tmpfile1_$$ tmpfile2_$$ tmpfile_common_label_$$ tmpfile_$$ tmpfile_label1_$$ tmpfile_label2_$$
+
+		else
+
+			rm -f tmpfile_$$
+			while read line
+			do
+				echo "${line} 100" >> tmpfile_$$
+			done < ${EQ}_label_SelectedFiles
+			mv tmpfile_$$ ${EQ}_label_SelectedFiles
+
+		fi
+
+		awk '{$1="";$3="";$4=""; print $0}' ${EQ}_label_SelectedFiles > ${EQ}_SelectedFiles
+		# current columns in ${EQ}_SelectedFiles:
+		# FileName,Gcarc,BeginTime,EndTime,radpat,snr(snr is only valid for ${COMP})
+
+		NSTA=`wc -l < ${EQ}_SelectedFiles`
+		if [ ${NSTA} -eq 0 ]
+		then
+			echo "        Number of records: ${NSTA}..."
 			continue
 		fi
 
 
-		# b. Choose file already exists for this component.
+		# D. Select SAC file time window coverage.
+		#	 a. get ${Phase} arrivals of these stations.
+
+		# a.
+		awk '{print $2}' ${EQ}_SelectedFiles > tmpfile_gcarc_$$
+
+	${EXECDIR}/Interpolate.out 0 3 0 << EOF
+${PhaseFile}
+tmpfile_gcarc_$$
+tmpfile_$$
+EOF
+
+		paste ${EQ}_SelectedFiles tmpfile_$$ > ${EQ}_SelectedFiles_Arrivals
+		rm -f tmpfile_$$ tmpfile_gcarc_$$
+
+		# b.
+		awk '{$2="";$3="";$4="";print $0}' ${EQ}_SelectedFiles_Arrivals > ${EQ}_SelectedFiles
+		# current columns in ${EQ}_SelectedFiles:
+		# FileName,radpat,snr,arrivals
+
+		NSTA=`wc -l < ${EQ}_SelectedFiles`
+		if [ ${NSTA} -eq 0 ]
+		then
+			echo "        Number of records: ${NSTA}..."
+			continue
+		fi
+
+
+		# E. Get the right component from the ${EQ}_SelectedFiles for this task.
+		awk '{print $1}' ${EQ}_SelectedFiles > ${EQ}_Files.txt
+
+		# a. Choose file already exists for this component.
 		#    (get the filenames exists both in ${EQ}_SelectedFiles and ${a01DIR}/${EQ}_FileList_${COMP})
-		${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_${COMP} ${EQ}_SelectedFiles > ${EQ}_List1
-		saclst kstnm knetwk gcarc f `cat ${EQ}_List1` > tmpfile_$$
+		${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_${COMP} ${EQ}_Files.txt > ${EQ}_List1
+		${BASHCODEDIR}/Findrow.sh ${EQ}_SelectedFiles ${EQ}_List1 > ${EQ}_filename_radpat_snr_arrival_List1
+		saclst kstnm knetwk f `cat ${EQ}_List1` > tmpfile_$$
+		paste ${EQ}_filename_radpat_snr_arrival_List1 tmpfile_$$ | awk '{$5="";print $0}' > ${EQ}_List1
+      rm -f tmpfile_$$
+		# current columns in ${EQ}_List1:
+		# FileName,radpat,snr,arrivals,kstnm,knetwk
 
-		sort -g -k 4,4 tmpfile_$$ > ${EQ}_List1
-		rm -f tmpfile_$$
 
-		# c. Choose files needed to be rotated for getting this component.
+
+		# b. Choose files needed to be rotated for getting this component.
 		if [ ${COMP} = "T" ] || [ ${COMP} = "R" ]
 		then
-			${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_E ${EQ}_SelectedFiles > tmpfile1_$$
-			${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_N ${EQ}_SelectedFiles > tmpfile2_$$
+			${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_E ${EQ}_Files.txt > tmpfile1_$$
+			${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_N ${EQ}_Files.txt > tmpfile2_$$
+
+			# If for some stations, either E or N didn't pass the selection above,
+			# throw away these stations.
+
+			saclst kstnm knetwk f `cat tmpfile1_$$` | awk '{print $2"_"$3}' | sort  > tmpfile1_label_$$
+			saclst kstnm knetwk f `cat tmpfile2_$$` | awk '{print $2"_"$3}' | sort  > tmpfile2_label_$$
+			comm -1 -2 tmpfile1_label_$$ tmpfile2_label_$$ > tmpfile_keep_label_$$
+
+			saclst kstnm knetwk f `cat tmpfile1_$$` | awk '{print $2"_"$3,$1}' > tmpfile1_label_file_$$
+			saclst kstnm knetwk f `cat tmpfile2_$$` | awk '{print $2"_"$3,$1}' > tmpfile2_label_file_$$
+
+			${BASHCODEDIR}/Findrow.sh tmpfile1_label_file_$$ tmpfile_keep_label_$$ | awk '{print $2}' > tmpfile1_$$
+			${BASHCODEDIR}/Findrow.sh tmpfile2_label_file_$$ tmpfile_keep_label_$$ | awk '{print $2}' > tmpfile2_$$
+
+
+			# Deal with rotation npts problem.
 
 			saclst npts f `cat tmpfile1_$$` > tmpfile3_$$
-			saclst kstnm knetwk npts gcarc f `cat tmpfile2_$$` > tmpfile4_$$
-			paste tmpfile3_$$ tmpfile4_$$ | sort -g -k 7,7 > ${EQ}_List2
+			saclst kstnm knetwk npts f `cat tmpfile2_$$` > tmpfile4_$$
+			${BASHCODEDIR}/Findrow.sh ${EQ}_SelectedFiles tmpfile1_$$ | awk '{$1="";print $0}' > tmpfile2_$$
+			paste tmpfile2_$$ tmpfile3_$$ tmpfile4_$$ > ${EQ}_List2
+			# current columns in ${EQ}_List2:
+			# radpat,snr,arrivals,fileE,nptsE,fileN,kstnm,knetwk,nptsN
 
-			rm -f tmpfile*$$
+
+			rm -f tmpfile1_$$ tmpfile2_$$ tmpfile3_$$ tmpfile4_$$ tmpfile1_label_$$ tmpfile2_label_$$ tmpfile1_label_file_$$ tmpfile2_label_file_$$
 
 			[ ${COMP} = "R" ] && ReadIn="junk.R" || ReadIn="junk.T"
 
 		fi
 
-		if [ ${COMP} = "E" ] || [ ${COMP} = "N" ]
+		touch ${EQ}_List2
+		NSTA1=`wc -l < ${EQ}_List1`
+		NSTA2=`wc -l < ${EQ}_List2`
+		NSTA=$((NSTA1+NSTA2))
+		#echo "        Number of stations: ${NSTA}..."
+
+		if [ ${NSTA} -eq 0 ]
 		then
-			${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_R ${EQ}_SelectedFiles > tmpfile1_$$
-			${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_T ${EQ}_SelectedFiles > tmpfile2_$$
-
-			saclst npts f `cat tmpfile1_$$` > tmpfile3_$$
-			saclst kstnm knetwk npts gcarc f `cat tmpfile2_$$` > tmpfile4_$$
-			paste tmpfile3_$$ tmpfile4_$$ | sort -g -k 7,7 > ${EQ}_List2
-
-			rm -f tmpfile*$$
-
-			[ ${COMP} = "E" ] && ReadIn="junk.E" || ReadIn="junk.N"
-
+			continue
 		fi
 
+		# E*. Only get the stations in a15 result in List1 & List2.
+		keys="<PREMBias>"
+		PREMBias=`${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | head -n 1`
 
-		# c*.get (by interpolate) the first arrival for this phase.
-		awk '{print $4}' ${EQ}_List1 > ${EQ}_gcarc_$$
+		keys="<NETWK> <STNM>"
+		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2}' > tmpfile_label_$$
 
-		${EXECDIR}/Interpolate.out 0 3 0 << EOF
-${PhaseFile}
-${EQ}_gcarc_$$
-${EQ}_FirstArrival_$$
-EOF
+		awk '{print $6"_"$5,$0}' ${EQ}_List1 > tmpfile_label_list1_$$
+		awk '{print $8"_"$7,$0}' ${EQ}_List2 > tmpfile_label_list2_$$
 
+		${BASHCODEDIR}/Findrow.sh tmpfile_label_list1_$$ tmpfile_label_$$ \
+		| awk -v P=${PREMBias} '{$1="";$3="";$4="";$5=$5+P; print $0}' > ${EQ}_List1
 
-		if [ $? -ne 0 ]
-		then
-			echo "    !=> Interpolate.out C++ code failed on ${EQ}, plot ${Num} ..."
-			rm -f ${a11DIR}/${EQ}* ${PLOTFILE}
-			exit 1
-		fi
+		${BASHCODEDIR}/Findrow.sh tmpfile_label_list2_$$ tmpfile_label_$$ \
+		| awk -v P=${PREMBias} '{$1="";$2="";$3="";$4=$4+P; print $0}' > ${EQ}_List2
 
-		awk '{print $1,$2,$3}' ${EQ}_List1 > tmpfile_$$
-		paste tmpfile_$$ ${EQ}_FirstArrival_$$ > ${EQ}_List1
-
-		rm -f tmpfile_$$
-
-		# c**.get (by interpolate) the first arrival for this phase.
-		if [ -s "${EQ}_List2" ]
-		then
-			awk '{print $7}' ${EQ}_List2 > ${EQ}_gcarc_$$
-
-			${EXECDIR}/Interpolate.out 0 3 0 << EOF
-${PhaseFile}
-${EQ}_gcarc_$$
-${EQ}_FirstArrival_$$
-EOF
+		# Current columns in ${EQ}_List1 ${EQ}_List2:
+		# FileName,arrivals+PREMbias,kstnm,knetwk
+		# arrivals+PREMbias,fileE,nptsE,fileN,kstnm,knetwk,nptsN
 
 
-			if [ $? -ne 0 ]
-			then
-				echo "    !=> Interpolate.out C++ code failed on ${EQ}, plot ${Num} ..."
-				rm -f ${a11DIR}/${EQ}* ${PLOTFILE}
-				exit 1
-			fi
-
-			awk '{$7=""; print $0}' ${EQ}_List2 > tmpfile_$$
-			paste tmpfile_$$ ${EQ}_FirstArrival_$$ > ${EQ}_List2
-
-			rm -f tmpfile_$$
-
-		fi
-
-
-
-		# d. Process data (to sac format) in ${EQ}_List1.
-		rm -f ${EQ}_SACMacro1.m
-		while read filename stnm netwk ArrivalTime
+		# F. Process data (to sac format) in ${EQ}_List1.
+		rm -f ${EQ}_SACMacro1.m ${EQ}_label_filename.txt
+		while read filename cutcenter stnm netwk
 		do
+
+			T1=`echo "${cutcenter}+${TimeMin}" | bc -l`
+			T2=`echo "${cutcenter}+${TimeMax}" | bc -l`
+			echo "${netwk}_${stnm} ${EQ}.${netwk}.${stnm}.sac" >> ${EQ}_label_filename.txt
 
 			cat >> ${EQ}_SACMacro1.m << EOF
 cut off
@@ -239,27 +368,31 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_ZPDS}
-ch t1 ${ArrivalTime}
+interp d ${Delta_APDS}
 w junk.sac
-cut t1 ${TIMEMIN} ${TIMEMAX}
+cut O ${T1} ${T2}
 r junk.sac
 w ${EQ}.${netwk}.${stnm}.sac
 EOF
 		done < ${EQ}_List1
 
-		sac >/dev/null 2>&1  << EOF
+		if [ -s "${EQ}_SACMacro1.m" ]
+		then
+
+			sac >/dev/null 2>&1  << EOF
 m ${EQ}_SACMacro1.m
 q
 EOF
-		rm -f junk.sac
+			rm -f junk.sac
+		fi
 
 
-		# e. Process data (to sac format) in ${EQ}_List2, for COMP="R" or "T".
+		# F*. Process data (to sac format) in ${EQ}_List2, for COMP="R" or "T".
 		if [ ${COMP} = "T" ] || [ ${COMP} = "R" ]
 		then
+
 			rm -f ${EQ}_SACMacro2.m
-			while read Efile ENpts Nfile stnm netwk NNpts ArrivalTime
+			while read cutcenter Efile ENpts Nfile stnm netwk NNpts
 			do
 				if [ ${ENpts} -ge ${NNpts} ]
 				then
@@ -267,6 +400,10 @@ EOF
 				else
 					SACCut="cut b n ${ENpts}"
 				fi
+
+				T1=`echo "${cutcenter}+${TimeMin}" | bc -l`
+				T2=`echo "${cutcenter}+${TimeMax}" | bc -l`
+				echo "${netwk}_${stnm} ${EQ}.${netwk}.${stnm}.sac" >> ${EQ}_label_filename.txt
 
 				cat >> ${EQ}_SACMacro2.m << EOF
 ${SACCut}
@@ -278,115 +415,86 @@ rmean
 rtr
 taper
 ${SACCommand}
-interp d ${Delta_ZPDS}
-ch t1 ${ArrivalTime}
+interp d ${Delta_APDS}
 w junk.sac
-cut t1 ${TIMEMIN} ${TIMEMAX}
+cut O ${T1} ${T2}
 r junk.sac
 w ${EQ}.${netwk}.${stnm}.sac
 EOF
 			done < ${EQ}_List2
 
-			sac >/dev/null 2>&1  << EOF
+			if [ -s "${EQ}_SACMacro2.m" ]
+			then
+
+				sac >/dev/null 2>&1 << EOF
 m ${EQ}_SACMacro2.m
 q
 EOF
-			rm -f junk.sac junk.R junk.T
-
+				rm -f junk.sac junk.R junk.T
+			fi
 		fi
 
+		# G. Integrate the shift time, weight to ${EQ}_label_filename.txt.
+		#    Also, the gcarc of each station.
+		keys="<NETWK> <STNM> <DT> <Weight>"
+		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2,$3,$4}' > tmpfile_label_dt_weight_$$
 
-		# e*. Process data (to sac format) in ${EQ}_List2, for COMP="E" or "N".
-		if [ ${COMP} = "E" ] || [ ${COMP} = "N" ]
-		then
-			rm -f ${EQ}_SACMacro2.m
-			while read Rfile RNpts Tfile stnm netwk TNpts ArrivalTime
-			do
-				if [ ${RNpts} -ge ${TNpts} ]
-				then
-					SACCut="cut b n ${RNpts}"
-				else
-					SACCut="cut b n ${TNpts}"
-				fi
+		awk '{print $1}' ${EQ}_label_filename.txt > tmpfile_label_$$
+		${BASHCODEDIR}/Findrow.sh tmpfile_label_dt_weight_$$ tmpfile_label_$$ > tmpfile_$$
+		paste ${EQ}_label_filename.txt tmpfile_$$ > tmpfile_label_filename_label_dt_weight_$$
+		awk '{print $2,$4,$5}' tmpfile_label_filename_label_dt_weight_$$ > ${EQ}_in_$$
 
-				cat >> ${EQ}_SACMacro2.m << EOF
-${SACCut}
-r ${Rfile} ${Tfile}
-rotate to 0
-w junk.N junk.E
-r ${ReadIn}
-rmean
-rtr
-taper
-${SACCommand}
-interp d ${Delta_ZPDS}
-ch t1 ${ArrivalTime}
-w junk.sac
-cut t1 ${TIMEMIN} ${TIMEMAX}
-r junk.sac
-w ${EQ}.${netwk}.${stnm}.sac
-EOF
-			done < ${EQ}_List2
-
-			sac >/dev/null 2>&1  << EOF
-m ${EQ}_SACMacro2.m
-q
-EOF
-			rm -f junk.sac junk.N junk.E
-
-		fi
-
-
-		# f. Process data (from sac to ascii).
-		saclst gcarc t1 f `ls ${EQ}*sac` > ${EQ}_PlotList_Gcarc
-
-		sort -g -k 2,2 ${EQ}_PlotList_Gcarc > tmpfile_$$
-		mv tmpfile_$$ ${EQ}_PlotList_Gcarc
+		awk '{print $1}' ${EQ}_in_$$ > tmpfile_filename_$$
+		saclst gcarc f `cat tmpfile_filename_$$` | awk '{print $2}' > tmpfile_gcarc_$$
+		paste ${EQ}_in_$$ tmpfile_gcarc_$$ | sort -k 4,4 > ${EQ}_AlignedIn_$$
+		# current columns in ${EQ}_AlignedIn_$$
+		# FileName,dt,weight,gcarc
+		rm -f tmpfile*$$
 
 
 		# tighten the Distance range, take amplitude in consideration.
 		[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
-		awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C \
-		| awk -v D=${BinSize} '{print $1-D,$2+D}'     \
-		| awk -v D=${Amplitude_ZPDS} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
+		awk '{print $4}' ${EQ}_AlignedIn_$$ | minmax -C \
+		| awk -v D=${BinSize} '{print $1-D,$2+D}' \
+		| awk -v D=${Amplitude_APDS} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
 		read DISTMIN DISTMAX < tmpfile_$$
         if [ `echo "${DISTMIN}==${DISTMAX}"|bc` -eq 1 ]
         then
             DISTMIN=`echo "${DISTMIN}" | awk '{print $1-1}'`
             DISTMAX=`echo "${DISTMAX}" | awk '{print $1+1}'`
         fi
+		AmpScale=`echo "${Amplitude_APDS}/${PlotHeight}*(${DISTMAX}- ${DISTMIN})" | bc -l`
 		rm -f tmpfile_$$
 
 
-		# Decide the amplitude scale (in deg),
-		# in this c++ code, sac files are converted into a big ascii file.
+		# H. Make Plot file.
 
-		AmpScale=`echo "${Amplitude_ZPDS}/${PlotHeight}*(${DISTMAX}- ${DISTMIN})" | bc -l`
-
-		${EXECDIR}/ZoomProfileIncSum.out 1 4 6 << EOF
+		${EXECDIR}/AlignedProfileIncSum.out 2 4 6 << EOF
 ${Normalize}
-${EQ}_PlotList_Gcarc
+${UseWeight}
+${EQ}_AlignedIn_$$
 ${EQ}_PlotFile.txt
 ${EQ}_ValidTraceNum.txt
 ${EQ}_TraceCount.txt
 ${AmpScale}
 ${BinSize}
 ${BinInc}
-${TIMEMIN}
-${TIMEMAX}
-${Delta_ZPDS}
+${TimeMin}
+${TimeMax}
+${Delta_APDS}
 EOF
+
 		if [ $? -ne 0 ]
 		then
-			echo "    1=> ZoomProfileIncSum.out C++ code failed on ${EQ}, plot ${Num} ..."
-			rm -f ${a11DIR}/${EQ}* ${PLOTFILE}
+			echo "    !=> AlignedProfileIncSum.out C++ code failed on ${EQ}, line ${Num} ..."
+			rm -f ${a18DIR}/${EQ}* ${OUTFILE}
 			exit 1
 		fi
 
 		read NSTA < ${EQ}_ValidTraceNum.txt
 
 
-		# g. prepare travel times.
+		# I. prepare travel times.
 
 		# prepare travel time curves files.
 
@@ -418,7 +526,6 @@ ${PhaseFile}
 ${EQ}_gcarc_$$
 ${EQ}_FirstArrival_$$
 EOF
-
 			paste ${file} ${EQ}_FirstArrival_$$ | grep -v "nan" | awk '{printf "%.3lf %.3lf\n",$1,$2-$3}' > ${NewFile}
 
 			awk '{print $1}' ${file}_Enveloped > ${EQ}_gcarc_$$
@@ -461,15 +568,15 @@ EOF
 			${EXECDIR}/TextPosition.out 0 2 4 << EOF
 ${file}_Enveloped
 tmpfile_$$
-${TIMEMIN}
-${TIMEMAX}
+${TimeMin}
+${TimeMax}
 ${DISTMIN}
 ${DISTMAX}
 EOF
 			if [ $? -ne 0 ]
 			then
 				echo "    !=> TextPosition.out C++ code failed on ${EQ}, plot ${Num} ..."
-				rm -f ${a11DIR}/${EQ}* tmpfile_$$ ${PLOTFILE}
+				rm -f ${a09DIR}/${EQ}* tmpfile_$$ ${PLOTFILE}
 				exit 1
 			fi
 
@@ -510,10 +617,10 @@ EOF
 			# plot basemap.
 			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX5.3i/-${PlotHeight}i" || PROJ="-JX7.8i/-${PlotHeight}i"
 
-			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
-			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
-			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-			XLABEL="Time after ${Model_TT} ${Phase}-wave time (sec)"
+			[ `echo "(${TimeMax}- ${TimeMin})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
+			[ `echo "(${TimeMax}- ${TimeMin})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
+			[ `echo "(${TimeMax}- ${TimeMin})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
+			XLABEL="Time after shifted ${Model_TT} ${Phase}-wave time (sec)"
 
 			[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
 			[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
@@ -523,7 +630,7 @@ EOF
 			[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"
 			[ ${PlotOrient} = "Portrait" ] && YP="-Y-8i" || YP="-Y-5.5i"
 
-			REG="-R${TIMEMIN}/${TIMEMAX}/${DISTMIN}/${DISTMAX}"
+			REG="-R${TimeMin}/${TimeMax}/${DISTMIN}/${DISTMAX}"
 
 			psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/${YAXIS}:"${YLABEL}":WSne ${XP} ${YP} -K -O >> ${PLOTFILE}
 
@@ -548,7 +655,6 @@ EOF
 
 			# plot a arrival page, with phase name, without seismogram. (_TCandText)
 			pstext ${EQ}_Phases.txt -J -R -N -K -O >> ${PLOTFILE}_TCandText
-
 
 			# plot a histogram of TraceNum count in each bin.
 
@@ -640,10 +746,10 @@ EOF
 			# plot basemap.
 			[ ${PlotOrient} = "Portrait" ] && PROJ="-JX5.3i/-${PlotHeight}i" || PROJ="-JX7.8i/-${PlotHeight}i"
 
-			[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
-			[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
-			[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-			XLABEL="Time after ${Model_TT} ${Phase}-wave time (sec)"
+			[ `echo "(${TimeMax}- ${TimeMin})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
+			[ `echo "(${TimeMax}- ${TimeMin})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
+			[ `echo "(${TimeMax}- ${TimeMin})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
+			XLABEL="Time after shifted ${Model_TT} ${Phase}-wave time (sec)"
 
 			[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
 			[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
@@ -653,7 +759,7 @@ EOF
 			[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"
 			[ ${PlotOrient} = "Portrait" ] && YP="-Y-8i" || YP="-Y-5.5i"
 
-			REG="-R${TIMEMIN}/${TIMEMAX}/${DISTMIN}/${DISTMAX}"
+			REG="-R${TimeMin}/${TimeMax}/${DISTMIN}/${DISTMAX}"
 
 			gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/${YAXIS}:"${YLABEL}":WSne ${XP} ${YP} -K -O >> ${PLOTFILE}
 
@@ -731,13 +837,13 @@ EOF
 			gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}_WithTC
 			gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/f${BinInc}WS -O >> ${PLOTFILE}_TCandText
 
-
 			# get rid of traveltime plots if we don't want plot it.
 			[ ${TravelCurve} = "NO" ] && rm -f ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
 
 		fi
 
-	done < ${OUTDIR}/tmpfile_ZPDS_${RunNumber} # End of plot loop.
+
+	done < ${OUTDIR}/tmpfile_APDS_${RunNumber}
 
 done # End of EQ loop.
 

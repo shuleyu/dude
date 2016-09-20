@@ -29,7 +29,10 @@ No pre-calculated phase arrivals in sac headers are needed.
 Travel-Time plot bug fixed.
 Amplitude scale in profile plots are optional now.
 SNR,RadPat,etc.. measurements are arranged in *.List files.
-if maridb (database is installed), measurements are loaded into mysql.
 GMT-5 supported.
-Mask certain stations.
-Input recorded in INPUT dir, for futher inspect.
+Input recorded in INPUT dir, for later inspect.
+Profile plot distance min/max automatically adjusted.
+
+## Future:
+database integrate measurements
+mask station for profile plots.
