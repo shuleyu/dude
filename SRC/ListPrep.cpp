@@ -54,7 +54,13 @@ bool tmpfunc3(const struct record &item1,const struct record &item2){
 }
 
 bool tmpfunc4(const struct record &item1,const struct record &item2){
-	return (fabs(item1.lon-item2.lon)<0.01 && fabs(item1.lat-item2.lat)<0.01);
+	// For synthesis
+	if (item1.lat<-100){
+		return false;
+	}
+	else{
+		return (fabs(item1.lon-item2.lon)<0.01 && fabs(item1.lat-item2.lat)<0.01);
+	}
 }
 
 int main(int argc, char **argv){

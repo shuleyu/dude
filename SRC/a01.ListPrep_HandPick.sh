@@ -43,7 +43,6 @@ ${a01DIR}/${EQ}_FileList
 EOF
 	rm -f tmpfile_$$
 
-
 	if [ $? -ne 0 ]
 	then
 		echo "    !=> ListPrep.out C++ code failed on ${EQ} ..."
@@ -76,6 +75,7 @@ EOF
 	mv tmpfileN_$$ ${a01DIR}/${EQ}_FileList_N
 	mv tmpfileT_$$ ${a01DIR}/${EQ}_FileList_T
 	mv tmpfileR_$$ ${a01DIR}/${EQ}_FileList_R
+
 
 	# ============================
 	#     B. Get stations Info.

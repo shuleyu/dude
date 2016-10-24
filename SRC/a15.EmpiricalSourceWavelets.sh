@@ -56,6 +56,7 @@ do
 		OUTFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
 		OUTFILE_ESW=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}.ESW
 		trap "rm -f ${a15DIR}/${EQ}* ${PLOTFILE} ${OUTFILE} ${a15DIR}/tmpfile*$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+		echo ""
 		echo "    ==> Making ESW of ${EQ}, Line ${Num}..."
 
 		# Clean dir.

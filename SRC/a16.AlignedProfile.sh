@@ -589,7 +589,7 @@ EOF
 			[ ${PlotOrient} = "Portrait" ] && YP="-Y9.5i" || YP="-Y7i"
 
 			pstext -JX${XSIZE}i/1i -R-100/100/-1/1 -N -X0i ${YP} ${Ori} -K > ${PLOTFILE} << EOF
-0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} NetWork: ${NetWork} Comp: ${COMP}
+0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} NetWork: ${NETWK} Comp: ${COMP}
 0 0.5 12 0 0 CB @;red;${FrequencyContent}@;;
 0 0 15  0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}
 EOF
@@ -665,7 +665,7 @@ EOF
 
 
 			cat > ${EQ}_plottext.txt << EOF
-0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} NetWork: ${NetWork} Comp: ${COMP}
+0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} NetWork: ${NETWK} Comp: ${COMP}
 0 0.5 @:12:@;red;${FrequencyContent}@;;@::
 0 0 @:15:${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}@::
 EOF

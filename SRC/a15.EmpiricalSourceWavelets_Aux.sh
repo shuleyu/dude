@@ -7,7 +7,6 @@
 # Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
 
-echo ""
 echo "    --> `basename $0` is running. `date`"
 mkdir -p ${a15DIR}/tmpdir_$$
 cd ${a15DIR}/tmpdir_$$
@@ -18,7 +17,7 @@ cd ${a15DIR}/tmpdir_$$
 
 
 # Ctrl+C action.
-trap "rm -f ${a15DIR}/tmpdir_$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+trap "rm -rf ${a15DIR}/tmpdir_$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 # A. Check the exist of list file.

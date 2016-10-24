@@ -14,9 +14,9 @@
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                     /home/shule/PROJ/t041.DATA/NorthAmerican
+<DATADIR>                     /NAS/shule/PROJ/t039.ULVZ/NoiseLevel_0.3
 <CMTFILE>                     /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
-<OUTDIR>                      /home/shule/PROJ/t001.ScS_CA
+<OUTDIR>                      /home/shule/PROJ/t001.N3
 
 <GMTVERSION>                  5
 							  -- select GMT verion: 4 or 5.
@@ -27,7 +27,7 @@
 
 # Run.sh ----
 
-<NewPlots>                    1
+<NewPlots>                    0
 <CleanSAC>                    1
 
 # ----
@@ -243,10 +243,12 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <ZP_BEGIN>
 
-S    R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
-S    T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
+S    T    45     85    -100    100    0.033    0.3    Own    SH    AllSt    Portrait
 
 <ZP_END>
+
+ScS    T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
+S    R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
 
 #  Most of the parameter explanation see a06.
 #  There's only one difference, the first parameter in ZP_BEGIN_END:
@@ -320,6 +322,12 @@ S    T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portr
 
 <ChosenPhase_BEGIN>
 
+S          SH
+ScS        SH
+S          SV
+
+<ChosenPhase_END>
+
 P          P
 PKP        P
 PcP        P
@@ -332,8 +340,6 @@ ScS        SH
 S          SV
 SKS        SV
 SKKS       SV
-
-<ChosenPhase_END>
 
 #  CMTFILE:
 #    This file is the CMT search result saved from http://www.globalcmt.org/CMTsearch.html
@@ -414,8 +420,9 @@ SKKS       SV
 
 <PhaseESW_BEGIN>
 
-S    R    0    0    180    0.03    0.3    AllSt    -15    20
-S    T    0    0    180    0.03    0.3    AllSt    -15    20
+S      R    0    0    180    0.03    0.3    AllSt    -15    20
+S      T    0    0    180    0.03    0.3    AllSt    -15    20
+ScS    T    0    0    180    0.03    0.3    AllSt    -15    20
 
 <PhaseESW_END>
 
@@ -471,8 +478,9 @@ S    T    0    0    180    0.03    0.3    AllSt    -15    20
 
 <AP_BEGIN>
 
-S    R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
-S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+S      R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
+S      T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+ScS    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 
 <AP_END>
 
@@ -513,8 +521,9 @@ S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 
 <APC_BEGIN>
 
-0.5    S    R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
-0.5    S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+0.5    S      R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
+0.5    S      T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+0.05   ScS    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 
 <APC_END>
 
@@ -590,7 +599,7 @@ S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 #   The big ps file is deleted.
 
 # a50. =========================================================================
-<ByWhich>                     Task
+<ByWhich>                     EQ
 
 #  ByWhich:
 #    choose from "EQ","Task"
@@ -605,6 +614,9 @@ S    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
 #   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
-200711160313
+201500000016
+201500000041
+201500000103
+201500000134
 
 <EQs_END>
