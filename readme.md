@@ -24,13 +24,12 @@ Email  :
 
 ## Updates:
 
-(E,N),(R,T) rotation in a06,a07,a08,a09,a10,a11.
-No pre-calculated phase arrivals in sac headers are needed.
+Can do (E,N),(R,T) rotation in a06,a07,a08,a09,a10,a11.
+Don't need pre-calculated phase arrivals in sac headers.
 Travel-Time plot bug fixed.
 Amplitude scale in profile plots are optional now.
-SNR,RadPat,etc.. measurements are arranged in *.List files.
-GMT-5 supported.
-Input recorded in INPUT dir, for later inspect.
+SNR,RadPat,etc.. measurements are saved in ".List" files.
+GMT-5 are supported. Landscape/Portrait optional now.
 Profile plot distance min/max automatically adjusted.
 
 ## Future:

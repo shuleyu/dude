@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # ====================================================================
-# This script make profile plot of data.
-# Similar to a09, plot an auxilliary plot of a15.
-# The blue window is the normalize window given in INFILE_ESW_Window.
+# This script make a catalogue plot of data used in a15.
 #
 # Ed Garnero/Pei-Ying(Patty) Lin/Shule Yu
 # ====================================================================
@@ -45,14 +43,49 @@ NSTA_All=$((NSTA_All/3))
 # C. Enter the plot loop.
 DISTMIN="${DistMin}"
 DISTMAX="${DistMax}"
-TIMEMIN="-100"
-TIMEMAX="100"
+TIMEMIN="-1000"
+TIMEMAX="1000"
 Normalize="Own"
 NetWork="${NETWK}"
 TravelCurve="NO"
 PlotOrient="Portrait"
-Delta="0.05"
+Delta="${Delta_ESW}"
 PlotAmp="0.375"
+
+PLOTHEIGHT=7.4
+PLOTWIDTH=8
+TEXTWIDTH=2.5
+PLOTPERPAGE=12
+PLOTTIMEMIN=-100
+PLOTTIMEMAX=200
+
+Tick1=5
+Tick2=50
+height=`echo ${PLOTHEIGHT}/${PLOTPERPAGE}| bc -l`
+halfh=`echo ${height}/2 | bc -l`
+
+for T in `seq -50 50`
+do
+	echo "${T} ${Tick1}" | awk '{print $1*$2" 0"}' >> tmptime1_$$
+	echo "${T} ${Tick2}" | awk '{print $1*$2" 0"}' >> tmptime2_$$
+done
+
+# Specific phases marked in catalogue here.
+# These phase names should be in a05 INPUT list.
+cat > ${EQ}_tmpfile_WantedArrival_$$ << EOF
+S
+Sdiff
+P
+SP
+PP
+pP
+sP
+PPP
+Pdiff
+ScP
+PcS
+pScP
+EOF
 
 
 PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
@@ -76,10 +109,6 @@ else
 	Normalize=0
 fi
 
-
-# Clean dir.
-rm -f ${a15DIR}/tmpdir_$$/${EQ}*
-
 # set up SAC operator.
 if [ `echo "${F1}==0.0" | bc` -eq 1 ] && [ `echo "${F2}==0.0" | bc` -eq 1 ]
 then
@@ -100,7 +129,7 @@ fi
 
 
 # Ctrl+C action.
-trap "rm -f ${a15DIR}/tmpdir_$$ ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+trap "rm -rf ${a15DIR}/tmpdir_$$ ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 
 # a. Select network and gcp distance window.
@@ -353,137 +382,54 @@ EOF
 fi
 
 
-# f. Process data (from sac to ascii).
-saclst gcarc t1 f `ls ${EQ}*sac` > ${EQ}_PlotList_Gcarc
+# g. prepare travel times for each phases.
 
+# get a netwk_stnm_gcarc file.
+ls *sac > tmpfile_$$
+saclst knetwk kstnm knetwk gcarc f `cat tmpfile_$$`  | awk '{$4=""; print $1,$2"_"$3,$5}' > tmpfile_filename_nt_st_gcarc_$$
 
-# tighten the Distance range, take amplitude in consideration.
-[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
-awk '{print $2}' ${EQ}_PlotList_Gcarc | minmax -C | awk -v D=${PlotAmp} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
-read DISTMIN DISTMAX < tmpfile_$$
-if [ `echo "${DISTMIN}==${DISTMAX}"|bc` -eq 1 ]
-then
-	DISTMIN=`echo "${DISTMIN}" | awk '{print $1-1}'`
-	DISTMAX=`echo "${DISTMAX}" | awk '{print $1+1}'`
-fi
-rm -f tmpfile_$$
-
-
-# Decide the amplitude scale (in deg),
-# in this c++ code, sac files are converted into a big ascii file.
-
-AmpScale=`echo "${PlotAmp}/${PlotHeight}*(${DISTMAX}- ${DISTMIN})" | bc -l`
-
-${EXECDIR}/ZoomProfile.out 1 3 1 << EOF
-${Normalize}
-${EQ}_PlotList_Gcarc
-${EQ}_PlotFile.txt
-${EQ}_ValidTraceNum.txt
-${AmpScale}
-EOF
-if [ $? -ne 0 ]
-then
-	echo "    1=> ZoomProfile.out C++ code failed on ${EQ}..."
-	rm -f ${a15DIR}/tmpdir_$$/${EQ}* ${PLOTFILE}
-	exit 1
-fi
-
-read NSTA < ${EQ}_ValidTraceNum.txt
-
-
-# g. prepare travel times.
-
-# prepare travel time curves files.
-
-[ `echo "${EVDP}<50"|bc` -eq 1 ] && DepthPhase="[[:upper:]]" || DepthPhase=""
-
-# (uncomment this line to plot all phase disregard of event depth.)
-# 		DepthPhase=""
-
-case "${TravelCurve}" in
-	NO | ALL )
-		ls ${a05DIR}/${EQ}_*_${DepthPhase}*.gmt > ${EQ}_PhaseArrivalFiles.txt
-		;;
-	* )
-		ls ${a05DIR}/${EQ}_*${TravelCurve}*_${DepthPhase}*.gmt > ${EQ}_PhaseArrivalFiles.txt
-		;;
-esac
-
-# get a Phase-Shifted version of these traveltime curves.
-
-rm -f tmpfile_$$
-for file in `cat ${EQ}_PhaseArrivalFiles.txt`
+# for each phase, get a netwk_stnm_arrival file.
+for phase in `cat ${EQ}_tmpfile_WantedArrival_$$`
 do
-	NewFile=`basename ${file}`
-	echo "${NewFile}" >> tmpfile_$$
 
-	awk '{print $1}' ${file} > ${EQ}_gcarc_$$
+	PhaseFile=`ls ${a05DIR}/${EQ}_*_${phase}.gmt_Enveloped`
+	! [ -s ${PhaseFile} ] && echo "       ~=> No travel time frist arrival file in a05 for Phase ${phase}..." && continue
+	awk '{print $3}' tmpfile_filename_nt_st_gcarc_$$ > ${EQ}_gcarc_$$
+	awk '{print $2}' tmpfile_filename_nt_st_gcarc_$$ > tmpfile_$$
+
 	${EXECDIR}/Interpolate.out 0 3 0 << EOF
 ${PhaseFile}
 ${EQ}_gcarc_$$
 ${EQ}_FirstArrival_$$
 EOF
 
-	paste ${file} ${EQ}_FirstArrival_$$ | grep -v "nan" | awk '{printf "%.3lf %.3lf\n",$1,$2-$3}' > ${NewFile}
-
-	awk '{print $1}' ${file}_Enveloped > ${EQ}_gcarc_$$
-	${EXECDIR}/Interpolate.out 0 3 0 << EOF
-${PhaseFile}
-${EQ}_gcarc_$$
-${EQ}_FirstArrival_$$
-EOF
-	paste ${file}_Enveloped ${EQ}_FirstArrival_$$ | grep -v "nan" | awk '{printf "%.3lf %.3lf\n",$1,$2-$3}' > ${NewFile}_Enveloped
-
+	paste tmpfile_$$ ${EQ}_FirstArrival_$$ > ${phase}.premtime
 
 done
 
-mv tmpfile_$$ ${EQ}_PhaseArrivalFiles.txt
+# g*. prepare a "sorted.lst" for the catalogue plotting loop.
 
+keys="<NETWK> <STNM>"
+${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List "${keys}" | awk '{print $1"_"$2}' > tmpfile_filelist_$$
 
-# set travel time color.
+keys="<NETWK> <STNM> <Gcarc> <Az> <BAz> <STLO> <STLA>"
+${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | awk '{print $1"_"$2,$3,$4,$5,$6,$7}' | sort -u -k1,1 > tmpfile_$$
+${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_filelist_$$ | awk '{$1="";print $0}' > tmpfile1_$$
 
-cat > ${EQ}_PlotPen.txt << EOF
-P    100/100/255
-PSV  160/255/160
-SV   255/160/160
-SVSH 255/100/100
-SH   255/130/130
-EOF
+keys="<NETWK> <STNM> <DT> <CCC> <Weight> <PeakTime> <PeakAmp>"
+${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List "${keys}" | awk '{print $1"_"$2,$3,$4,$5,$6,$7}' > tmpfile_$$
+${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_filelist_$$ | awk '{$1="";print $0}' > tmpfile2_$$
 
-# prepare travel time texts.
-rm -f ${EQ}_Phases.txt
-touch ${EQ}_Phases.txt
-for file in `cat ${EQ}_PhaseArrivalFiles.txt`
-do
-	Polarity=`basename ${file}`
-	PhaseName=${Polarity##*_}
-	PhaseName=${PhaseName%.gmt}
-	Polarity=${Polarity#*_}
-	Polarity=${Polarity%%_*}
-	TextColor=`grep -w ${Polarity} ${EQ}_PlotPen.txt | awk '{print $2}'`
+[ ${COMP} = "Z" ] && COMP1="P"
+[ ${COMP} = "R" ] && COMP1="SV"
+[ ${COMP} = "T" ] && COMP1="SH"
+[ ${COMP} = "E" ] && COMP1="SV" # These two are error-pro
+[ ${COMP} = "N" ] && COMP1="SH"
+keys="<NETWK> <STNM> <RadPat>"
+${BASHCODEDIR}/Findfield.sh ${a12DIR}/${EQ}_${Phase}_${COMP1}_RadPat.List "${keys}" | awk '{print $1"_"$2,$3}' > tmpfile_$$
+${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_filelist_$$ | awk '{$1="";print $0}' > tmpfile3_$$
 
-	# get a random plot position.
-	${EXECDIR}/TextPosition.out 0 2 4 << EOF
-${file}_Enveloped
-tmpfile_$$
-${TIMEMIN}
-${TIMEMAX}
-${DISTMIN}
-${DISTMAX}
-EOF
-	if [ $? -ne 0 ]
-	then
-		echo "    !=> TextPosition.out C++ code failed on ${EQ}..."
-		rm -f ${a15DIR}/tmpdir_$$/${EQ}* tmpfile_$$ ${PLOTFILE}
-		exit 1
-	fi
-
-	read X Y < tmpfile_$$
-	! [ -z "${X}" ] && echo "${X} ${Y} 12 0 22 LM @;${TextColor};${PhaseName}@;;" >> ${EQ}_Phases.txt
-
-done
-rm -f tmpfile_$$
-
+paste tmpfile_filelist_$$ tmpfile1_$$ tmpfile2_$$ tmpfile3_$$ | sort -g -k 2,2 > sorted.lst
 
 # h. plot. (GMT-4)
 if [ ${GMTVERSION} -eq 4 ]
@@ -497,78 +443,215 @@ then
 	gmtset BASEMAP_FRAME_RGB = +0/0/0
 	gmtset GRID_PEN_PRIMARY = 0.5p,gray,-
 
-
-	# plot title and tag.
-	[ ${PlotOrient} = "Portrait" ] && XSIZE=8.5 || XSIZE=11
-	[ ${PlotOrient} = "Portrait" ] && Ori="-P" || Ori=""
-	[ ${PlotOrient} = "Portrait" ] && YP="-Y9.5i" || YP="-Y7i"
-
-	pstext -JX${XSIZE}i/1i -R-100/100/-1/1 -N -X0i ${YP} ${Ori} -K > ${PLOTFILE} << EOF
-0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} NetWork: ${NetWork} Comp: ${COMP}
-0 0.5 12 0 0 CB @;red;${FrequencyContent}@;;
-0 0 15  0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}
-EOF
-	pstext -J -R -N -Wored -G0 -Y-0.5i -O -K >> ${PLOTFILE} << EOF
-0 0.5 10 0 0 CB SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`
-EOF
-
-	# plot basemap.
-	[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
-
-	[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
-	[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
-	[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-	XLABEL="Time after ${Model_TT} ${Phase}-wave + Given bias (sec)"
-
-	[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
-	[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
-	[ `echo "(${DISTMAX}- ${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
-	YLABEL="Distance (deg)"
-
-	[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"
-	[ ${PlotOrient} = "Portrait" ] && YP="-Y-8i" || YP="-Y-5.5i"
-
-	REG="-R${TIMEMIN}/${TIMEMAX}/${DISTMIN}/${DISTMAX}"
-
-	psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/${YAXIS}:"${YLABEL}":WSne ${XP} ${YP} -K -O >> ${PLOTFILE}
-
-	# add travel time curve (or not). (_WithTC)
-	cp ${PLOTFILE} ${PLOTFILE}_WithTC
-	cp ${PLOTFILE} ${PLOTFILE}_TCandText
-
-	# add normalizing time window around PREM+PREMBias.
-
-	psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE} << EOF
-${NormalizeBegin} ${DISTMIN}
-${NormalizeBegin} ${DISTMAX}
-${NormalizeEnd} ${DISTMAX}
-${NormalizeEnd} ${DISTMIN}
-EOF
-
-
-	# plot arrivals lines.
-	for file in `cat ${EQ}_PhaseArrivalFiles.txt`
+	page=0
+	plot=$(($PLOTPERPAGE+1))
+	while read NETNM_STNM Gcarc AZ BAZ STLO STLA D_T CCC Weight Peak AMP Rad_Pat
 	do
-		Polarity=`basename ${file}`
-		Polarity=${Polarity#*_}
-		Polarity=${Polarity%%_*}
-		PenColor=`grep -w ${Polarity} ${EQ}_PlotPen.txt | awk '{print $2}'`
-		psxy ${file} -J -R -W1p/${PenColor} -: -K -O >> ${PLOTFILE}_WithTC
-		psxy ${file} -J -R -W1p/${PenColor} -: -K -O >> ${PLOTFILE}_TCandText
-	done
+		netwk=${NETNM_STNM%_*}
+		stnm=${NETNM_STNM#*_}
+		PhaseTime=`grep ${NETNM_STNM} ${Phase}.premtime | awk '{print $2}'`
 
+		## 4.2 check if need to plot on a new page.
+		if [ ${plot} -eq $(($PLOTPERPAGE+1)) ]
+		then
 
-	# plot seismogram.
-	psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -O >> ${PLOTFILE}
-	psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -O >> ${PLOTFILE}_WithTC
+			### 4.2.1. if this isn't first page, seal the last page.
+			if [ ${page} -gt 0 ]
+			then
+				psxy -J -R -O >> ${OUTFILE} << EOF
+EOF
+			fi
 
+			### 4.2.2 plot titles and legends
+			plot=1
+			page=$((page+1))
+			OUTFILE=${page}.ps
+			title1="${MM}/${DD}/${YYYY}  PHASE: ${Phase}  COMP: ${COMP}  Page: ${page}"
+			title2="${EQ}  ELAT/ELON: ${EVLA} ${EVLO}  Depth: ${EVDP} km. Mag: ${MAG}  NSTA: ${NSTA}"
+			title3="Time tick interval: ${Tick1} sec."
+			title4="NETNM.STNM AZ BAZ"
+			title5="Gcarc D_T Rad_Pat"
+			title6="CCC Weight"
 
-	# plot phase names. (_TCandText)
-	pstext ${EQ}_Phases.txt -J -R -N -O >> ${PLOTFILE}_TCandText
+			pstext -JX${PLOTWIDTH}i/0.7i -R-1/1/-1/1 -X0.75i -Y8i -K > ${OUTFILE} << EOF
+0 -0.5 14 0 0 CB ${title1}
+EOF
+			pstext -J -R -Y-0.35i -O -K >> ${OUTFILE} << EOF
+0 0 10 0 0 CB ${title2}
+EOF
+			pstext -J -R -Y-0.15i -Wored -O -K >> ${OUTFILE} << EOF
+0 0 8 0 0 CB ${SACCommand}
+EOF
+			psxy -J -R -Y0.7i -O -K >> ${OUTFILE} << EOF
+EOF
+			#### 4.2.3 add legends of station info.
+			pstext -JX${TEXTWIDTH}i/${height}i -R-1/1/-1/1 -X${PLOTWIDTH}i -Y-${height}i -N -O -K >> ${OUTFILE} << EOF
+0 0.5 8 0 0 CB ${title3}
+0 0 8 0 0 CB ${title4}
+0 -0.5 8 0 0 CB ${title5}
+0 -1 8 0 0 CB ${title6}
+EOF
+		fi # end new page test.
 
+		## go to the right position to plot seismograms.
+		psxy -JX${PLOTWIDTH}i/${height}i -R${PLOTTIMEMIN}/${PLOTTIMEMAX}/-1/1 -X-${PLOTWIDTH}i -Y-${height}i -O -K >> ${OUTFILE} << EOF
+EOF
 
-	# get rid of traveltime plots if we don't want plot it.
-	[ ${TravelCurve} = "NO" ] && rm -f ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
+		### 4.4.0 plot Checkbox.
+		psxy -J -R -O -K -Y${halfh}i >> ${OUTFILE} << EOF
+EOF
+		if [ ${page} -eq 1 ] && [ ${plot} -eq 1 ]
+		then
+			cat >> ${OUTFILE} << EOF
+[ /_objdef {ZaDb} /type /dict /OBJ pdfmark
+[ {ZaDb} <<
+/Type /Font
+/Subtype /Type1
+/Name /ZaDb
+/BaseFont /ZapfDingbats
+>> /PUT pdfmark
+[ /_objdef {Helv} /type /dict /OBJ pdfmark
+[ {Helv} <<
+/Type /Font
+/Subtype /Type1
+/Name /Helv
+/BaseFont /Helvetica
+>> /PUT pdfmark
+[ /_objdef {aform} /type /dict /OBJ pdfmark
+[ /_objdef {afields} /type /array /OBJ pdfmark
+[ {aform} <<
+/Fields {afields}
+/DR << /Font << /ZaDb {ZaDb} /Helv {Helv} >> >>
+/DA (/Helv 0 Tf 0 g)
+/NeedAppearances true
+>> /PUT pdfmark
+[ {Catalog} << /AcroForm {aform} >> /PUT pdfmark
+EOF
+		fi
+
+		if [ `echo "${Weight}>0" |bc` -eq 1 ]
+		then
+			cat >> ${OUTFILE} << EOF
+[
+/T (${EQ}_${stnm})
+/FT /Btn
+/Rect [-180 -65 -50 65]
+/F 4 /H /O
+/BS << /W 1 /S /S >>
+/MK << /CA (8) /BC [ 0 ] /BG [ 1 ] >>
+/DA (/ZaDb 0 Tf 1 0 0 rg)
+/AP << /N << /${EQ}_${stnm} /null >> >>
+/Subtype /Widget
+/ANN pdfmark
+EOF
+		else
+			cat >> ${OUTFILE} << EOF
+[
+/T (${EQ}_${stnm})
+/V /${EQ}_${stnm}
+/FT /Btn
+/Rect [-180 -65 -50 65]
+/F 4 /H /O
+/BS << /W 1 /S /S >>
+/MK << /CA (8) /BC [ 0 ] /BG [ 1 ] >>
+/DA (/ZaDb 0 Tf 1 0 0 rg)
+/AP << /N << /${EQ}_${stnm} /null >> >>
+/Subtype /Widget
+/ANN pdfmark
+EOF
+		fi
+		psxy -J -R -O -K -Y-${halfh}i >> ${OUTFILE} << EOF
+EOF
+
+        ### plot normalize window.
+        psxy -J -R -W200/200/200 -G200/200/200 -L -O -K >> ${OUTFILE} << EOF
+`echo "${PREMBias} + ${NormalizeBegin} " | bc -l` -1
+`echo "${PREMBias} + ${NormalizeBegin} " | bc -l` 1
+`echo "${PREMBias} + ${NormalizeEnd} " | bc -l` 1
+`echo "${PREMBias} + ${NormalizeEnd} " | bc -l` -1
+EOF
+
+        ### plot ESF window.
+        psxy -J -R -W100/100/200 -G100/100/200 -L -O -K >> ${OUTFILE} << EOF
+`echo "${D_T} + ${TimeMin} " | bc -l` -1
+`echo "${D_T} + ${TimeMin} " | bc -l` 1
+`echo "${D_T} + ${TimeMax} " | bc -l` 1
+`echo "${D_T} + ${TimeMax} " | bc -l` -1
+EOF
+
+		### plot zero line with time marker.
+		psxy -J -R -W0.3p,. -O -K >> ${OUTFILE} << EOF
+${PLOTTIMEMIN} 0
+${PLOTTIMEMAX} 0
+EOF
+		psxy tmptime1_$$ -J -R -Sy0.02i -Gred -O -K >> ${OUTFILE}
+		psxy tmptime2_$$ -J -R -Sy0.05i -Gblack -O -K >> ${OUTFILE}
+
+		### PREM arrivals. (t=zero)
+		for phase in `cat ${EQ}_tmpfile_WantedArrival_$$`
+		do
+			T=`grep ${NETNM_STNM} ${phase}.premtime | awk -v P=${PhaseTime} '{print $2-P}'`
+			[[ ${T} = *nan* ]] && continue
+			psvelo -J -R -Wblack -Gpurple -Se${halfh}i/0.2/18 -O -K >> ${OUTFILE} << EOF
+${T} -0.4 0 0.4
+EOF
+			pstext -J -R -O -K >> ${OUTFILE} << EOF
+${T} -0.45 5 0 6 CT ${phase}
+EOF
+		done
+
+		### picked arrival.
+		psvelo -J -R -Wblack -Gred -Se${halfh}i/0.2/18 -N -O -K >> ${OUTFILE} << EOF
+${D_T} 0.5 0 -0.5
+EOF
+
+		### plot data.
+		echo ${EQ}.${netwk}.${stnm}.sac > filelist
+		${EXECDIR}/SAC2XY.out 0 1 0 << EOF
+filelist
+EOF
+
+		### data. (flipped and normalize within plot window).
+		file=${EQ}.${netwk}.${stnm}.sac.waveform
+		Polarity=`echo ${AMP} | awk '{if ($1>0) print 1;else print -1}'`
+		AMP_All=`echo ${AMP} ${Polarity} | awk '{print $1*$2}'`
+		if [ "${Normalize}" -eq 1 ]
+		then
+			awk -v T1=${PLOTTIMEMIN} -v T2=${PLOTTIMEMAX} -v P=${PhaseTime} '{if ( T1<$1-P && $1-P<T2 ) print $2}' ${file} > tmpfile_$$
+			AMP_All=`${BASHCODEDIR}/amplitude.sh tmpfile_$$`
+		fi
+		AMP_Scale=`echo ${AMP} ${AMP_All} | awk '{print $1/$2}'`
+
+		#### peak position.
+		psxy -J -R -Sa0.06i -Gblue -N -O -K >> ${OUTFILE} << EOF
+`echo ${Peak} ${PhaseTime} | awk '{print $1-$2}'` ${AMP_Scale}
+EOF
+		### shifted empirical source. (normalize to AMP, flip according to polarity)
+		${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.ESW "<Time> <Stack2>" > esw
+		awk -v S=${D_T} -v A=${AMP_Scale} -v C=${Polarity} -v T1=${TimeMin} -v T2=${TimeMax} '{if (T1<$1 && $1<T2) print $1+S,$2*C/A}' esw |  psxy -J -R -W0.3p,red,- -O -K >> ${OUTFILE}
+		#### waveform
+		awk -v T1=${PLOTTIMEMIN} -v T2=${PLOTTIMEMAX} -v P=${PhaseTime} -v A=${AMP_All} '{ if ($1-P>T1 && $1-P<T2) print $1-P,$2/A}' ${file} | psxy -J -R -W0.5p -O -K >> ${OUTFILE}
+
+		### flip mark.
+		[ "${Polarity}" -eq 1 ] && Color=red || Color=blue
+		psxy -J -R -Sc0.08i -G${Color} -N -O -K >> ${OUTFILE} << EOF
+${PLOTTIMEMIN} 0
+EOF
+		## station info.
+		pstext -JX${TEXTWIDTH}i/${height}i -R/-1/1/-1/1 -X${PLOTWIDTH}i -N -O -K >> ${OUTFILE} << EOF
+0 0 10 0 0 CB ${netwk}.${stnm}  `echo ${AZ} | awk '{printf "%.2f",$1}'`@~\260@~  `echo ${BAZ} | awk '{printf "%.2f",$1}'`@~\260@~
+0 -0.5 10 0 0 CB `echo ${Gcarc} | awk '{printf "%.2f",$1}'`@~\260@~  ${D_T} sec. ${Rad_Pat}
+0 -1 10 0 0 CB ${CCC}  ${SNR}   ${Weight}
+EOF
+		pstext -J -R/-1/1/-1/1 -N -O -K >> ${OUTFILE} << EOF
+EOF
+
+		plot=$((plot+1))
+
+	done < sorted.lst # end of plot loop.
+
+	psxy -J -R -O >> ${OUTFILE} << EOF
+EOF
 
 fi
 
@@ -665,7 +748,11 @@ EOF
 
 fi
 
+PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
+cat `ls -rt *.ps` > ${PLOTFILE}
+ps2pdf ${PLOTFILE}
+
 # Clean up.
-rm -r ${a15DIR}/tmpdir_$$
+rm -rf ${a15DIR}/tmpdir_$$
 
 exit 0

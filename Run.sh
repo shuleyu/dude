@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #=========================================================
-# This script Run the project.
+# This script Run DUDE.
 #
 # Shule Yu
 #=========================================================
@@ -151,115 +151,112 @@ do
 	fi
 done
 
-#===================================================================
-#            ! Compile ASU_tools, ASU_tools_cpp library !
-#===================================================================
-
-# Set up Ctrl + C action.
-trap "cd ${CCODEDIR}; make clean; cd ${CPPCODEDIR}; make clean; rm -f ${OUTDIR}/*_$$; exit 1" SIGINT
-
-# Compile ASU_tools Library.
-cd ${CCODEDIR}
-make
-cd ${CPPCODEDIR}
-make
 
 #==================================================
 #            ! Compile C,C++,Fortran codes !
 #==================================================
 
-# Set up Ctrl + C action.
-trap "rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$; exit 1" SIGINT
+if [ $# -ne 0 ]
+then
 
-# Set Header/Library dirs, Libray names.
-INCLUDEDIR="-I${CPPCODEDIR} -I${CCODEDIR} -I${SACDIR}/include"
-LIBRARYDIR="-L${CPPCODEDIR} -L${CCODEDIR} -L${SACDIR}/lib -L."
-LIBRARIES="-lASU_tools -lsac -lsacio -lm"
+	# Set up Ctrl + C action.
+	trap "rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$; exit 1" SIGINT
 
-cd ${EXECDIR}
+	# Set Header/Library dirs, Libray names.
+	INCLUDEDIR="-I${CPPCODEDIR} -I${CCODEDIR} -I${SACDIR}/include"
+	LIBRARYDIR="-L${CPPCODEDIR} -L${CCODEDIR} -L${SACDIR}/lib -L."
+	LIBRARIES="-lASU_tools -lsac -lsacio -lm"
 
-# Customized Functions (C).
-for code in `ls ${SRCDIR}/*fun.c 2>/dev/null`
-do
-    name=`basename ${code}`
-    name=${name%.fun.c}
+	# Compile ASU_tools Library.
+	cd ${CCODEDIR}
+	make
+	cd ${CPPCODEDIR}
+	make
+	cd ${EXECDIR}
 
-    ${CCOMP} ${CFLAG} -c ${code} ${INCLUDEDIR}
+	# Customized Functions (C).
+	for code in `ls ${SRCDIR}/*fun.c 2>/dev/null`
+	do
+		name=`basename ${code}`
+		name=${name%.fun.c}
 
-    if [ $? -ne 0 ]
-    then
-        echo "${name} C function is not compiled ..."
-        rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-        exit 1
-    fi
-done
+		${CCOMP} ${CFLAG} -c ${code} ${INCLUDEDIR}
 
-# Customized Functions (C++).
-for code in `ls ${SRCDIR}/*fun.cpp 2>/dev/null`
-do
-    name=`basename ${code}`
-    name=${name%.fun.cpp}
+		if [ $? -ne 0 ]
+		then
+			echo "${name} C function is not compiled ..."
+			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
+			exit 1
+		fi
+	done
 
-    ${CPPCOMP} ${CPPFLAG} -c ${code} ${INCLUDEDIR}
+	# Customized Functions (C++).
+	for code in `ls ${SRCDIR}/*fun.cpp 2>/dev/null`
+	do
+		name=`basename ${code}`
+		name=${name%.fun.cpp}
 
-    if [ $? -ne 0 ]
-    then
-        echo "${name} C++ function is not compiled ..."
-        rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-        exit 1
-    fi
-done
+		${CPPCOMP} ${CPPFLAG} -c ${code} ${INCLUDEDIR}
 
-# Executables (C).
-for code in `ls ${SRCDIR}/*.c 2>/dev/null | grep -v fun.c`
-do
-    name=`basename ${code}`
-    name=${name%.c}
+		if [ $? -ne 0 ]
+		then
+			echo "${name} C++ function is not compiled ..."
+			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
+			exit 1
+		fi
+	done
 
-    ${CCOMP} ${CFLAG} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
+	# Executables (C).
+	for code in `ls ${SRCDIR}/*.c 2>/dev/null | grep -v fun.c`
+	do
+		name=`basename ${code}`
+		name=${name%.c}
 
-    if [ $? -ne 0 ]
-    then
-        echo "${name} C code is not compiled ..."
-        rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-        exit 1
-    fi
-done
+		${CCOMP} ${CFLAG} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
 
-# Executables (C++).
-for code in `ls ${SRCDIR}/*.cpp 2>/dev/null | grep -v fun.cpp`
-do
-    name=`basename ${code}`
-    name=${name%.cpp}
+		if [ $? -ne 0 ]
+		then
+			echo "${name} C code is not compiled ..."
+			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
+			exit 1
+		fi
+	done
 
-    ${CPPCOMP} ${CPPFLAG} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
+	# Executables (C++).
+	for code in `ls ${SRCDIR}/*.cpp 2>/dev/null | grep -v fun.cpp`
+	do
+		name=`basename ${code}`
+		name=${name%.cpp}
 
-    if [ $? -ne 0 ]
-    then
-        echo "${name} C++ code is not compiled ..."
-        rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-        exit 1
-    fi
-done
+		${CPPCOMP} ${CPPFLAG} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
 
-# Executables (fortran).
-for code in `ls ${SRCDIR}/*.f90 2>/dev/null`
-do
-    name=`basename ${code}`
-    name=${name%.f}
+		if [ $? -ne 0 ]
+		then
+			echo "${name} C++ code is not compiled ..."
+			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
+			exit 1
+		fi
+	done
 
-    ${FCOMP} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
+	# Executables (fortran).
+	for code in `ls ${SRCDIR}/*.f90 2>/dev/null`
+	do
+		name=`basename ${code}`
+		name=${name%.f}
 
-    if [ $? -ne 0 ]
-    then
-        echo "${name} Fortran code is not compiled ..."
-        rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-        exit 1
-    fi
-done
+		${FCOMP} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
 
-# Clean up.
-rm -f ${EXECDIR}/*fun.o
+		if [ $? -ne 0 ]
+		then
+			echo "${name} Fortran code is not compiled ..."
+			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
+			exit 1
+		fi
+	done
+
+	# Clean up.
+	rm -f ${EXECDIR}/*fun.o
+fi
 
 # ==============================================
 #           ! Work Begin !

@@ -14,12 +14,13 @@
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                     /NAS/shule/PROJ/t039.ULVZ/NoiseLevel_0.3
+<DATADIR>                     /home/shule/PROJ/t041.DATA/NorthAmerican
 <CMTFILE>                     /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
-<OUTDIR>                      /home/shule/PROJ/t001.N3
+<OUTDIR>                      /home/shule/PROJ/t001.ScP
 
-<GMTVERSION>                  5
-							  -- select GMT verion: 4 or 5.
+<GMTVERSION>                  4
+							  -- 4: use GMT-4.
+							  -- 5: use GMT-5.
 
 # ==============================================================================
 #                               ! parameters !
@@ -28,7 +29,12 @@
 # Run.sh ----
 
 <NewPlots>                    0
+                              1 -- Will delete every previous made figures of chosen events.
+							  0 -- Will keep old figures
+
 <CleanSAC>                    1
+                              1 -- Will delete SAC files created by this program (clean up)
+							  0 -- Will keep SAC files for benchmark.
 
 # ----
 
@@ -148,7 +154,7 @@ SH 4.5kmps
 
 <BP_BEGIN>
 
-T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
+Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <BP_END>
 
@@ -197,7 +203,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPC_BEGIN>
 
-0.5    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
+0.5    Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <BPC_END>
 
@@ -220,7 +226,7 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <BPDS_BEGIN>
 
-1    1    T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
+1    1    Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <BPDS_END>
 
@@ -243,12 +249,12 @@ T    0    180    200    1800    0.03    0.3    Global    SH    AllSt    Portrait
 
 <ZP_BEGIN>
 
-S    T    45     85    -100    100    0.033    0.3    Own    SH    AllSt    Portrait
+P    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+PcP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
 
 <ZP_END>
 
-ScS    T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
-S    R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
 
 #  Most of the parameter explanation see a06.
 #  There's only one difference, the first parameter in ZP_BEGIN_END:
@@ -272,8 +278,9 @@ S    R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portr
 
 <ZPC_BEGIN>
 
-0.5    S    R    0    180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
-0.5    S    T    0    180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
+0.5    P    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+0.5    PcP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+0.5    ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
 
 <ZPC_END>
 
@@ -296,8 +303,9 @@ S    R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portr
 
 <ZPDS_BEGIN>
 
-1    1    S      R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portrait
-1    1    S      T    0     180    -100    100    0.03    0.3    Own    SH    AllSt    Portrait
+1    1    P    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+1    1    PcP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+1    1    ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
 
 <ZPDS_END>
 
@@ -318,13 +326,13 @@ S    R    0     180    -100    100    0.03    0.3    Own    SV    AllSt    Portr
 # Note: Need results from a01,a05.
 #       Because we use the lower hemisphere formula, no depth phase here.
 
-<CMTFILE>                     /home/shule/PROJ/t041.DATA/DATA_t041/CMT.dat
+<CMTFILE>                     /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
 
 <ChosenPhase_BEGIN>
 
-S          SH
-ScS        SH
-S          SV
+P          P
+PcP        P
+ScP        P
 
 <ChosenPhase_END>
 
@@ -340,6 +348,7 @@ ScS        SH
 S          SV
 SKS        SV
 SKKS       SV
+
 
 #  CMTFILE:
 #    This file is the CMT search result saved from http://www.globalcmt.org/CMTsearch.html
@@ -363,6 +372,12 @@ SKKS       SV
 
 P          P
 PcP        P
+ScP        P
+
+<RP_END>
+
+P          P
+PcP        P
 PP         P
 PKiKP      P
 PKP        P
@@ -373,8 +388,6 @@ ScS        SH
 S          SV
 SKS        SV
 SKKS       SV
-
-<RP_END>
 
 #
 #  RP_BEGIN_END:
@@ -420,9 +433,8 @@ SKKS       SV
 
 <PhaseESW_BEGIN>
 
-S      R    0    0    180    0.03    0.3    AllSt    -15    20
-S      T    0    0    180    0.03    0.3    AllSt    -15    20
-ScS    T    0    0    180    0.03    0.3    AllSt    -15    20
+P      Z    0    40    60    0.01    1    AllSt    -15    20
+ScP    Z    0    40    60    0.01    1    AllSt    -15    20
 
 <PhaseESW_END>
 
@@ -453,9 +465,18 @@ ScS    T    0    0    180    0.03    0.3    AllSt    -15    20
 #    H. Choose one network. (choose from network names. for all data, use "AllSt")
 #    I. ESW left window (in seconds, relative to anchored arrival).
 #    J. ESW right window (in seconds, relative to anchored arrival).
-#    K. PREM initial bias. (in seconds, the initial overall PREM prediction bias
-#       caused by origin time error, model simplicity and etc. This value can be
-#       visually decided from according plots like a09,a10,a11)
+#
+#	In INFILE_ESW_Window, there are parameters specified for each events.
+#	The first line in INFILE_ESW_Window should be parameter names in angle bracket.
+#
+#	EQ             Event name.
+#	Phase_COMP     PREM bias. (in seconds, the data v.s. PREM prediction bias
+# 				   caused by origin time error, simple model, receiver structure
+# 				   and etc. These values can be visually decided from plots like
+# 				   a09,a10,a11)
+#
+#	Phase_COMP_B   Normalize window Begin relative to PREM+Phase_COMP
+#	Phase_COMP_E   Normalize window End relative to PREM+Phase_COMP
 #
 # a15. =========================================================================
 
@@ -478,9 +499,7 @@ ScS    T    0    0    180    0.03    0.3    AllSt    -15    20
 
 <AP_BEGIN>
 
-S      R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
-S      T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
-ScS    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+ScP    Z    0    40    60    0.01    1    AllSt    -200    200    P    Landscape
 
 <AP_END>
 
@@ -521,9 +540,7 @@ ScS    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrai
 
 <APC_BEGIN>
 
-0.5    S      R    0    0    180    0.03    0.3    AllSt    -100    100    SV   Portrait
-0.5    S      T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
-0.05   ScS    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrait
+0.5    ScP    Z    0    40    60    0.01    1    AllSt    -200    200    P    Landscape
 
 <APC_END>
 
@@ -548,8 +565,8 @@ ScS    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrai
 
 <APDS_BEGIN>
 
-1    1    S    R    0    0    180    0.03    0.3    AllSt     Own    0    -100    100    SV   Portrait
-1    1    S    T    0    0    180    0.03    0.3    AllSt     Own    0    -100    100    SH   Portrait
+1    1    ScP    Z    0    40    60    0.01    1    AllSt     Own    0    -200    200    P    Landscape
+1    1    ScP    Z    0    40    60    0.01    1    AllSt     Own    1    -200    200    P    Landscape
 
 <APDS_END>
 
@@ -614,9 +631,6 @@ ScS    T    0    0    180    0.03    0.3    AllSt    -100    100    SH   Portrai
 #   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
-201500000016
-201500000041
-201500000103
-201500000134
+200711291900
 
 <EQs_END>

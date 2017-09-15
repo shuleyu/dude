@@ -15,7 +15,7 @@ extern "C"{
 using namespace std;
 
 struct Record{
-	string filename;
+	string filename,netwk,stnm;
 	double radpat,snr,*data,PP,Peak;
 };
 
@@ -23,7 +23,7 @@ struct Record{
 int main(int argc, char **argv){
 
     enum PIenum{FLAG1};
-    enum PSenum{infile,outfile,stackout,nstaout,FLAG2};
+    enum PSenum{eq,infile,outfile,badfilelist,stackout,nstaout,FLAG2};
     enum Penum{E1,E2,PREMbias,NBegin,NEnd,Delta,FLAG3};
 
     /****************************************************************
@@ -112,6 +112,7 @@ int main(int argc, char **argv){
 
 	// 1. Read in data.
 	ifstream fpin;
+	ofstream fpout;
 	vector<Record> Data;
 	Record tmpdata;
 	int MaxLength=200000,rawnpts,nerr,MinNpts=MaxLength,
@@ -121,8 +122,10 @@ int main(int argc, char **argv){
 	double Amplitude;
 
 	fpin.open(PS[infile]);
+	fpout.open(PS[badfilelist]);
 
-	while (fpin >> tmpdata.filename >> tmpdata.radpat >> tmpdata.snr){
+	while (fpin >> tmpdata.filename >> tmpdata.netwk >> tmpdata.stnm 
+		        >> tmpdata.radpat >> tmpdata.snr){
 
 		strcpy(tmpchar,tmpdata.filename.c_str());
 		rsac1(tmpchar,maxdata,&rawnpts,&rawbeg,&rawdel,&MaxLength,&nerr,
@@ -141,6 +144,7 @@ int main(int argc, char **argv){
 		if (std::isnan(Amplitude) || Amplitude<=1e-20 ){
 			cout << "SAC File: " << tmpdata.filename
 			<< " has small amplitude, skipping ... " << endl;
+			fpout << tmpdata.netwk << " " << tmpdata.stnm << endl;
 			continue;
 		}
 
@@ -155,6 +159,7 @@ int main(int argc, char **argv){
 	}
 
 	fpin.close();
+	fpout.close();
 
 
 	// Stack data to make Stack 0.
@@ -172,11 +177,13 @@ int main(int argc, char **argv){
 	}
 
 	shift_stack(PreStack,Data.size(),MinNpts,0,Shift,1,Weight,Stack0,Std);
+	int Elen=(int)((P[E2]-P[E1])/P[Delta]);
+	if (max_ampd(Stack0+FirstOnSet+(int(P[E1]/P[Delta])),Elen,&tmpint)==-1)
+		for (int index=0;index<MinNpts;index++) Stack0[index]*=-1;
 
 
 	// Use cross-correlation to calculate shifts and coefficients
 	// between Stack 0 and each traces.
-	int Elen=(int)((P[E2]-P[E1])/P[Delta]);
 	double *CCC=new double[Data.size()];
 
 	for (size_t index=0;index<Data.size();index++){
@@ -229,8 +236,7 @@ int main(int argc, char **argv){
 
 	// Output Stack 0, Stack 1, Stack 2, Std of Stack 2.
 	// Normalize the Stack ? or not ? (we are not normalizing Stack for now)
-	ofstream fpout;
-	fpout.open(PS[stackout].c_str());
+	fpout.open(PS[stackout]);
 	fpout << "<Time> <Stack0> <Stack1> <Stack2> <Std>" << endl;
 	for (int index=0;index<MinNpts;index++){
 		fpout << P[Delta]*(index-FirstOnSet) << " "
@@ -245,9 +251,9 @@ int main(int argc, char **argv){
 	// Notice DTs, Weights are what we used to construct Stack 2.
 	//        CCCs are obtained by comparing Stack 2 and each traces.
 
-	fpout.open(PS[outfile].c_str());
+	fpout.open(PS[outfile]);
 	for (size_t index=0;index<Data.size();index++){
-		fpout << P[PREMbias] << " " << P[Delta]*Shift[index]
+		fpout << P[PREMbias] + P[Delta]*Shift[index]
 		      << " " << CCC[index] << " " << Weight[index]
 		      << " " << Data[index].PP << " " << Data[index].Peak
 			  << endl;
@@ -256,9 +262,17 @@ int main(int argc, char **argv){
 
 
 	// Output valid NSTA.
-	fpout.open(PS[nstaout].c_str());
+	fpout.open(PS[nstaout]);
 	fpout << Data.size();
 	fpout.close();
+
+	// Output waveform.
+// 	for (auto item:Data){
+// 		fpout.open(PS[eq]+"_"+item.netwk+"_"+item.stnm+".waveform");
+// 		for (int index=0;index<MinNpts;index++)
+// 			fpout << index*P[Delta]-3*P[E1] << " " << item.data[index] << endl;
+// 		fpout.close();
+// 	}
 
 
 	// Free spaces.

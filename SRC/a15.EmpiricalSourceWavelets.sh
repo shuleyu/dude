@@ -54,9 +54,8 @@ do
 		Num=$((Num+1))
 		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
 		OUTFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
-		OUTFILE_ESW=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}.ESW
+		OUTFILE_ESW=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.ESW
 		trap "rm -f ${a15DIR}/${EQ}* ${PLOTFILE} ${OUTFILE} ${a15DIR}/tmpfile*$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
-		echo ""
 		echo "    ==> Making ESW of ${EQ}, Line ${Num}..."
 
 		# Clean dir.
@@ -270,7 +269,7 @@ EOF
 		${BASHCODEDIR}/Findrow.sh ${EQ}_SelectedFiles ${EQ}_List1 > ${EQ}_filename_radpat_snr_arrival_List1
 		saclst kstnm knetwk f `cat ${EQ}_List1` > tmpfile_$$
 		paste ${EQ}_filename_radpat_snr_arrival_List1 tmpfile_$$ | awk '{$5="";print $0}' > ${EQ}_List1
-      rm -f tmpfile_$$
+		rm -f tmpfile_$$
 		# current columns in ${EQ}_List1:
 		# FileName,radpat,snr,arrivals,kstnm,knetwk
 
@@ -331,7 +330,7 @@ EOF
 
 			T1=`echo "${arrival}+3*${TimeMin}" | bc -l`
 			T2=`echo "${arrival}+3*${TimeMax}" | bc -l`
-			echo "${EQ}.${netwk}.${stnm}.sac ${radpat} ${snr}" >> ${EQ}_ESW_infile
+			echo "${EQ}.${netwk}.${stnm}.sac ${netwk} ${stnm} ${radpat} ${snr}" >> ${EQ}_ESW_infile
 			echo "${EQ} ${netwk} ${stnm} ${arrival}" >> ${EQ}_eq_netwk_stnm
 
 			cat >> ${EQ}_SACMacro1.m << EOF
@@ -376,7 +375,7 @@ EOF
 
 				T1=`echo "${arrival}+3*${TimeMin}" | bc -l`
 				T2=`echo "${arrival}+3*${TimeMax}" | bc -l`
-				echo "${EQ}.${netwk}.${stnm}.sac ${radpat} ${snr}" >> ${EQ}_ESW_infile
+				echo "${EQ}.${netwk}.${stnm}.sac ${netwk} ${stnm} ${radpat} ${snr}" >> ${EQ}_ESW_infile
 			    echo "${EQ} ${netwk} ${stnm} ${arrival}" >> ${EQ}_eq_netwk_stnm
 
 				cat >> ${EQ}_SACMacro2.m << EOF
@@ -427,9 +426,11 @@ EOF
 
 
 		# H. Make ESW from the cut (therefore aligned) SAC data.
-		${EXECDIR}/ESW.out 0 4 6 << EOF
+		${EXECDIR}/ESW.out 0 6 6 << EOF
+${EQ}
 ${EQ}_ESW_infile
 tmpfile_out_$$
+tmpfile_badlist_$$
 ${OUTFILE_ESW}
 tmpfile_NSTA_$$
 ${TimeMin}
@@ -447,7 +448,12 @@ EOF
 			exit 1
 		fi
 
-		echo "<EQ> <NETWK> <STNM> <Arrival> <PREMBias> <DT> <CCC> <Weight> <PeakTime> <PeakAmp>" > ${OUTFILE}
+		echo "<EQ> <NETWK> <STNM> <Arrival> <DT> <CCC> <Weight> <PeakTime> <PeakAmp>" > ${OUTFILE}
+		while read nt st
+		do
+			grep -v "${nt} ${st}" ${EQ}_eq_netwk_stnm > tmpfile_$$
+			mv tmpfile_$$ ${EQ}_eq_netwk_stnm
+		done < tmpfile_badlist_$$
 		paste ${EQ}_eq_netwk_stnm tmpfile_out_$$ >> ${OUTFILE}
 		read NSTA < tmpfile_NSTA_$$
 		rm -f tmpfile_out_$$ tmpfile_NSTA_$$
@@ -757,7 +763,9 @@ EOF
 
 		fi
 
-		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Aux.sh
+# 		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Aux.sh
+
+		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Catalogue.sh
 
 	done < ${OUTDIR}/tmpfile_PhaseESW_${RunNumber}
 
