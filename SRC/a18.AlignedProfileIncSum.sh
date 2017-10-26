@@ -332,9 +332,6 @@ EOF
 		fi
 
 		# E*. Only get the stations in a15 result in List1 & List2.
-		keys="<PREMBias>"
-		PREMBias=`${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | head -n 1`
-
 		keys="<NETWK> <STNM>"
 		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2}' > tmpfile_label_$$
 
@@ -342,14 +339,14 @@ EOF
 		awk '{print $8"_"$7,$0}' ${EQ}_List2 > tmpfile_label_list2_$$
 
 		${BASHCODEDIR}/Findrow.sh tmpfile_label_list1_$$ tmpfile_label_$$ \
-		| awk -v P=${PREMBias} '{$1="";$3="";$4="";$5=$5+P; print $0}' > ${EQ}_List1
+		| awk '{$1="";$3="";$4=""; print $0}' > ${EQ}_List1
 
 		${BASHCODEDIR}/Findrow.sh tmpfile_label_list2_$$ tmpfile_label_$$ \
-		| awk -v P=${PREMBias} '{$1="";$2="";$3="";$4=$4+P; print $0}' > ${EQ}_List2
+		| awk '{$1="";$2="";$3=""; print $0}' > ${EQ}_List2
 
 		# Current columns in ${EQ}_List1 ${EQ}_List2:
-		# FileName,arrivals+PREMbias,kstnm,knetwk
-		# arrivals+PREMbias,fileE,nptsE,fileN,kstnm,knetwk,nptsN
+		# FileName,arrivals,kstnm,knetwk
+		# arrivals,fileE,nptsE,fileN,kstnm,knetwk,nptsN
 
 
 		# F. Process data (to sac format) in ${EQ}_List1.

@@ -17,7 +17,7 @@ cd ${a15DIR}/tmpdir_$$
 
 # Ctrl+C action.
 trap "rm -rf ${a15DIR}/tmpdir_$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
-
+GMTVERSION=4 # Only support GMT-4 for now.
 
 # A. Check the exist of list file.
 if ! [ -s "${a01DIR}/${EQ}_FileList" ]
@@ -430,6 +430,7 @@ ${BASHCODEDIR}/Findfield.sh ${a12DIR}/${EQ}_${Phase}_${COMP1}_RadPat.List "${key
 ${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_filelist_$$ | awk '{$1="";print $0}' > tmpfile3_$$
 
 paste tmpfile_filelist_$$ tmpfile1_$$ tmpfile2_$$ tmpfile3_$$ | sort -g -k 2,2 > sorted.lst
+NSTA=`wc -l < sorted.lst`
 
 # h. plot. (GMT-4)
 if [ ${GMTVERSION} -eq 4 ]
@@ -652,99 +653,6 @@ EOF
 
 	psxy -J -R -O >> ${OUTFILE} << EOF
 EOF
-
-fi
-
-# h*. plot. (GMT-5)
-if [ ${GMTVERSION} -eq 5 ]
-then
-
-	# basic gmt settings
-	gmt gmtset PS_MEDIA letter
-	gmt gmtset FONT_ANNOT_PRIMARY 12p
-	gmt gmtset FONT_LABEL 16p
-	gmt gmtset MAP_LABEL_OFFSET 0.1i
-	gmt gmtset MAP_FRAME_PEN black
-	gmt gmtset MAP_GRID_PEN_PRIMARY 0.5p,gray,-
-
-
-	# plot title and tag.
-	[ ${PlotOrient} = "Portrait" ] && XSIZE=8.5 || XSIZE=11
-	[ ${PlotOrient} = "Portrait" ] && Ori="-P" || Ori=""
-	[ ${PlotOrient} = "Portrait" ] && YP="-Yf9.5i" || YP="-Yf7i"
-
-
-	cat > ${EQ}_plottext.txt << EOF
-0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN} NetWork: ${NetWork} Comp: ${COMP}
-0 0.5 @:12:@;red;${FrequencyContent}@;;@::
-0 0 @:15:${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}@::
-EOF
-	gmt pstext ${EQ}_plottext.txt -JX${XSIZE}i/1i -R-100/100/-1/1 -F+jCB+f20p,Helvetica,black -N -Xf0i ${YP} ${Ori} -K > ${PLOTFILE}
-
-	cat > ${EQ}_plottext.txt << EOF
-0 0.5 SCRIPT: `basename ${0}` `date "+CREATION DATE: %m/%d/%y  %H:%M:%S"`
-EOF
-	gmt pstext ${EQ}_plottext.txt -J -R -F+jCB+f10p,Helvetica,black -N -Wred -Y-0.5i -O -K >> ${PLOTFILE}
-
-
-	# plot basemap.
-	[ ${PlotOrient} = "Portrait" ] && PROJ="-JX6.5i/-${PlotHeight}i" || PROJ="-JX9i/-${PlotHeight}i"
-
-	[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
-	[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
-	[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-	XLABEL="Time after ${Model_TT} ${Phase}-wave + Given bias (sec)"
-
-	[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
-	[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
-	[ `echo "(${DISTMAX}- ${DISTMIN})<1" | bc` -eq 1 ] && YAXIS="a0.1f0.1"
-	YLABEL="Distance (deg)"
-
-	[ ${PlotOrient} = "Portrait" ] && XP="-X1.2i" || XP="-X1.2i"
-	[ ${PlotOrient} = "Portrait" ] && YP="-Y-8i" || YP="-Y-5.5i"
-
-	REG="-R${TIMEMIN}/${TIMEMAX}/${DISTMIN}/${DISTMAX}"
-
-	gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/${YAXIS}:"${YLABEL}":WSne ${XP} ${YP} -K -O >> ${PLOTFILE}
-
-
-	# add travel time curve (or not). (_WithTC)
-	cp ${PLOTFILE} ${PLOTFILE}_WithTC
-	cp ${PLOTFILE} ${PLOTFILE}_TCandText
-
-	# add normalizing time window around PREM+PREMBias.
-
-	gmt psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE} << EOF
-${NormalizeBegin} ${DISTMIN}
-${NormalizeBegin} ${DISTMAX}
-${NormalizeEnd} ${DISTMAX}
-${NormalizeEnd} ${DISTMIN}
-EOF
-
-	# plot arrival lines.
-	for file in `cat ${EQ}_PhaseArrivalFiles.txt`
-	do
-		Polarity=`basename ${file}`
-		Polarity=${Polarity#*_}
-		Polarity=${Polarity%%_*}
-		PenColor=`grep -w ${Polarity} ${EQ}_PlotPen.txt | awk '{print $2}'`
-		gmt psxy ${file} -J -R -W1p,${PenColor} -: -K -O >> ${PLOTFILE}_WithTC
-		gmt psxy ${file} -J -R -W1p,${PenColor} -: -K -O >> ${PLOTFILE}_TCandText
-	done
-
-
-	# plot seismogram.
-	gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O >> ${PLOTFILE}
-	gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -O >> ${PLOTFILE}_WithTC
-
-
-	# plot phase names. (_TCandText)
-	awk '{print $1,$2,$7}' ${EQ}_Phases.txt > ${EQ}_plottext.txt
-	gmt pstext ${EQ}_plottext.txt -J -R -F+jLM+f12p,Helvetica-Narrow-Bold,black -N -O >> ${PLOTFILE}_TCandText
-
-
-	# get rid of traveltime plots if we don't want plot it.
-	[ ${TravelCurve} = "NO" ] && rm -f ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
 
 fi
 

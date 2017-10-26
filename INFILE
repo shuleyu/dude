@@ -15,10 +15,9 @@
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
 <DATADIR>                     /home/shule/PROJ/t041.DATA/NorthAmerican
-<CMTFILE>                     /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
-<OUTDIR>                      /home/shule/PROJ/t001.ScP
+<OUTDIR>                      /home/shule/PROJ/t001.DoubleBump
 
-<GMTVERSION>                  4
+<GMTVERSION>                  5
 							  -- 4: use GMT-4.
 							  -- 5: use GMT-5.
 
@@ -28,7 +27,7 @@
 
 # Run.sh ----
 
-<NewPlots>                    0
+<NewPlots>                    1
                               1 -- Will delete every previous made figures of chosen events.
 							  0 -- Will keep old figures
 
@@ -249,9 +248,7 @@ Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <ZP_BEGIN>
 
-P    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
-PcP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
-ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
 
 <ZP_END>
 
@@ -278,9 +275,7 @@ ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landsca
 
 <ZPC_BEGIN>
 
-0.5    P    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
-0.5    PcP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
-0.5    ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+0.5    S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPC_END>
 
@@ -303,9 +298,7 @@ ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landsca
 
 <ZPDS_BEGIN>
 
-1    1    P    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
-1    1    PcP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
-1    1    ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landscape
+1    1    S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPDS_END>
 
@@ -326,13 +319,10 @@ ScP    Z    40    60    -200    200    0.01    1    Own    P    AllSt    Landsca
 # Note: Need results from a01,a05.
 #       Because we use the lower hemisphere formula, no depth phase here.
 
-<CMTFILE>                     /home/shule/PROJ/t041.DATA/NorthAmerican/CMT.dat
 
 <ChosenPhase_BEGIN>
 
-P          P
-PcP        P
-ScP        P
+S          SH
 
 <ChosenPhase_END>
 
@@ -349,13 +339,6 @@ S          SV
 SKS        SV
 SKKS       SV
 
-
-#  CMTFILE:
-#    This file is the CMT search result saved from http://www.globalcmt.org/CMTsearch.html
-#    using "GMT psvelomeca input". Therefore strike/dip/rake will occur on column 3/4/5
-#    Alternatively, this can be left blank, the program will try to fetch each
-#    CMT info from this website automatically.
-#
 #  ChosenPhase_BEGIN_END:
 #    each line will results in one file named ${EQ}_${Phase}_${COMP}_RadPat.txt:
 #
@@ -433,8 +416,7 @@ SKKS       SV
 
 <PhaseESW_BEGIN>
 
-P      Z    0    40    60    0.01    1    AllSt    -15    20
-ScP    Z    0    40    60    0.01    1    AllSt    -15    20
+S    T    0    40    95    0    0.2    AllSt    -10    15
 
 <PhaseESW_END>
 
@@ -499,7 +481,7 @@ ScP    Z    0    40    60    0.01    1    AllSt    -15    20
 
 <AP_BEGIN>
 
-ScP    Z    0    40    60    0.01    1    AllSt    -200    200    P    Landscape
+S    T    0    40    95    0    0.2    AllSt    -200    200    SH    Portrait
 
 <AP_END>
 
@@ -540,7 +522,7 @@ ScP    Z    0    40    60    0.01    1    AllSt    -200    200    P    Landscape
 
 <APC_BEGIN>
 
-0.5    ScP    Z    0    40    60    0.01    1    AllSt    -200    200    P    Landscape
+0.5    S    T    0    40    95    0    0.2    AllSt    -200    200    SH    Portrait
 
 <APC_END>
 
@@ -565,8 +547,7 @@ ScP    Z    0    40    60    0.01    1    AllSt    -200    200    P    Landscape
 
 <APDS_BEGIN>
 
-1    1    ScP    Z    0    40    60    0.01    1    AllSt     Own    0    -200    200    P    Landscape
-1    1    ScP    Z    0    40    60    0.01    1    AllSt     Own    1    -200    200    P    Landscape
+1    1    S    T    0    40    95    0    0.2    AllSt     Own    1    -200    200    SH    Portrait
 
 <APDS_END>
 
@@ -626,11 +607,10 @@ ScP    Z    0    40    60    0.01    1    AllSt    -200    200    P    Landscape
 # a50. =========================================================================
 
 
-
 # EQs.
 #   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
-200711291900
+200707211327
 
 <EQs_END>
