@@ -17,7 +17,7 @@
 <DATADIR>                     /home/shule/PROJ/t041.DATA/NorthAmerican
 <OUTDIR>                      /home/shule/PROJ/t001.DoubleBump
 
-<GMTVERSION>                  5
+<GMTVERSION>                  4
 							  -- 4: use GMT-4.
 							  -- 5: use GMT-5.
 
@@ -611,6 +611,13 @@ S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
 #   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
+200603241227
+200612121548
+200701310315
+200704291241
 200707211327
+200709031614
+200710050717
+201506231218
 
 <EQs_END>
