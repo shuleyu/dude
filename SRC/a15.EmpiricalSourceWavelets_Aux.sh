@@ -236,9 +236,6 @@ rm -f ${EQ}_SACMacro1.m
 while read filename stnm netwk ArrivalTime
 do
 
-	# Do the PREMBias shift.
-	ArrivalTime=`echo ${ArrivalTime} ${PREMBias} | awk '{print $1+$2}'`
-
 	cat >> ${EQ}_SACMacro1.m << EOF
 cut off
 r ${filename}
@@ -268,9 +265,6 @@ then
 	rm -f ${EQ}_SACMacro2.m
 	while read Efile ENpts Nfile stnm netwk NNpts ArrivalTime
 	do
-
-		# Do the PREMBias shift.
-		ArrivalTime=`echo ${ArrivalTime} ${PREMBias} | awk '{print $1+$2}'`
 
 
 		if [ ${ENpts} -ge ${NNpts} ]
@@ -314,9 +308,6 @@ then
 	rm -f ${EQ}_SACMacro2.m
 	while read Rfile RNpts Tfile stnm netwk TNpts ArrivalTime
 	do
-
-		# Do the PREMBias shift.
-		ArrivalTime=`echo ${ArrivalTime} ${PREMBias} | awk '{print $1+$2}'`
 
 		if [ ${RNpts} -ge ${TNpts} ]
 		then
@@ -518,7 +509,7 @@ EOF
 	[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
 	[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
 	[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-	XLABEL="Time after ${Model_TT} ${Phase}-wave + Given bias (sec)"
+	XLABEL="Time after ${Model_TT} ${Phase}-wave (sec)"
 
 	[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
 	[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
@@ -539,10 +530,14 @@ EOF
 	# add normalizing time window around PREM+PREMBias.
 
 	psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE} << EOF
-${NormalizeBegin} ${DISTMIN}
-${NormalizeBegin} ${DISTMAX}
-${NormalizeEnd} ${DISTMAX}
-${NormalizeEnd} ${DISTMIN}
+`echo ${PREMBias} ${NormalizeBegin} | awk '{print $1+$2}'` ${DISTMIN}
+`echo ${PREMBias} ${NormalizeBegin} | awk '{print $1+$2}'` ${DISTMAX}
+`echo ${PREMBias} ${NormalizeEnd} | awk '{print $1+$2}'` ${DISTMAX}
+`echo ${PREMBias} ${NormalizeEnd} | awk '{print $1+$2}'` ${DISTMIN}
+EOF
+	psxy -J -R -L -W2p,red -K -O >> ${PLOTFILE} << EOF
+${PREMBias} ${DISTMIN}
+${PREMBias} ${DISTMAX}
 EOF
 
 
@@ -610,7 +605,7 @@ EOF
 	[ `echo "(${TIMEMAX}- ${TIMEMIN})>2000" | bc` -eq 1 ] && XAXIS="a500f100"
 	[ `echo "(${TIMEMAX}- ${TIMEMIN})<=2000" | bc` -eq 1 ] && XAXIS="a200f20"
 	[ `echo "(${TIMEMAX}- ${TIMEMIN})<1000" | bc` -eq 1 ] && XAXIS="a100f10"
-	XLABEL="Time after ${Model_TT} ${Phase}-wave + Given bias (sec)"
+	XLABEL="Time after ${Model_TT} ${Phase}-wave (sec)"
 
 	[ `echo "(${DISTMAX}- ${DISTMIN})>5" | bc` -eq 1 ] && YAXIS=`echo ${DISTMIN} ${DISTMAX} | awk '{print (int(int(($2-$1)/10)/5)+1)*5 }' |  awk '{print "a"$1"f"$1/5}'`
 	[ `echo "(${DISTMAX}- ${DISTMIN})<=5" | bc` -eq 1 ] && YAXIS="a0.5f0.1"
@@ -632,10 +627,14 @@ EOF
 	# add normalizing time window around PREM+PREMBias.
 
 	gmt psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE} << EOF
-${NormalizeBegin} ${DISTMIN}
-${NormalizeBegin} ${DISTMAX}
-${NormalizeEnd} ${DISTMAX}
-${NormalizeEnd} ${DISTMIN}
+`echo ${PREMBias} ${NormalizeBegin} | awk '{print $1+$2}'` ${DISTMIN}
+`echo ${PREMBias} ${NormalizeBegin} | awk '{print $1+$2}'` ${DISTMAX}
+`echo ${PREMBias} ${NormalizeEnd} | awk '{print $1+$2}'` ${DISTMAX}
+`echo ${PREMBias} ${NormalizeEnd} | awk '{print $1+$2}'` ${DISTMIN}
+EOF
+	gmt psxy -J -R -L -W2p,red -K -O >> ${PLOTFILE} << EOF
+${PREMBias} ${DISTMIN}
+${PREMBias} ${DISTMAX}
 EOF
 
 	# plot arrival lines.

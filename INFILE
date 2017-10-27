@@ -248,7 +248,7 @@ Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <ZP_BEGIN>
 
-S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
+S    T    40    100    -100    100    0    0.2    Own    SH    AllSt    Portrait
 
 <ZP_END>
 
@@ -275,7 +275,7 @@ S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPC_BEGIN>
 
-0.5    S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
+0.5    S    T    40    100    -200    200    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPC_END>
 
@@ -298,7 +298,7 @@ S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPDS_BEGIN>
 
-1    1    S    T    40    95    -200    200    0    0.2    Own    SH    AllSt    Portrait
+1    1    S    T    40    100    -200    200    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPDS_END>
 
@@ -416,7 +416,7 @@ SKKS       SV
 
 <PhaseESW_BEGIN>
 
-S    T    0    40    95    0    0.2    AllSt    -10    15
+S    T    0    40    100    0    0.2    AllSt    -10    15
 
 <PhaseESW_END>
 
@@ -481,7 +481,7 @@ S    T    0    40    95    0    0.2    AllSt    -10    15
 
 <AP_BEGIN>
 
-S    T    0    40    95    0    0.2    AllSt    -200    200    SH    Portrait
+S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
 
 <AP_END>
 
@@ -522,7 +522,7 @@ S    T    0    40    95    0    0.2    AllSt    -200    200    SH    Portrait
 
 <APC_BEGIN>
 
-0.5    S    T    0    40    95    0    0.2    AllSt    -200    200    SH    Portrait
+0.5    S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
 
 <APC_END>
 
@@ -547,7 +547,7 @@ S    T    0    40    95    0    0.2    AllSt    -200    200    SH    Portrait
 
 <APDS_BEGIN>
 
-1    1    S    T    0    40    95    0    0.2    AllSt     Own    1    -200    200    SH    Portrait
+1    1    S    T    0    40    100    0    0.2    AllSt     Own    1    -100    100    SH    Portrait
 
 <APDS_END>
 

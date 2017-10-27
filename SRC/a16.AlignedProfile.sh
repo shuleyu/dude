@@ -425,7 +425,7 @@ EOF
 		# G. Integrate the shift time, weight to ${EQ}_label_filename.txt.
 		#    Also, the gcarc of each station.
 		keys="<NETWK> <STNM> <DT> <Weight>"
-		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2,$3,$4}' > tmpfile_label_dt_weight_$$
+		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2,-$3,$4}' > tmpfile_label_dt_weight_$$
 
 		awk '{print $1}' ${EQ}_label_filename.txt > tmpfile_label_$$
 		${BASHCODEDIR}/Findrow.sh tmpfile_label_dt_weight_$$ tmpfile_label_$$ > tmpfile_$$

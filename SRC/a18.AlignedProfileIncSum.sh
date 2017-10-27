@@ -332,8 +332,9 @@ EOF
 		fi
 
 		# E*. Only get the stations in a15 result in List1 & List2.
-		keys="<NETWK> <STNM>"
-		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2}' > tmpfile_label_$$
+		#     fabs(CCC) > 0.7
+		keys="<NETWK> <STNM> <CCC>"
+		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{ if ($3>0.7 || $3<-0.7) print $1"_"$2}' > tmpfile_label_$$
 
 		awk '{print $6"_"$5,$0}' ${EQ}_List1 > tmpfile_label_list1_$$
 		awk '{print $8"_"$7,$0}' ${EQ}_List2 > tmpfile_label_list2_$$
@@ -434,7 +435,7 @@ EOF
 		# G. Integrate the shift time, weight to ${EQ}_label_filename.txt.
 		#    Also, the gcarc of each station.
 		keys="<NETWK> <STNM> <DT> <Weight>"
-		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2,$3,$4}' > tmpfile_label_dt_weight_$$
+		${BASHCODEDIR}/Findfield.sh ${INFILE} "${keys}" | awk '{print $1"_"$2,-$3,$4}' > tmpfile_label_dt_weight_$$
 
 		awk '{print $1}' ${EQ}_label_filename.txt > tmpfile_label_$$
 		${BASHCODEDIR}/Findrow.sh tmpfile_label_dt_weight_$$ tmpfile_label_$$ > tmpfile_$$

@@ -77,11 +77,13 @@ S
 Sdiff
 P
 SP
+PS
 PP
 pP
 sP
 PPP
 Pdiff
+ScS
 ScP
 PcS
 pScP
@@ -423,7 +425,7 @@ ${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_filelist_$$ | awk '{$1="";print $0}
 [ ${COMP} = "Z" ] && COMP1="P"
 [ ${COMP} = "R" ] && COMP1="SV"
 [ ${COMP} = "T" ] && COMP1="SH"
-[ ${COMP} = "E" ] && COMP1="SV" # These two are error-pro
+[ ${COMP} = "E" ] && COMP1="SV" # These two are erroneous
 [ ${COMP} = "N" ] && COMP1="SH"
 keys="<NETWK> <STNM> <RadPat>"
 ${BASHCODEDIR}/Findfield.sh ${a12DIR}/${EQ}_${Phase}_${COMP1}_RadPat.List "${keys}" | awk '{print $1"_"$2,$3}' > tmpfile_$$
@@ -530,7 +532,7 @@ EOF
 EOF
 		fi
 
-		if [ `echo "${Weight}>0" |bc` -eq 1 ]
+		if [ `echo "${Weight}>0.66" |bc` -eq 1 ]
 		then
 			cat >> ${OUTFILE} << EOF
 [
@@ -572,12 +574,12 @@ EOF
 `echo "${PREMBias} + ${NormalizeEnd} " | bc -l` -1
 EOF
 
-        ### plot ESF window.
+        ### plot ESW window.
         psxy -J -R -W100/100/200 -G100/100/200 -L -O -K >> ${OUTFILE} << EOF
-`echo "${D_T} + ${TimeMin} " | bc -l` -1
-`echo "${D_T} + ${TimeMin} " | bc -l` 1
-`echo "${D_T} + ${TimeMax} " | bc -l` 1
-`echo "${D_T} + ${TimeMax} " | bc -l` -1
+`echo "${PREMBias} + ${TimeMin} " | bc -l` -1
+`echo "${PREMBias} + ${TimeMin} " | bc -l` 1
+`echo "${PREMBias} + ${TimeMax} " | bc -l` 1
+`echo "${PREMBias} + ${TimeMax} " | bc -l` -1
 EOF
 
 		### plot zero line with time marker.
@@ -615,23 +617,22 @@ EOF
 		### data. (flipped and normalize within plot window).
 		file=${EQ}.${netwk}.${stnm}.sac.waveform
 		Polarity=`echo ${AMP} | awk '{if ($1>0) print 1;else print -1}'`
-		AMP_All=`echo ${AMP} ${Polarity} | awk '{print $1*$2}'`
+		AMP_Plot=`echo ${AMP} ${Polarity} | awk '{print $1*$2}'`
 		if [ "${Normalize}" -eq 1 ]
 		then
 			awk -v T1=${PLOTTIMEMIN} -v T2=${PLOTTIMEMAX} -v P=${PhaseTime} '{if ( T1<$1-P && $1-P<T2 ) print $2}' ${file} > tmpfile_$$
-			AMP_All=`${BASHCODEDIR}/amplitude.sh tmpfile_$$`
+			AMP_Plot=`${BASHCODEDIR}/amplitude.sh tmpfile_$$`
 		fi
-		AMP_Scale=`echo ${AMP} ${AMP_All} | awk '{print $1/$2}'`
 
 		#### peak position.
 		psxy -J -R -Sa0.06i -Gblue -N -O -K >> ${OUTFILE} << EOF
-`echo ${Peak} ${PhaseTime} | awk '{print $1-$2}'` ${AMP_Scale}
+`echo ${Peak} ${PhaseTime} | awk '{print $1-$2}'` `echo ${AMP} ${AMP_Plot} | awk '{print $1/$2}'`
 EOF
 		### shifted empirical source. (normalize to AMP, flip according to polarity)
 		${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.ESW "<Time> <Stack2>" > esw
-		awk -v S=${D_T} -v A=${AMP_Scale} -v C=${Polarity} -v T1=${TimeMin} -v T2=${TimeMax} '{if (T1<$1 && $1<T2) print $1+S,$2*C/A}' esw |  psxy -J -R -W0.3p,red,- -O -K >> ${OUTFILE}
+		awk -v S=${D_T} -v A1=${AMP_Plot} -v A2=${AMP} -v T1=${TimeMin} -v T2=${TimeMax} '{if (T1<$1 && $1<T2) print $1+S,$2*A2/A1}' esw |  psxy -J -R -W0.3p,red,- -O -K >> ${OUTFILE}
 		#### waveform
-		awk -v T1=${PLOTTIMEMIN} -v T2=${PLOTTIMEMAX} -v P=${PhaseTime} -v A=${AMP_All} '{ if ($1-P>T1 && $1-P<T2) print $1-P,$2/A}' ${file} | psxy -J -R -W0.5p -O -K >> ${OUTFILE}
+		awk -v T1=${PLOTTIMEMIN} -v T2=${PLOTTIMEMAX} -v P=${PhaseTime} -v A=${AMP_Plot} '{ if ($1-P>T1 && $1-P<T2) print $1-P,$2/A}' ${file} | psxy -J -R -W0.5p -O -K >> ${OUTFILE}
 
 		### flip mark.
 		[ "${Polarity}" -eq 1 ] && Color=red || Color=blue

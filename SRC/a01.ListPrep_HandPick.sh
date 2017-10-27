@@ -50,33 +50,6 @@ EOF
 		continue
 	fi
 
-	# Hand selected traces.
-
-	mysql -N ScS_CP > tmpfile_$$  << EOF
-select eq,netwk,stnm from Master_a13 where wantit=1 and eq=${EQ};
-EOF
-	awk '{printf "%s\\.%s\\.%s\\.\n",$1,$2,$3}' tmpfile_$$ > tmpfile1_$$
-
-	rm -f tmpfile_$$ tmpfileZ_$$ tmpfileE_$$ tmpfileN_$$ tmpfileR_$$ tmpfileT_$$
-	while read File
-	do
-		grep "${File}" ${a01DIR}/${EQ}_FileList   >> tmpfile_$$
-		grep "${File}" ${a01DIR}/${EQ}_FileList_Z >> tmpfileZ_$$
-		grep "${File}" ${a01DIR}/${EQ}_FileList_E >> tmpfileE_$$
-		grep "${File}" ${a01DIR}/${EQ}_FileList_N >> tmpfileN_$$
-		grep "${File}" ${a01DIR}/${EQ}_FileList_T >> tmpfileT_$$
-		grep "${File}" ${a01DIR}/${EQ}_FileList_R >> tmpfileR_$$
-	done < tmpfile1_$$
-	rm -f tmpfile1_$$
-
-	mv tmpfile_$$  ${a01DIR}/${EQ}_FileList
-	mv tmpfileZ_$$ ${a01DIR}/${EQ}_FileList_Z
-	mv tmpfileE_$$ ${a01DIR}/${EQ}_FileList_E
-	mv tmpfileN_$$ ${a01DIR}/${EQ}_FileList_N
-	mv tmpfileT_$$ ${a01DIR}/${EQ}_FileList_T
-	mv tmpfileR_$$ ${a01DIR}/${EQ}_FileList_R
-
-
 	# ============================
 	#     B. Get stations Info.
 	# ============================
@@ -91,6 +64,27 @@ EOF
 	| awk '{$6=$5+$6*$7;$7=""; print $0}' >> ${a01DIR}/${EQ}_FileList_Info
 
 
+	# Extra selection.
+	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "<FileName> <Gcarc> <STLO> <STLA>" | awk '{if (-170<$3 && $3<-30) print $1}'> tmpfile_$$
+
+	${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList   tmpfile_$$ > tmpfileL_$$
+	${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_Z tmpfile_$$ > tmpfileZ_$$
+	${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_E tmpfile_$$ > tmpfileE_$$
+	${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_N tmpfile_$$ > tmpfileN_$$
+	${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_T tmpfile_$$ > tmpfileT_$$
+	${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_R tmpfile_$$ > tmpfileT_$$
+	echo "<FileName> <STNM> <NETWK> <OMarker> <BeginTime> <EndTime> <COMP> <Gcarc> <Az> <BAz> <STLO> <STLA>" > tmpfileI_$$
+	${BASHCODEDIR}/Findrow.sh ${a01DIR}/${EQ}_FileList_Info tmpfile_$$ >> tmpfileI_$$ 
+
+	mv tmpfileL_$$ ${a01DIR}/${EQ}_FileList
+	mv tmpfileZ_$$ ${a01DIR}/${EQ}_FileList_Z
+	mv tmpfileE_$$ ${a01DIR}/${EQ}_FileList_E
+	mv tmpfileN_$$ ${a01DIR}/${EQ}_FileList_N
+	mv tmpfileT_$$ ${a01DIR}/${EQ}_FileList_T
+	mv tmpfileR_$$ ${a01DIR}/${EQ}_FileList_R
+	mv tmpfileI_$$ ${a01DIR}/${EQ}_FileList_Info
+	rm -f tmpfile_$$
+
 	# ============================
 	#     C. Get EQs Info.
 	# ============================
@@ -100,8 +94,6 @@ EOF
 	saclst evla evlo evdp mag f `head -n 1 ${a01DIR}/${EQ}_FileList` \
 	| awk -v E=${EQ} '{if ($4>1000) $4/=1000; print E,$2,$3,$4,$5}' \
 	>> ${a01DIR}/EQInfo.txt
-
-
 
 done # End of EQ loop.
 

@@ -765,7 +765,7 @@ EOF
 
 		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Aux.sh
 
-# 		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Catalogue.sh
+		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Catalogue.sh
 
 	done < ${OUTDIR}/tmpfile_PhaseESW_${RunNumber}
 

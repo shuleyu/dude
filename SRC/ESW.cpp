@@ -253,8 +253,8 @@ int main(int argc, char **argv){
 
 	fpout.open(PS[outfile]);
 	for (size_t index=0;index<Data.size();index++){
-		fpout << P[PREMbias] + P[Delta]*Shift[index]
-		      << " " << CCC[index] << " " << Weight[index]
+		fpout << P[PREMbias] - P[Delta]*Shift[index]
+		      << " " << CCC[index] << " " << fabs(Weight[index])
 		      << " " << Data[index].PP << " " << Data[index].Peak
 			  << endl;
 	}
