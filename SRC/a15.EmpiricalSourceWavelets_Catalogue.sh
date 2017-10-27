@@ -86,7 +86,7 @@ Pdiff
 ScS
 ScP
 PcS
-pScP
+SKS
 EOF
 
 
@@ -452,7 +452,7 @@ then
 	do
 		netwk=${NETNM_STNM%_*}
 		stnm=${NETNM_STNM#*_}
-		PhaseTime=`grep ${NETNM_STNM} ${Phase}.premtime | awk '{print $2}'`
+		PhaseTime=`grep -w ${NETNM_STNM} ${Phase}.premtime | awk '{print $2}'`
 
 		## 4.2 check if need to plot on a new page.
 		if [ ${plot} -eq $(($PLOTPERPAGE+1)) ]
@@ -593,7 +593,7 @@ EOF
 		### PREM arrivals. (t=zero)
 		for phase in `cat ${EQ}_tmpfile_WantedArrival_$$`
 		do
-			T=`grep ${NETNM_STNM} ${phase}.premtime | awk -v P=${PhaseTime} '{print $2-P}'`
+			T=`grep -w ${NETNM_STNM} ${phase}.premtime | awk -v P=${PhaseTime} '{print $2-P}'`
 			[[ ${T} = *nan* ]] && continue
 			psvelo -J -R -Wblack -Gpurple -Se${halfh}i/0.2/18 -O -K >> ${OUTFILE} << EOF
 ${T} -0.4 0 0.4
