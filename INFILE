@@ -589,7 +589,7 @@ S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrai
 # Note: Need results form a01,a05.
 
 # a26. =========================================================================
-# For every source-receiver pair, compute its S wave paths (exclude Sdiff).
+# For every source-receiver pair, compute its S wave paths (include Sdiff).
 # Record the IN-N-OUT location of shell at depth X km.
 #
 # Note: Need results form a01,a05.

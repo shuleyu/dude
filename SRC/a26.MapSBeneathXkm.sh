@@ -34,7 +34,7 @@ do
 		echo "    ~=> ${EQ} doesn't have FileList ..."
 		continue
 	else
-		echo "    ==> Making S path section beneath ${XDepth} km of ${EQ}."
+		echo "    ==> Making S,Sdiff path section beneath ${XDepth} km of ${EQ}."
 	fi
 
 	# B. Pull information.
@@ -93,7 +93,7 @@ do
 
 	if ! [ -s "${EQ}_net_stn_stlo_stla_az" ]
 	then
-		echo "        ~=>${EQ} has 0 S path beneath ${XDepth} km recorded in this data set..."
+		echo "        ~=>${EQ} has 0 S,Sdiff path beneath ${XDepth} km recorded in this data set..."
 		continue
 	fi
 
@@ -163,7 +163,7 @@ EOF
 
         # plot title and tag.
         pstext -JX11i/1i -R-100/100/-1/1 -N -X0i -Y7i -K > ${PLOTFILE} << EOF
-0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  S paths beneath ${XDepth} km.
+0 1 20 0 0 CB Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  S,Sdiff paths beneath ${XDepth} km.
 0 0.5 15 0 0 CB ${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}
 0 0 12 0 0 CB Tomography model:  S20RTS (Ritsema) Z=2880 km
 EOF
@@ -213,7 +213,7 @@ EOF
 
         # plot title and tag.
         cat > ${EQ}_plottext.txt << EOF
-0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  S paths beneath ${XDepth} km.
+0 1 Event: ${MM}/${DD}/${YYYY} ${HH}:${MIN}  S,Sdiff paths beneath ${XDepth} km.
 0 0.5 @:15:${EQ} LAT=${EVLA} LON=${EVLO} Z=${EVDP} Mb=${MAG} NSTA=${NSTA}/${NSTA_All}@::
 0 0 @:12:Tomography model:  S20RTS (Ritsema) Z=2880 km@::
 EOF

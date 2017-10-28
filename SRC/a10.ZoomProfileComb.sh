@@ -658,7 +658,7 @@ EOF
 10 ${DISTMAX}
 10 ${DISTMIN}
 EOF
-			psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
+			gmt psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
 0 ${DISTMIN}
 0 ${DISTMAX}
 EOF
