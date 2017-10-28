@@ -530,6 +530,33 @@ EOF
 			# add travel time curve (or not). (_WithTC)
 			cp ${PLOTFILE} ${PLOTFILE}_WithTC
 
+			# add 5 sec + 10 sec + 5 sec time window around PREM.
+
+			gmt psxy -J -R -L -Glightyellow -K -O >> ${PLOTFILE}_WithTC << EOF
+-10 ${DISTMIN}
+-10 ${DISTMAX}
+-5 ${DISTMAX}
+-5 ${DISTMIN}
+EOF
+
+			gmt psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE}_WithTC << EOF
+-5 ${DISTMIN}
+-5 ${DISTMAX}
+5 ${DISTMAX}
+5 ${DISTMIN}
+EOF
+			gmt psxy -J -R -L -Glightgreen -K -O >> ${PLOTFILE}_WithTC << EOF
+5 ${DISTMIN}
+5 ${DISTMAX}
+10 ${DISTMAX}
+10 ${DISTMIN}
+EOF
+			psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
+0 ${DISTMIN}
+0 ${DISTMAX}
+EOF
+
+			# plot arrival lines.
 			for file in `cat ${EQ}_PhaseArrivalFiles.txt`
 			do
 				Polarity=`basename ${file}`
@@ -661,6 +688,33 @@ EOF
 			# add travel time curve (or not). (_WithTC)
 			cp ${PLOTFILE} ${PLOTFILE}_WithTC
 
+			# add 5 sec + 10 sec + 5 sec time window around PREM.
+
+			gmt psxy -J -R -L -Glightyellow -K -O >> ${PLOTFILE}_WithTC << EOF
+-10 ${DISTMIN}
+-10 ${DISTMAX}
+-5 ${DISTMAX}
+-5 ${DISTMIN}
+EOF
+
+			gmt psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE}_WithTC << EOF
+-5 ${DISTMIN}
+-5 ${DISTMAX}
+5 ${DISTMAX}
+5 ${DISTMIN}
+EOF
+			gmt psxy -J -R -L -Glightgreen -K -O >> ${PLOTFILE}_WithTC << EOF
+5 ${DISTMIN}
+5 ${DISTMAX}
+10 ${DISTMAX}
+10 ${DISTMIN}
+EOF
+			psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
+0 ${DISTMIN}
+0 ${DISTMAX}
+EOF
+
+			# plot arrival lines.
 			for file in `cat ${EQ}_PhaseArrivalFiles.txt`
 			do
 				Polarity=`basename ${file}`

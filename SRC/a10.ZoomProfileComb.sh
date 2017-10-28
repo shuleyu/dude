@@ -547,6 +547,11 @@ EOF
 10 ${DISTMIN}
 EOF
 
+			psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
+0 ${DISTMIN}
+0 ${DISTMAX}
+EOF
+
 			# plot arrival lines.
 
 			for file in `cat ${EQ}_PhaseArrivalFiles.txt`
@@ -652,6 +657,10 @@ EOF
 5 ${DISTMAX}
 10 ${DISTMAX}
 10 ${DISTMIN}
+EOF
+			psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
+0 ${DISTMIN}
+0 ${DISTMAX}
 EOF
 
 			# plot arrival lines.
