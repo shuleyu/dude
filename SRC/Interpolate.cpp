@@ -102,9 +102,12 @@ int main(int argc, char **argv){
 	// Read from input.
 	fpin.open(PS[infile].c_str());
 
-	for (int index=0;index<NPTS;index++){
-		fpin >> Gcarc[index] >> Time[index];
+	// Safeguard for repeating x values.
+	for (Cnt=0;Cnt<NPTS;Cnt++){
+		fpin >> Gcarc[Cnt] >> Time[Cnt];
+		if (Gcarc[Cnt]==Gcarc[Cnt-1]) --Cnt;
 	}
+	NPTS=Cnt;
 
 	fpin.close();
 
