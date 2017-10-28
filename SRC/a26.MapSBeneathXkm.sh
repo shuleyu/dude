@@ -106,8 +106,8 @@ do
 		[ `echo "${MinR} > 3480+${XDepth}" | bc` -eq 1 ] && continue
 
 		BreakDist=`grep -w ${MinR} tmpfile_$$ | awk 'NR==1 {print $2}'`
-		awk -v B=${BreakDist} '{if ($2<=B) print $0}' tmpfile_$$ | sort -g -k1,1 > tmpfile_in1_$$
-		awk -v B=${BreakDist} '{if ($2>B) print $0}' tmpfile_$$ | sort -g -k1,1 > tmpfile_in2_$$
+		awk -v B=${BreakDist} '{if ($2<=B && $1>3480) print $0}' tmpfile_$$ | sort -g -k1,1 > tmpfile_in1_$$
+		awk -v B=${BreakDist} '{if ($2>B && $1>3480) print $0}' tmpfile_$$ | sort -g -k1,1 > tmpfile_in2_$$
 		echo "${XDepth}" | awk '{print 3480+$1}' > tmpfile_in3_$$
 
 		${EXECDIR}/Interpolate.out 0 3 0 << EOF
