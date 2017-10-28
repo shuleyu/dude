@@ -275,7 +275,7 @@ S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portr
 
 <ZPC_BEGIN>
 
-0.5    S    T    40    100    -200    200    0.01    1.0    Own    SH    AllSt    Portrait
+0.5    S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portrait
 
 <ZPC_END>
 
@@ -298,7 +298,7 @@ S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portr
 
 <ZPDS_BEGIN>
 
-1    1    S    T    40    100    -200    200    0.01    1.0    Own    SH    AllSt    Portrait
+1    1    S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portrait
 
 <ZPDS_END>
 
