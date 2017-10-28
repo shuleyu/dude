@@ -109,6 +109,7 @@ a22DIR=${OUTDIR}/a22.MapSSReflect
 a23DIR=${OUTDIR}/a23.MapSdiffPath
 a24DIR=${OUTDIR}/a24.MapSKSInOutCMB
 a25DIR=${OUTDIR}/a25.MapPKIKPInOutCMB
+a26DIR=${OUTDIR}/a26.MapSBeneathXkm
 mkdir -p ${EXECDIR}
 mkdir -p ${PLOTDIR}
 

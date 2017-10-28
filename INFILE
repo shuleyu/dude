@@ -248,7 +248,7 @@ Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <ZP_BEGIN>
 
-S    T    40    100    -100    100    0    0.2    Own    SH    AllSt    Portrait
+S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portrait
 
 <ZP_END>
 
@@ -275,7 +275,7 @@ S    T    40    100    -100    100    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPC_BEGIN>
 
-0.5    S    T    40    100    -200    200    0    0.2    Own    SH    AllSt    Portrait
+0.5    S    T    40    100    -200    200    0.01    1.0    Own    SH    AllSt    Portrait
 
 <ZPC_END>
 
@@ -298,7 +298,7 @@ S    T    40    100    -100    100    0    0.2    Own    SH    AllSt    Portrait
 
 <ZPDS_BEGIN>
 
-1    1    S    T    40    100    -200    200    0    0.2    Own    SH    AllSt    Portrait
+1    1    S    T    40    100    -200    200    0.01    1.0    Own    SH    AllSt    Portrait
 
 <ZPDS_END>
 
@@ -481,7 +481,7 @@ S    T    0    40    100    0    0.2    AllSt    -10    15
 
 <AP_BEGIN>
 
-S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
+S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrait
 
 <AP_END>
 
@@ -522,7 +522,7 @@ S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
 
 <APC_BEGIN>
 
-0.5    S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
+0.5    S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrait
 
 <APC_END>
 
@@ -547,7 +547,7 @@ S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
 
 <APDS_BEGIN>
 
-1    1    S    T    0    40    100    0    0.2    AllSt     Own    1    -100    100    SH    Portrait
+1    1    S    T    0    40    100    0.01    1.0    AllSt     Own    1    -100    100    SH    Portrait
 
 <APDS_END>
 
@@ -587,16 +587,24 @@ S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
 #
 # a25.
 # Note: Need results form a01,a05.
+
+# a26. =========================================================================
+# For every source-receiver pair, compute its S wave paths (exclude Sdiff).
+# Record the IN-N-OUT location of shell at depth X km.
 #
-# a26.
 # Note: Need results form a01,a05.
 #
-# a50.
+
+<XDepth>                      300
+
+# a50. =========================================================================
+
+# a50. =========================================================================
+#
 #   Join all ps file for one EQ together in the order of plotting,
 #   then convert the big ps file into a pdf file.
 #   The big ps file is deleted.
 
-# a50. =========================================================================
 <ByWhich>                     EQ
 
 #  ByWhich:
@@ -611,13 +619,6 @@ S    T    0    40    100    0    0.2    AllSt    -100    100    SH    Portrait
 #   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
-200603241227
-200612121548
-200701310315
-200704291241
 200707211327
-200709031614
-200710050717
-201506231218
 
 <EQs_END>
