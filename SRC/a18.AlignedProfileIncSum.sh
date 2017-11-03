@@ -46,11 +46,11 @@ do
 
 	# Enter the ESW making loop.
 	Num=0
-	while read BinSize BinInc Phase COMP UseSNR DistMin DistMax F1 F2 NETWK Normalize UseWeight TimeMin TimeMax TravelCurve PlotOrient
+	while read BinSize BinInc Phase COMP UseSNR DistMin DistMax AzMin AzMax F1 F2 NETWK Normalize UseWeight TimeMin TimeMax TravelCurve PlotOrient
 	do
 		Num=$((Num+1))
 		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
-		INFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
+		INFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${AzMin}_${AzMax}_${F1}_${F2}_${NETWK}.List
 
 		# A**. Check a15 ESW file.
 		if ! [ -s ${INFILE} ] || [ `wc -l < ${INFILE}` -eq 1 ]
@@ -152,11 +152,11 @@ do
 
 
 		# a. select according to min/max distance.
-		keys="<FileName> <NETWK> <STNM> <Gcarc> <BeginTime> <EndTime>"
+		keys="<FileName> <NETWK> <STNM> <Gcarc> <BeginTime> <EndTime> <Az>"
 		${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
 		| awk -v N=${NETWK} '{if (N=="AllSt" || (N!="AllSt" && $2==N)) print $0}' \
 		| awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$4 && $4<=D2) print $0}' \
-		| awk -v D1=${DistMin} -v D2=${DistMax} '{if (D1<=$4 && $4<=D2) {A=$0;print $2"_"$3" "A}}' \
+		| awk -v D1=${DistMin} -v D2=${DistMax} -v A1=${AzMin} -v A2=${AzMax} '{if (D1<=$4 && $4<=D2 && ((A1<=A2 && A1<=$7 && $7<=A2) || (A1>A2 && (A1<=$7 || $7<=A2)))) {$7="";A=$0;print $2"_"$3" "A}}' \
 		> ${EQ}_label_SelectedFiles
 
 		NSTA=`wc -l < ${EQ}_label_SelectedFiles`

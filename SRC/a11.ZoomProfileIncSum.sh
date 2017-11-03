@@ -527,36 +527,9 @@ EOF
 
 			psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/${YAXIS}:"${YLABEL}":WSne ${XP} ${YP} -K -O >> ${PLOTFILE}
 
-			# add travel time curve (or not). (_WithTC)
+			# add travel time curve. (_WithTC and _TCandText)
 			cp ${PLOTFILE} ${PLOTFILE}_WithTC
 
-			# add 5 sec + 10 sec + 5 sec time window around PREM.
-
-			psxy -J -R -L -Glightyellow -K -O >> ${PLOTFILE}_WithTC << EOF
--10 ${DISTMIN}
--10 ${DISTMAX}
--5 ${DISTMAX}
--5 ${DISTMIN}
-EOF
-
-			psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE}_WithTC << EOF
--5 ${DISTMIN}
--5 ${DISTMAX}
-5 ${DISTMAX}
-5 ${DISTMIN}
-EOF
-			psxy -J -R -L -Glightgreen -K -O >> ${PLOTFILE}_WithTC << EOF
-5 ${DISTMIN}
-5 ${DISTMAX}
-10 ${DISTMAX}
-10 ${DISTMIN}
-EOF
-			psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
-0 ${DISTMIN}
-0 ${DISTMAX}
-EOF
-
-			# plot arrival lines.
 			for file in `cat ${EQ}_PhaseArrivalFiles.txt`
 			do
 				Polarity=`basename ${file}`
@@ -566,14 +539,15 @@ EOF
 				psxy ${file} -J -R -W1p/${PenColor} -: -K -O >> ${PLOTFILE}_WithTC
 			done
 
-
-			# plot seismogram.
 			cp ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
+
+
+			# plot seismogram. (seismograms and _WithTC)
 			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -K -O >> ${PLOTFILE}
 			psxy ${EQ}_PlotFile.txt -J -R -W0.005i/0 -m -K -O >> ${PLOTFILE}_WithTC
 
 
-			# plot a arrival page, with phase name, without seismogram. (_TCandText)
+			# plot phase names. (_TCandText)
 			pstext ${EQ}_Phases.txt -J -R -N -K -O >> ${PLOTFILE}_TCandText
 
 
@@ -685,36 +659,9 @@ EOF
 			gmt psbasemap ${PROJ} ${REG} -B${XAXIS}:"${XLABEL}":/${YAXIS}:"${YLABEL}":WSne ${XP} ${YP} -K -O >> ${PLOTFILE}
 
 
-			# add travel time curve (or not). (_WithTC)
+			# add travel time curve. (_WithTC and _TCandText)
 			cp ${PLOTFILE} ${PLOTFILE}_WithTC
 
-			# add 5 sec + 10 sec + 5 sec time window around PREM.
-
-			gmt psxy -J -R -L -Glightyellow -K -O >> ${PLOTFILE}_WithTC << EOF
--10 ${DISTMIN}
--10 ${DISTMAX}
--5 ${DISTMAX}
--5 ${DISTMIN}
-EOF
-
-			gmt psxy -J -R -L -Glightblue -K -O >> ${PLOTFILE}_WithTC << EOF
--5 ${DISTMIN}
--5 ${DISTMAX}
-5 ${DISTMAX}
-5 ${DISTMIN}
-EOF
-			gmt psxy -J -R -L -Glightgreen -K -O >> ${PLOTFILE}_WithTC << EOF
-5 ${DISTMIN}
-5 ${DISTMAX}
-10 ${DISTMAX}
-10 ${DISTMIN}
-EOF
-			gmt psxy -J -R -W2p,red -K -O >> ${PLOTFILE}_WithTC << EOF
-0 ${DISTMIN}
-0 ${DISTMAX}
-EOF
-
-			# plot arrival lines.
 			for file in `cat ${EQ}_PhaseArrivalFiles.txt`
 			do
 				Polarity=`basename ${file}`
@@ -724,14 +671,14 @@ EOF
 				gmt psxy ${file} -J -R -W1p,${PenColor} -: -K -O >> ${PLOTFILE}_WithTC
 			done
 
-
-			# plot seismogram.
 			cp ${PLOTFILE}_WithTC ${PLOTFILE}_TCandText
+
+			# plot seismogram. (seismograms and _WithTC)
 			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -K -O >> ${PLOTFILE}
 			gmt psxy ${EQ}_PlotFile.txt -J -R -W0.005i,black -K -O >> ${PLOTFILE}_WithTC
 
 
-			# plot a arrival page, with phase name, without seismogram. (_TCandText)
+			# plot phase names. (_TCandText)
 			awk '{print $1,$2,$7}' ${EQ}_Phases.txt > ${EQ}_plottext.txt
 			gmt pstext ${EQ}_plottext.txt -J -R -F+jLM+f12p,Helvetica-Narrow-Bold,black -N -K -O >> ${PLOTFILE}_TCandText
 

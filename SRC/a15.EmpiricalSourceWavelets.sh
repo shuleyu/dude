@@ -49,20 +49,52 @@ do
 
 	# Enter the ESW making loop.
 	Num=0
-	while read Phase COMP UseSNR DistMin DistMax F1 F2 NETWK TimeMin TimeMax
+	while read Phase COMP UseSNR DistMin DistMax AzMin AzMax F1 F2 NETWK
 	do
 		Num=$((Num+1))
+
+
+		# Files.
 		PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`_${Num}.ps
-		OUTFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
-		OUTFILE_ESW=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.ESW
+		OUTFILE=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${AzMin}_${AzMax}_${F1}_${F2}_${NETWK}.List
+		OUTFILE_ESW=${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${AzMin}_${AzMax}_${F1}_${F2}_${NETWK}.ESW
 		trap "rm -f ${a15DIR}/${EQ}* ${PLOTFILE} ${OUTFILE} ${a15DIR}/tmpfile*$$ ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 		echo "    ==> Making ESW of ${EQ}, Line ${Num}..."
+
 
 		# Clean dir.
 		for file in `ls ${a15DIR}/${EQ}* 2>/dev/null | grep -v List | grep -v ESW`
 		do
 			rm -f ${file}
 		done
+
+		# Basic set-ups.
+
+		# Set up normalize & cross-correlation windows for this event, for this line of ESW parameters.
+		# Default windows will be -10 ~ 15 second around PREM arrival.
+		# Search INFILE_ESW_Window for specific window parameters.
+		keys="<EQ> <LineNum> <PREMBias> <EBegin> <EEnd> <NBegin> <NEnd>"
+		Info=`${BASHCODEDIR}/Findfield.sh ${CODEDIR}/INFILE_ESW_Window "${keys}" 2>/dev/null | grep "${EQ}" \
+		| awk -v L=${Num} '{if ($2==L || $2=="*") print $3,$4,$5,$6,$7}' | head -n 1`
+
+		PREMBias=""
+		TimeMin=""
+		TimeMax=""
+		NBegin=""
+		NEnd=""
+
+		PREMBias=`echo "${Info}" | awk '{print $1}'`
+		TimeMin=`echo "${Info}"  | awk '{print $2}'`
+		TimeMax=`echo "${Info}"  | awk '{print $3}'`
+		NBegin=`echo "${Info}"   | awk '{print $4}'`
+		NEnd=`echo "${Info}"     | awk '{print $5}'`
+
+		[ -z ${PREMBias} ] && PREMBias=0
+		[ -z ${TimeMin} ] && TimeMin="-10"
+		[ -z ${TimeMax} ] && TimeMax="15"
+		[ -z ${NBegin} ] && NBegin="-10"
+		[ -z ${NEnd} ] && NEnd="15"
+
 
 		# Convert COMP to RadPat component name.
 		case ${COMP} in
@@ -141,11 +173,11 @@ do
 
 
 		# a. select according to min/max distance.
-		keys="<FileName> <NETWK> <STNM> <Gcarc> <BeginTime> <EndTime>"
+		keys="<FileName> <NETWK> <STNM> <Gcarc> <BeginTime> <EndTime> <Az>"
 		${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
 		| awk -v N=${NETWK} '{if (N=="AllSt" || (N!="AllSt" && $2==N)) print $0}' \
 		| awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$4 && $4<=D2) print $0}' \
-		| awk -v D1=${DistMin} -v D2=${DistMax} '{if (D1<=$4 && $4<=D2) {A=$0;print $2"_"$3" "A}}' \
+		| awk -v D1=${DistMin} -v D2=${DistMax} -v A1=${AzMin} -v A2=${AzMax} '{if (D1<=$4 && $4<=D2 && ((A1<=A2 && A1<=$7 && $7<=A2) || (A1>A2 && (A1<=$7 || $7<=A2)))) {$7="";A=$0;print $2"_"$3" "A}}' \
 		> ${EQ}_label_SelectedFiles
 
 		NSTA=`wc -l < ${EQ}_label_SelectedFiles`
@@ -407,25 +439,8 @@ EOF
 			fi
 		fi
 
-		# G. Find the PREMbias and Normalize window for this EQ,phase.
-		#    Will also plot an auxilliary plot, which is same as a09, execpt that this window is added.
-		keys="<EQ> <${Phase}_${COMP}> <${Phase}_${COMP}_B> <${Phase}_${COMP}_E>"
-		Info=`${BASHCODEDIR}/Findfield.sh ${CODEDIR}/INFILE_ESW_Window "${keys}" 2>/dev/null | grep "${EQ}"`
 
-		PREMBias=""
-		NormalizeBegin=""
-		NormalizeEnd=""
-
-		PREMBias=`echo "${Info}" | awk '{print $2}'`
-		NormalizeBegin=`echo "${Info}" | awk '{print $3}'`
-		NormalizeEnd=`echo "${Info}" | awk '{print $4}'`
-
-		[ -z ${PREMBias} ] && PREMBias=0
-		[ -z ${NormalizeBegin} ] && NormalizeBegin="-5"
-		[ -z ${NormalizeEnd} ] && NormalizeEnd="5"
-
-
-		# H. Make ESW from the cut (therefore aligned) SAC data.
+		# G. Make ESW from the cut (therefore aligned) SAC data.
 		${EXECDIR}/ESW.out 0 6 6 << EOF
 ${EQ}
 ${EQ}_ESW_infile
@@ -436,8 +451,8 @@ tmpfile_NSTA_$$
 ${TimeMin}
 ${TimeMax}
 ${PREMBias}
-${NormalizeBegin}
-${NormalizeEnd}
+${NBegin}
+${NEnd}
 ${Delta_ESW}
 EOF
 
@@ -458,7 +473,7 @@ EOF
 		read NSTA < tmpfile_NSTA_$$
 		rm -f tmpfile_out_$$ tmpfile_NSTA_$$
 
-		# I. Plot. (GMT-4)
+		# H. Plot. (GMT-4)
 		if [ ${GMTVERSION} -eq 4 ]
 		then
 
@@ -610,7 +625,7 @@ EOF
 		fi
 
 
-		# I*. Plot. (GMT-5)
+		# H*. Plot. (GMT-5)
 		if [ ${GMTVERSION} -eq 5 ]
 		then
 

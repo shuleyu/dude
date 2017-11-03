@@ -97,7 +97,6 @@ do
 			fi
 		done
 
-
 		# plot the EQ and stations
 		psxy ${REG} ${PROJ} -Sa0.12i -O -K -W1/0/0/0 -G0 >> ${PLOTFILE} << EOF
 ${EVLO} ${EVLA}

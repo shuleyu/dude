@@ -41,8 +41,6 @@ NSTA_All=`wc -l < ${a01DIR}/${EQ}_FileList_Info`
 NSTA_All=$((NSTA_All/3))
 
 # C. Enter the plot loop.
-DISTMIN="${DistMin}"
-DISTMAX="${DistMax}"
 TIMEMIN="-1000"
 TIMEMAX="1000"
 Normalize="Own"
@@ -135,10 +133,11 @@ trap "rm -rf ${a15DIR}/tmpdir_$$ ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" S
 
 
 # a. Select network and gcp distance window.
-keys="<FileName> <NETWK> <Gcarc> <BeginTime> <EndTime>"
+keys="<FileName> <NETWK> <Gcarc> <BeginTime> <EndTime> <Az>"
 ${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
-| awk -v D1=${DISTMIN} -v D2=${DISTMAX} '{if (D1<=$3 && $3<=D2) print $0}' \
+| awk -v D1=${DistMin} -v D2=${DistMax} '{if (D1<=$3 && $3<=D2) print $0}' \
 | awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$3 && $3<=D2) print $0}' \
+| awk -v D1=${AzMin} -v D2=${AzMax} '{if ((D1<=D2 && D1<=$6 && $6<=D2) || (D1>D2 && (D1<$6 || $6<D2))) {$6="";print $0}}' \
 | awk -v N=${NetWork} '{if (N=="AllSt") print $0; else if ($2==N) print $0}' \
 | sort -g -k 3,3 > ${EQ}_SelectedFiles
 
@@ -412,14 +411,14 @@ done
 # g*. prepare a "sorted.lst" for the catalogue plotting loop.
 
 keys="<NETWK> <STNM>"
-${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List "${keys}" | awk '{print $1"_"$2}' > tmpfile_filelist_$$
+${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${AzMin}_${AzMax}_${F1}_${F2}_${NETWK}.List "${keys}" | awk '{print $1"_"$2}' > tmpfile_filelist_$$
 
 keys="<NETWK> <STNM> <Gcarc> <Az> <BAz> <STLO> <STLA>"
 ${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | awk '{print $1"_"$2,$3,$4,$5,$6,$7}' | sort -u -k1,1 > tmpfile_$$
 ${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_filelist_$$ | awk '{$1="";print $0}' > tmpfile1_$$
 
 keys="<NETWK> <STNM> <DT> <CCC> <Weight> <PeakTime> <PeakAmp>"
-${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List "${keys}" | awk '{print $1"_"$2,$3,$4,$5,$6,$7}' > tmpfile_$$
+${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${AzMin}_${AzMax}_${F1}_${F2}_${NETWK}.List "${keys}" | awk '{print $1"_"$2,$3,$4,$5,$6,$7}' > tmpfile_$$
 ${BASHCODEDIR}/Findrow.sh tmpfile_$$ tmpfile_filelist_$$ | awk '{$1="";print $0}' > tmpfile2_$$
 
 [ ${COMP} = "Z" ] && COMP1="P"
@@ -568,10 +567,10 @@ EOF
 
         ### plot normalize window.
         psxy -J -R -W200/200/200 -G200/200/200 -L -O -K >> ${OUTFILE} << EOF
-`echo "${PREMBias} + ${NormalizeBegin} " | bc -l` -1
-`echo "${PREMBias} + ${NormalizeBegin} " | bc -l` 1
-`echo "${PREMBias} + ${NormalizeEnd} " | bc -l` 1
-`echo "${PREMBias} + ${NormalizeEnd} " | bc -l` -1
+`echo "${PREMBias} + ${NBegin} " | bc -l` -1
+`echo "${PREMBias} + ${NBegin} " | bc -l` 1
+`echo "${PREMBias} + ${NEnd} " | bc -l` 1
+`echo "${PREMBias} + ${NEnd} " | bc -l` -1
 EOF
 
         ### plot ESW window.
@@ -629,7 +628,7 @@ EOF
 `echo ${Peak} ${PhaseTime} | awk '{print $1-$2}'` `echo ${AMP} ${AMP_Plot} | awk '{print $1/$2}'`
 EOF
 		### shifted empirical source. (normalize to AMP, flip according to polarity)
-		${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.ESW "<Time> <Stack2>" > esw
+		${BASHCODEDIR}/Findfield.sh ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${AzMin}_${AzMax}_${F1}_${F2}_${NETWK}.ESW "<Time> <Stack2>" > esw
 		awk -v S=${D_T} -v A1=${AMP_Plot} -v A2=${AMP} -v T1=${TimeMin} -v T2=${TimeMax} '{if (T1<$1 && $1<T2) print $1+S,$2*A2/A1}' esw |  psxy -J -R -W0.3p,red,- -O -K >> ${OUTFILE}
 		#### waveform
 		awk -v T1=${PLOTTIMEMIN} -v T2=${PLOTTIMEMAX} -v P=${PhaseTime} -v A=${AMP_Plot} '{ if ($1-P>T1 && $1-P<T2) print $1-P,$2/A}' ${file} | psxy -J -R -W0.5p -O -K >> ${OUTFILE}

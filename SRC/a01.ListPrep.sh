@@ -62,7 +62,7 @@ EOF
 	# because sometimes two numveric outputs of saclst has no white seperation characters between them.
 	saclst kstnm knetwk o kcmpnm b kcmpnm npts kcmpnm delta kcmpnm gcarc kcmpnm az kcmpnm baz kcmpnm stlo kcmpnm stla f `cat ${a01DIR}/${EQ}_FileList` \
 	| awk '{$5="";$7="";$9="";$13="";$15="";$17="";$19=""; print $0}' \
-	| awk '{$6=$5+$6*$7;$7=""; print $0}' >> ${a01DIR}/${EQ}_FileList_Info
+	| awk '{$6=$5+$6*$7;$7=""; if ($10<0) $10+=360; print $0}' >> ${a01DIR}/${EQ}_FileList_Info
 
 
 	# ============================
