@@ -18,7 +18,7 @@ cd ${PLOTDIR}
 trap "rm -f ${PLOTDIR}/tmpfile*$$ ${EQ}.pdf a*.pdf ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 # Clean PDF(s)
-rm -f *pdf
+# rm -f *pdf
 
 # Work Begin.
 

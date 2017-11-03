@@ -1,4 +1,3 @@
-
 # ==============================================================================
 #                             ! DIRs and files !
 # ==============================================================================
@@ -14,7 +13,7 @@
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 
-<DATADIR>                     /home/shule/PROJ/t041.DATA/NorthAmerican
+<DATADIR>                     /NAS/soduser/Merge.Mw6.50km
 <OUTDIR>                      /home/shule/PROJ/t001.DoubleBump
 
 <GMTVERSION>                  4
@@ -248,7 +247,7 @@ Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <ZP_BEGIN>
 
-S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portrait
+S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Portrait
 
 <ZP_END>
 
@@ -275,7 +274,7 @@ S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portr
 
 <ZPC_BEGIN>
 
-0.5    S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portrait
+0.5    S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Portrait
 
 <ZPC_END>
 
@@ -298,7 +297,7 @@ S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portr
 
 <ZPDS_BEGIN>
 
-1    1    S    T    40    100    -100    100    0.01    1.0    Own    SH    AllSt    Portrait
+1    1    S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Portrait
 
 <ZPDS_END>
 
@@ -416,10 +415,9 @@ SKKS       SV
 
 <PhaseESW_BEGIN>
 
-S    T    0    40    100    0    0.2    AllSt    -10    15
+S    T    0    40    100    350    360    0.015    0.2    AllSt
 
 <PhaseESW_END>
-
 
 #
 #  PhaseESW_BEGIN_END:
@@ -427,7 +425,7 @@ S    T    0    40    100    0    0.2    AllSt    -10    15
 #    the result is plotted on one page showing the empirical wavelets,
 #    cross-correlation coefficient histogram and time shift histogram.
 #    Also, a file named:
-#    ${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
+#    ${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${AzMin}_${AzMax}_${F1}_${F2}_${NETWK}.List
 #    can be found for each line in ${a15DIR} with headers:
 #    EQ,NETWK,STNM,DT,CCC,Weight
 #
@@ -441,36 +439,40 @@ S    T    0    40    100    0    0.2    AllSt    -10    15
 #    D. DistMin. The distance range minimum. ( Can be used to avoid traffic )
 #    E. DistMax. The distance range maximum. ( Can be used to avoid traffic )
 #    	Suggestion: run either a09,a10,a11 to visually decide the traffic distance intervals.
-#    F. Filter lower corner. (if set to 0.0, apply a low-pass butterworth filter using upper corner)
-#    G. Filter upper corner. (if set to 0.0, apply a high-pass butterworth filter using lower corner)
+#    F. AzMin. The azimuth range minimum. ( 0 ~ 360 deg)
+#    G. AzMax. The azimuth range maximum. ( 0 ~ 360 deg)
+#    	If AzMin>AzMax, will select data with azimuth in the range of: AzMax ~ 360+AzMin
+#    H. Filter lower corner. (if set to 0.0, apply a low-pass butterworth filter using upper corner)
+#    I. Filter upper corner. (if set to 0.0, apply a high-pass butterworth filter using lower corner)
 #       ( if both lower and upper corner are set to 0.0, don't apply the filter. )
-#    H. Choose one network. (choose from network names. for all data, use "AllSt")
-#    I. ESW left window (in seconds, relative to anchored arrival).
-#    J. ESW right window (in seconds, relative to anchored arrival).
+#    J. Choose one network. (choose from network names. for all data, use "AllSt")
 #
-#	In INFILE_ESW_Window, there are parameters specified for each events.
-#	The first line in INFILE_ESW_Window should be parameter names in angle bracket.
+#	In INFILE_ESW_Window, there are Cross-correlation window and normalize window parameters
+#	specified for each line and also for each event.
 #
 #	EQ             Event name.
-#	Phase_COMP     PREM bias. (in seconds, the data v.s. PREM prediction bias
+#	LineNum        According to which line of parameters between PhaseESW_begin and PhaseESW_end
+#	               * means use this parameter for this earthquakes for all the lines.
+#	PREMBias       PREM bias. (in seconds, the data v.s. PREM prediction bias
 # 				   caused by origin time error, simple model, receiver structure
-# 				   and etc. These values can be visually decided from plots like
+# 				   and etc. This value can be visually decided from plots like
 # 				   a09,a10,a11)
-#
-#	Phase_COMP_B   Normalize window Begin relative to PREM+Phase_COMP
-#	Phase_COMP_E   Normalize window End relative to PREM+Phase_COMP
+#	EBegin         Cross-correlation window Begin relative to PREMarrival + PREMBias
+#	Eend           Cross-correlation window End relative to PREMarrival + PREMBias
+#	NBegin         Normalize window Begin relative to PREMarrival + PREMBias
+#	Nend           Normalize window End relative to PREMarrival + PREMBias
 #
 # a15. =========================================================================
 
 # a16. =========================================================================
 # Almost the same as a09: zoom profile to the phase arrival(a09), then align them
 # using the time shift calculated in a15. To make sense, the input of this task
-# should match the input of a15 in the first 8 sections:
+# should match the input of a15 in the first 10 sections:
 #
-# ${Phase} ${COMP} ${UseSNR} ${DistMin} ${DistMax} ${F1} ${F2} ${NETWK}
+# ${Phase} ${COMP} ${UseSNR} ${DistMin} ${DistMax} ${AzMin} ${AzMax} ${F1} ${F2} ${NETWK}
 #
 # In other words, for each input line, if this file:
-#  ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${DistMax}_${F1}_${F2}_${NETWK}.List
+#  ${a15DIR}/${EQ}_${Phase}_${COMP}_${UseSNR}_${DistMin}_${AzMin}_${AzMax}_${DistMax}_${F1}_${F2}_${NETWK}.List
 # is not found, then this input line is skipped.
 #
 # Note: Need results form a01,a05,a12(use radpat to flip the records)
@@ -481,7 +483,7 @@ S    T    0    40    100    0    0.2    AllSt    -10    15
 
 <AP_BEGIN>
 
-S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrait
+S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100    SH    Portrait
 
 <AP_END>
 
@@ -522,7 +524,7 @@ S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrai
 
 <APC_BEGIN>
 
-0.5    S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrait
+0.5    S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100    SH    Portrait
 
 <APC_END>
 
@@ -547,7 +549,7 @@ S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrai
 
 <APDS_BEGIN>
 
-1    1    S    T    0    40    100    0.01    1.0    AllSt     Own    1    -100    100    SH    Portrait
+1    1    S    T    0    40    100    350    360    0.015    0.2    AllSt     Own    1    -100    100    SH    Portrait
 
 <APDS_END>
 
@@ -556,16 +558,16 @@ S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrai
 #
 #    A. Gcarc bin width. Will sum-average traces within each bin with this gcarc size.
 #    B. Bin increment. Bin center position in gcarc is seperated by this value.
-#    C-J. see a16.
-#    K. Normalize. (choose from "Own","Global"
+#    C-L. see a16.
+#    M. Normalize. (choose from "Own","Global"
 #                               -- "Own" means the maximum amplitude of each inc sum will be set to "1".
 #                               -- "Global" means preserve the relative amplitude between each inc sum,
 #                                  and the maximum ampiltude across all traces is set to "1".)
-#    L. Weight. (choose from "1","0"
+#    N. Weight. (choose from "1","0"
 #                            -- "1" means we will take advantages of the a15 <Weight> measurements and
 #                                   do a weighted Inc Sum)
 #                            -- "0" means we will apply no weights when traces are summed.
-#    M-End. see a16.
+#    O-End. see a16.
 #
 # a18. =========================================================================
 
@@ -619,6 +621,7 @@ S    T    0    40    100    0.01    1.0    AllSt    -100    100    SH    Portrai
 #   A list of EQ names in the format of YYYYMMDDHHmm (12-digits)
 <EQs_BEGIN>
 
-200707211327
+200603241227
+200612121548
 
 <EQs_END>

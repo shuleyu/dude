@@ -103,11 +103,11 @@ int main(int argc, char **argv){
 
     ****************************************************************/
 
-	// Note: Implicit setting 1: SAC files are pre-cut to this time window:
-	//       |    PERM+3*TimeMin(E1)  <-->  PREM+3*TimeMax(E2)    |
+	// Note: SAC files are pre-cut to this time window:
+	//       |    PERMarrival+3*TimeMin(E1)  <-->  PREMarrival+3*TimeMax(E2)    |
 	//
-	//       Implicit setting 2: will normalise each waveform near the PREM
-	//       arrival (windowing around FirstOnSet).
+	//       Will normalize waveform around PREMarrival + PREMBias (FirstOnSet).
+	//       Will Cross-correlation around PREMarrival + PREMBias (FirstOnSet).
 
 
 	// 1. Read in data.
@@ -124,7 +124,7 @@ int main(int argc, char **argv){
 	fpin.open(PS[infile]);
 	fpout.open(PS[badfilelist]);
 
-	while (fpin >> tmpdata.filename >> tmpdata.netwk >> tmpdata.stnm 
+	while (fpin >> tmpdata.filename >> tmpdata.netwk >> tmpdata.stnm
 		        >> tmpdata.radpat >> tmpdata.snr){
 
 		strcpy(tmpchar,tmpdata.filename.c_str());
@@ -150,9 +150,8 @@ int main(int argc, char **argv){
 
 		// Record this trace.
 		tmpdata.data=new double [rawnpts];
-		for (int index=0;index<rawnpts;index++){
+		for (int index=0;index<rawnpts;index++)
 			tmpdata.data[index]=maxdata[index]/Amplitude;
-		}
 		Data.push_back(tmpdata);
 
 		MinNpts=MinNpts>rawnpts?rawnpts:MinNpts;
