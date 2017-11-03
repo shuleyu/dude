@@ -98,33 +98,15 @@ do
 	fi
 
     # E. Call TauP to get In-N-Out points.
+	XPierce=`echo ${XDepth} | awk '{print 2891-$1}'`
     echo "<NETWK> <STNM> <STLO> <STLA> <S_LO_IN> <S_LA_IN> <S_LO_OUT> <S_LA_OUT>" > ${EQ}_S_${XDepth}km.List
     while read netwk stnm STLO STLA AZ
     do
-        taup_path -ph S,Sdiff -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -o stdout | awk 'NR>1 {print $2,$1}' > tmpfile_$$
-		MinR=`minmax -C tmpfile_$$ | awk '{print $1}'`
-		[ `echo "${MinR} > 3480+${XDepth}" | bc` -eq 1 ] && continue
-
-		BreakDist=`grep -w ${MinR} tmpfile_$$ | awk 'NR==1 {print $2}'`
-		awk -v B=${BreakDist} '{if ($2<=B && $1>3480) print $0}' tmpfile_$$ | sort -g -k1,1 > tmpfile_in1_$$
-		awk -v B=${BreakDist} '{if ($2>B && $1>3480) print $0}' tmpfile_$$ | sort -g -k1,1 > tmpfile_in2_$$
-		echo "${XDepth}" | awk '{print 3480+$1}' > tmpfile_in3_$$
-
-		${EXECDIR}/Interpolate.out 0 3 0 << EOF
-tmpfile_in1_$$
-tmpfile_in3_$$
-tmpfile_out1_$$
-EOF
-		${EXECDIR}/Interpolate.out 0 3 0 << EOF
-tmpfile_in2_$$
-tmpfile_in3_$$
-tmpfile_out2_$$
-EOF
-		read Dist1 < tmpfile_out1_$$
-		read Dist2 < tmpfile_out2_$$
+        taup_pierce -ph S,Sdiff -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -pierce ${XPierce} -nodiscon | awk 'NR>1 {print $2,$1}' > tmpfile_$$
 		
-		echo "${netwk} ${stnm} ${STLO} ${STLA} `${EXECDIR}/CalcWaypoint.out ${EVLO} ${EVLA} ${AZ} ${Dist1}` `${EXECDIR}/CalcWaypoint.out ${EVLO} ${EVLA} ${AZ} ${Dist2}`" >> ${EQ}_S_${XDepth}km.List
+		echo "${netwk} ${stnm} ${STLO} ${STLA} `head -n 1 tmpfile_$$` `tail -n 1 tmpfile_$$`" >> ${EQ}_S_${XDepth}km.List
     done < ${EQ}_net_stn_stlo_stla_az
+
 	rm -f tmpfile_$$
 
     NSTA=`wc -l < ${EQ}_S_${XDepth}km.List`
