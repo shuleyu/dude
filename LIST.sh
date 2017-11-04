@@ -5,7 +5,7 @@ ${SRCDIR}/a01.ListPrep.sh
 # ${SRCDIR}/a02.MasterMap.sh
 # ${SRCDIR}/a03.CityMap.sh
 # ${SRCDIR}/a04.Histogram.sh
-# ${SRCDIR}/a05.MakeTravelTimeData.sh
+${SRCDIR}/a05.MakeTravelTimeData.sh
 # ${SRCDIR}/a06.BigProfile.sh
 # ${SRCDIR}/a07.BigProfileComb.sh
 # ${SRCDIR}/a08.BigProfileIncSum.sh
