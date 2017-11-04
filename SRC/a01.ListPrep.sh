@@ -69,7 +69,7 @@ EOF
 	#     C. Get EQs Info.
 	# ============================
 
-	trap "rm -f ${a01DIR}/EQInfo.txt ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
+	trap "rm -f ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
 
 	saclst evla evlo evdp mag f `head -n 1 ${a01DIR}/${EQ}_FileList` \
 	| awk -v E=${EQ} '{if ($4>1000) $4/=1000; print E,$2,$3,$4,$5}' \

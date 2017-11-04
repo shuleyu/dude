@@ -65,8 +65,8 @@ do
 
     PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`.ps
 
-    # Clean dir.
-    rm -f ${a26DIR}/${EQ}*
+	# Clean dir.
+	rm -f ${a26DIR}/${EQ}*
 
     # Ctrl+C action.
     trap "rm -f ${a26DIR}/${EQ}* ${a26DIR}/tmpfile_$$ ${PLOTFILE} ${OUTDIR}/*_${RunNumber}; exit 1" SIGINT
@@ -102,7 +102,7 @@ do
     echo "<NETWK> <STNM> <STLO> <STLA> <S_LO_IN> <S_LA_IN> <S_LO_OUT> <S_LA_OUT>" > ${EQ}_S_${XDepth}km.List
     while read netwk stnm STLO STLA AZ
     do
-        taup_pierce -ph S,Sdiff -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -pierce ${XPierce} -nodiscon | awk 'NR>1 {print $2,$1}' > tmpfile_$$
+        taup_pierce -ph S,Sdiff -h ${EVDP} -sta ${STLA} ${STLO} -evt ${EVLA} ${EVLO} -mod ${Model_TT} -pierce ${XPierce} -nodiscon | awk 'NR>1 {print $5,$4}' > tmpfile_$$
 		
 		echo "${netwk} ${stnm} ${STLO} ${STLA} `head -n 1 tmpfile_$$` `tail -n 1 tmpfile_$$`" >> ${EQ}_S_${XDepth}km.List
     done < ${EQ}_net_stn_stlo_stla_az
