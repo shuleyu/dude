@@ -37,8 +37,8 @@ do
 	${BASHCODEDIR}/Findfield.sh ${a01DIR}/EQInfo.txt "${keys}" | grep ${EQ} > ${EQ}_Info
 	read EQ EVLA EVLO EVDP MAG < ${EQ}_Info
 
-	keys="<STLO> <STLA> <Gcarc>"
-	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | uniq > ${EQ}_stlo_stla_gcarc
+	keys="<STLO> <STLA> <Gcarc> <NETWK> <STNM>"
+	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}"  | sort -u -k 4,5 | awk '{print $1,$2,$3}' > ${EQ}_stlo_stla_gcarc
 
 	NSTA=`wc -l < ${EQ}_stlo_stla_gcarc`
 

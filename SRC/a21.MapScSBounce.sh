@@ -75,7 +75,7 @@ do
 
     # D. Select gcp distance window.
     keys="<NETWK> <STNM> <Gcarc> <STLO> <STLA>"
-    ${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | sort | uniq \
+    ${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | sort -u -k 1,2 \
     | awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$3 && $3<=D2) print $1,$2,$4,$5}' > ${EQ}_net_stn_stlo_stla
 
 	if ! [ -s "${EQ}_net_stn_stlo_stla" ]

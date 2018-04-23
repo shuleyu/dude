@@ -59,7 +59,7 @@ bool tmpfunc4(const struct record &item1,const struct record &item2){
 		return false;
 	}
 	else{
-		return (fabs(item1.lon-item2.lon)<0.01 && fabs(item1.lat-item2.lat)<0.01);
+		return (fabs(item1.lon-item2.lon)<0.001 && fabs(item1.lat-item2.lat)<0.001);
 	}
 }
 
@@ -164,6 +164,7 @@ int main(int argc, char **argv){
 	infile.close();
 
 
+
 	// Get unique NW_ST by Label.
 	// Account for different NetWork + same StaName, while they are actually
 	// different stations.
@@ -174,7 +175,7 @@ int main(int argc, char **argv){
 	// Get unique NW_ST by station location.
 	// Account for different NetWork + same StaName, while they are actually
 	// the same station.
-	// Notice: Distance < ~1.1 km is considered a same station.
+	// Notice: Distance < ~0.11 km is considered a same station.
 	sort(data.begin(),it,tmpfunc3);
 	it=unique(data.begin(),it,tmpfunc4);
 
@@ -237,7 +238,8 @@ int main(int argc, char **argv){
 
 	// Select Good traces.
 	sort(Data.begin(),Data.end(),tmpfunc1);
-	vector<struct record> data_clean;
+	vector<struct record> data_clean,data_dirty;
+
 
 	for (auto index: metadata){
 
@@ -296,6 +298,13 @@ int main(int argc, char **argv){
 				}
 			}
 		}
+        else {
+            for (auto index2: Data){
+                if (index2.Label==index.Label){
+                    data_dirty.push_back(index2);
+                }
+            }
+        }
 	}
 
 	// Output good traces.
@@ -328,6 +337,13 @@ int main(int argc, char **argv){
 	}
 
 	outfile.close();
+
+    // Output bad traces.
+
+	outfile.open(PS[FileList]+"_Bad");
+	for (auto index: data_dirty)
+		outfile << index.FileName << endl;
+    outfile.close();
 
     return 0;
 }

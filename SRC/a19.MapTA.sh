@@ -45,10 +45,10 @@ do
 	MIN=` echo ${EQ} | cut -c11-12 `
 
 	# C. Select only TA station.
-	keys="<NETWK> <STLO> <STLA>"
+	keys="<NETWK> <STNM> <STLO> <STLA>"
 	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
-	| sort | uniq \
-	| awk '{if ($1=="TA") print $2,$3}' > ${EQ}_stlo_stla
+	| sort -u -k 1,2 \
+	| awk '{if ($1=="TA") print $3,$4}' > ${EQ}_stlo_stla
 
 	if ! [ -s "${EQ}_stlo_stla" ]
 	then

@@ -44,8 +44,8 @@ do
 	HH=`  echo ${EQ} | cut -c9-10 `
 	MIN=` echo ${EQ} | cut -c11-12 `
 
-	keys="<Gcarc> <Az> <BAz>"
-	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | uniq > ${EQ}_gcarc_az_baz
+	keys="<Gcarc> <Az> <BAz> <NETWK> <STNM>"
+	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | sort -u -k 4,5 | awk '{print $1,$2,$3}' > ${EQ}_gcarc_az_baz
 
 	NSTA=`wc -l < ${EQ}_gcarc_az_baz`
 

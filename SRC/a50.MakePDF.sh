@@ -62,6 +62,8 @@ then
 			ps2pdf tmpfile_$$ ${EQ}.pdf
 		fi
 
+        tomini ${EQ}.pdf
+
 	done # End of EQ loop.
 
 else
@@ -104,11 +106,11 @@ else
 			ps2pdf tmpfile_$$ a${Task}.pdf
 		fi
 
+        tomini a${Task}.pdf
+
 	done # End of Task loop.
 
 fi
-
-
 
 rm -f tmpfile*$$
 

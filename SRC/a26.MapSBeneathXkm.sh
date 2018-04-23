@@ -74,7 +74,7 @@ do
 
     # D. Select gcp distance window.
     keys="<NETWK> <STNM> <Gcarc> <STLO> <STLA> <Az>"
-    ${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | sort | uniq \
+    ${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" | sort -u -k 1,2 \
     | awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$3 && $3<=D2) print $1,$2,$3,$4,$5,$6}' > ${EQ}_net_stn_gcarc_stlo_stla_az
 
 	# D'. Select gcp distance window ( minimum distance required for S to bottom beneath XDepth.

@@ -251,6 +251,7 @@ do
 		fi
 
 		awk '{$1="";$3="";$4=""; print $0}' ${EQ}_label_SelectedFiles > ${EQ}_SelectedFiles
+
 		# current columns in ${EQ}_SelectedFiles:
 		# FileName,Gcarc,BeginTime,EndTime,radpat,snr(snr is only valid for ${COMP})
 
@@ -390,7 +391,6 @@ EOF
 			rm -f junk.sac
 		fi
 
-
 		# F*. Process data (to sac format) in ${EQ}_List2, for COMP="R" or "T".
 		if [ ${COMP} = "T" ] || [ ${COMP} = "R" ]
 		then
@@ -438,7 +438,6 @@ EOF
 				rm -f junk.sac junk.R junk.T
 			fi
 		fi
-
 
 		# G. Make ESW from the cut (therefore aligned) SAC data.
 		${EXECDIR}/ESW.out 0 6 6 << EOF
@@ -778,7 +777,7 @@ EOF
 
 		fi
 
-		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Catalogue.sh
+# 		bash ${SRCDIR}/a15.EmpiricalSourceWavelets_Catalogue.sh
 
 	done < ${OUTDIR}/tmpfile_PhaseESW_${RunNumber}
 
