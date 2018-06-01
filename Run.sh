@@ -125,7 +125,7 @@ fi
 #            ! Test Software Dependencies !
 #======================================================
 
-CommandList="${FCOMP} ${CCOMP} ${CPPCOMP} sac saclst taup_time tac"
+CommandList="${CPPCOMP} sac saclst taup_time tac"
 
 case "${GMTVERSION}" in
 	4 )
@@ -157,113 +157,27 @@ done
 #            ! Compile C,C++,Fortran codes !
 #==================================================
 
-if [ $# -ne 0 ]
-then
+# Set up Ctrl + C action.
+trap "rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$; exit 1" SIGINT
 
-	# Set up Ctrl + C action.
-	trap "rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$; exit 1" SIGINT
+# Set Header/Library dirs, Libray names.
+INCLUDEDIR="-I${CPPCODEDIR} -I${CCODEDIR} -I${SACDIR}/include"
+LIBRARYDIR="-L${CCODEDIR} -L${SACDIR}/lib -L."
+LIBRARIES="-lASU_tools -lsac -lsacio -lm"
 
-	# Set Header/Library dirs, Libray names.
-	INCLUDEDIR="-I${CPPCODEDIR} -I${CCODEDIR} -I${SACDIR}/include"
-	LIBRARYDIR="-L${CPPCODEDIR} -L${CCODEDIR} -L${SACDIR}/lib -L."
-	LIBRARIES="-lASU_tools -lsac -lsacio -lm"
+# Compile ASU_tools Library.
+cd ${CCODEDIR}
+make
 
-	# Compile ASU_tools Library.
-	cd ${CCODEDIR}
-	make
-	cd ${CPPCODEDIR}
-	make
-	cd ${EXECDIR}
+cd ${SRCDIR}
+make OUTDIR=${EXECDIR} CDIR=${CCODEDIR} CPPDIR=${CPPCODEDIR} SACDIR=${SACDIR}
 
-	# Customized Functions (C).
-	for code in `ls ${SRCDIR}/*fun.c 2>/dev/null`
-	do
-		name=`basename ${code}`
-		name=${name%.fun.c}
-
-		${CCOMP} ${CFLAG} -c ${code} ${INCLUDEDIR}
-
-		if [ $? -ne 0 ]
-		then
-			echo "${name} C function is not compiled ..."
-			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-			exit 1
-		fi
-	done
-
-	# Customized Functions (C++).
-	for code in `ls ${SRCDIR}/*fun.cpp 2>/dev/null`
-	do
-		name=`basename ${code}`
-		name=${name%.fun.cpp}
-
-		${CPPCOMP} ${CPPFLAG} -c ${code} ${INCLUDEDIR}
-
-		if [ $? -ne 0 ]
-		then
-			echo "${name} C++ function is not compiled ..."
-			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-			exit 1
-		fi
-	done
-
-	# Executables (C).
-	for code in `ls ${SRCDIR}/*.c 2>/dev/null | grep -v fun.c`
-	do
-		name=`basename ${code}`
-		name=${name%.c}
-
-		${CCOMP} ${CFLAG} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
-
-		if [ $? -ne 0 ]
-		then
-			echo "${name} C code is not compiled ..."
-			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-			exit 1
-		fi
-	done
-
-	# Executables (C++).
-	for code in `ls ${SRCDIR}/*.cpp 2>/dev/null | grep -v fun.cpp`
-	do
-		name=`basename ${code}`
-		name=${name%.cpp}
-
-		${CPPCOMP} ${CPPFLAG} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
-
-		if [ $? -ne 0 ]
-		then
-			echo "${name} C++ code is not compiled ..."
-			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-			exit 1
-		fi
-	done
-
-	# Executables (fortran).
-	for code in `ls ${SRCDIR}/*.f90 2>/dev/null`
-	do
-		name=`basename ${code}`
-		name=${name%.f}
-
-		${FCOMP} -o ${EXECDIR}/${name}.out ${code} ${INCLUDEDIR} ${LIBRARYDIR} ${LIBRARIES}
-
-		if [ $? -ne 0 ]
-		then
-			echo "${name} Fortran code is not compiled ..."
-			rm -f ${EXECDIR}/*.o ${OUTDIR}/*_$$
-			exit 1
-		fi
-	done
-
-	# Clean up.
-	rm -f ${EXECDIR}/*fun.o
-fi
+echo "Compile finished...running..."
 
 # ==============================================
 #           ! Work Begin !
 # ==============================================
 
-cd ${OUTDIR}
 cat >> ${OUTDIR}/stdout << EOF
 
 ======================================
@@ -288,6 +202,8 @@ do
 		find ${OUTDIR}/ -iname "${EQ}*sac" -exec rm -f '{}' \;
 	fi
 done
+
+echo "Finished."
 
 rm -f ${OUTDIR}/*_$$
 

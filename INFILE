@@ -2,20 +2,12 @@
 #                             ! DIRs and files !
 # ==============================================================================
 
-<FCOMP>                       f95
-<CCOMP>                       gcc
-<CPPCOMP>                     c++
-<CFLAG>                       -Wall
-<CPPFLAG>                     -std=c++14 -Wall
-
-<SACDIR>                      /opt/sac-101.6
+<OUTDIR>                      /home/shule/PROJ/t001.tmp
 <BASHCODEDIR>                 /home/shule/Research/Fun.Bash.c001
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
-
+<SACDIR>                      /opt/sac-101.6
 <DATADIR>                     /home/shule/PROJ/t041.DATA/CleanNorthAmerican
-<OUTDIR>                      /home/shule/PROJ/t001.NorthAmericanIncESW
-
 <GMTVERSION>                  5
 							  -- 4: use GMT-4.
 							  -- 5: use GMT-5.
@@ -457,8 +449,28 @@ ScS    T    0    40    100    0    360    0.033    0.3    AllSt
 #       ( if both lower and upper corner are set to 0.0, don't apply the filter. )
 #    J. Choose one network. (choose from network names. for all data, use "AllSt")
 #
-#	In INFILE_ESW_Window, there are Cross-correlation window and normalize window parameters
-#	specified for each line and also for each event.
+
+<ESWWindow_BEGIN>
+
+200608250044    *            5             -10         15        -10         15
+200611130126    *            7             -7          15        -10         15
+200707211534    *            8             -7          15        -10         15
+200711160313    *            3             -10         15        -10         15
+200911141944    *            3             -10         15        -10         15
+201106201636    *            2             -10         15        -10         15
+201111221848    *           -4             -10         15        -10         15
+201208020938    *           -4             -10         15        -10         15
+201211221307    *           -3             -10         15        -10         15
+201302221201    *           -3             -10         15        -10         15
+201502111857    *            3             -10         15        -10         15
+201511242250    *           -5             -10         15        -10         15
+201511260545    *           -5             -10         15        -10         15
+200609220232    *            3             -7          13        -10         15
+
+<ESWWindow_END>
+
+#	In ESWWindow, there are Cross-correlation window and normalize window parameters
+#	specified for each line and each event.
 #
 #	EQ             Event name.
 #	LineNum        According to which line of parameters between PhaseESW_begin and PhaseESW_end

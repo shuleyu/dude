@@ -72,10 +72,8 @@ do
 
 		# Set up normalize & cross-correlation windows for this event, for this line of ESW parameters.
 		# Default windows will be -10 ~ 15 second around PREM arrival.
-		# Search INFILE_ESW_Window for specific window parameters.
-		keys="<EQ> <LineNum> <PREMBias> <EBegin> <EEnd> <NBegin> <NEnd>"
-		Info=`${BASHCODEDIR}/Findfield.sh ${CODEDIR}/INFILE_ESW_Window "${keys}" 2>/dev/null | grep "${EQ}" \
-		| awk -v L=${Num} '{if ($2==L || $2=="*") print $3,$4,$5,$6,$7}' | head -n 1`
+		# Search the ESWWindow section for specific window parameters.
+		Info=`grep "${EQ}" ${WORKDIR}/tmpfile_ESWWindow_${RunNumber} | awk -v L=${Num} '{if ($2==L || $2=="*") print $3,$4,$5,$6,$7}' | head -n 1`
 
 		PREMBias=""
 		TimeMin=""
