@@ -2,12 +2,13 @@
 #                             ! DIRs and files !
 # ==============================================================================
 
+<DATADIR>                     /NAS/soduser/Merge.Mw6.50km
 <OUTDIR>                      /home/shule/PROJ/t001.tmp
+
 <BASHCODEDIR>                 /home/shule/Research/Fun.Bash.c001
 <CCODEDIR>                    /home/shule/Research/Fun.C.c002
 <CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
-<SACDIR>                      /opt/sac-101.6
-<DATADIR>                     /home/shule/PROJ/t041.DATA/CleanNorthAmerican
+<SACDIR>                      /opt/sac
 <GMTVERSION>                  5
 							  -- 4: use GMT-4.
 							  -- 5: use GMT-5.
@@ -33,8 +34,8 @@
 
 #  UseBH:
 #    value choose from "1","0"
-#    -- "1" means use BH?.sac (sampling rate ~40Hz) when station gives both BH and HH
-#    -- "0" means use HH?.sac (sampling rate ~100Hz) when station gives both BH and HH
+#    -- "1" means use BH?.sac (sampling rate ~40Hz) if station gives both BH and HH
+#    -- "0" means use HH?.sac (sampling rate ~100Hz) if station gives both BH and HH
 #    -- other value will stop scripts immediately.
 #
 # a01. =========================================================================
@@ -55,16 +56,6 @@
 <Model_TT>                    prem
 
 <PhaseList_BEGIN>
-
-SVSH S
-SVSH Sdiff
-SVSH sS
-SVSH sSS
-SH ScS
-SH sScS
-SH SS
-
-<PhaseList_END>
 
 P P
 P Pdiff
@@ -128,6 +119,7 @@ SH sScSScSScSScSScSScS
 SH sScSScSScSScSScSScSScS
 SH 4.5kmps
 
+<PhaseList_END>
 
 #  Model_TT:
 #    choose a TauP velocity model for arrival calculation.
@@ -644,64 +636,6 @@ S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100  
 
 <EQs_BEGIN>
 
-200608250044
-200611130126
-200707211327
-200707211534
-200711160313
-200807080913
-200809031125
-200810122055
-200907120612
-200909050358
-200911141944
-201003042239
-201007120011
-201009130715
-201103061231
-201106080306
-201106201636
-201111221848
-201205141000
-201205280507
-201206071603
-201208020938
-201308230834
-201502111857
-201503230451
-201506101352
-201509281528
-201511242250
-201511260545
-201108150253
-201211221307
-201302221201
-201601140325
-200609220232
-200705251747
-200707120523
-200711180540
-200802161445
-200803242039
-200808262100
-200907141838
-200911130727
-201005241618
-201010221931
-201104021059
-201104170158
-201206020752
-201210080150
-201409241116
-201001280804
-201008121154
-201101010956
-201109021347
-201410261045
-200610232100
-201001252252
-201108241746
-201211101457
-201502021049
+200809180141
 
 <EQs_END>

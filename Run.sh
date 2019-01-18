@@ -130,9 +130,11 @@ CommandList="${CPPCOMP} sac saclst taup_time tac"
 case "${GMTVERSION}" in
 	4 )
 		CommandList="${CommandList} psxy"
+        MINMAX="minmax"
 		;;
 	5 )
 		CommandList="${CommandList} gmt"
+        MINMAX="gmtinfo"
 		;;
 	* )
 		echo "Wrong GMT version ! Exiting ..."
