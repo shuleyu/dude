@@ -3,11 +3,12 @@
 # ==============================================================================
 
 <DATADIR>                     /NAS/soduser/Merge.Mw6.50km
-<OUTDIR>                      /home/shule/PROJ/t001.tmp
+<OUTDIR>                      /home/shule/ForDanFrost/t001.tmp
+                              # Events to process are listed at the end of this file.
 
-<BASHCODEDIR>                 /home/shule/Research/Fun.Bash.c001
-<CCODEDIR>                    /home/shule/Research/Fun.C.c002
-<CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
+<BASHCODEDIR>                 /home/shule/ForDanFrost/Fun.Bash.c001
+<CCODEDIR>                    /home/shule/ForDanFrost/Fun.C.c002
+<CPPCODEDIR>                  /home/shule/ForDanFrost/Fun.C++.c003
 <SACDIR>                      /opt/sac
 <GMTVERSION>                  5
 							  -- 4: use GMT-4.
@@ -19,13 +20,13 @@
 
 # Run.sh ----
 
-<NewPlots>                    1
+<NewPlots>                    0
                               1 -- Will delete every previous made figures of chosen events.
 							  0 -- Will keep old figures
 
 <CleanSAC>                    1
                               1 -- Will delete SAC files created by this program (clean up)
-							  0 -- Will keep SAC files for benchmark.
+							  0 -- Will keep SAC files created by this program.
 
 # ----
 

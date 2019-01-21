@@ -102,7 +102,7 @@ EOF
 		XNUM=20
 
 		YMIN=0
-		YMAX=`minmax -C ${EQ}_Count_gcarc | awk '{print $4}'`
+		YMAX=`${MINMAX} -C ${EQ}_Count_gcarc | awk '{print $4}'`
 		YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 		YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 		YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
@@ -122,7 +122,7 @@ EOF
 		XNUM=40
 
 		YMIN=0
-		YMAX=`minmax -C ${EQ}_Count_az | awk '{print $4}'`
+		YMAX=`${MINMAX} -C ${EQ}_Count_az | awk '{print $4}'`
 
 		YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 		YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
@@ -144,7 +144,7 @@ EOF
 		XNUM=40
 
 		YMIN=0
-		YMAX=`minmax -C ${EQ}_Count_baz | awk '{print $4}'`
+		YMAX=`${MINMAX} -C ${EQ}_Count_baz | awk '{print $4}'`
 
 		YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 		YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
@@ -218,7 +218,7 @@ EOF
 		XNUM=20
 
 		YMIN=0
-		YMAX=`minmax -C ${EQ}_Count_gcarc | awk '{print $4}'`
+		YMAX=`${MINMAX} -C ${EQ}_Count_gcarc | awk '{print $4}'`
 
 		YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 		YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
@@ -239,7 +239,7 @@ EOF
 		XNUM=40
 
 		YMIN=0
-		YMAX=`minmax -C ${EQ}_Count_az | awk '{print $4}'`
+		YMAX=`${MINMAX} -C ${EQ}_Count_az | awk '{print $4}'`
 
 		YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 		YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
@@ -260,7 +260,7 @@ EOF
 		XNUM=40
 
 		YMIN=0
-		YMAX=`minmax -C ${EQ}_Count_baz | awk '{print $4}'`
+		YMAX=`${MINMAX} -C ${EQ}_Count_baz | awk '{print $4}'`
 
 		YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 		YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `

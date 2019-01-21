@@ -120,8 +120,8 @@ do
 			continue
 		else
 			PhaseFile=`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped`
-			PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
-			PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
+			PhaseDistMin=`${MINMAX} -C ${PhaseFile} | awk '{print $1}'`
+			PhaseDistMax=`${MINMAX} -C ${PhaseFile} | awk '{print $2}'`
 		fi
 
 
@@ -452,7 +452,7 @@ EOF
 
 		# tighten the Distance range, take amplitude in consideration.
 		[ ${PlotOrient} = "Portrait" ] && PlotHeight=8.5 || PlotHeight=6
-		awk '{print $4}' ${EQ}_AlignedIn_$$ | minmax -C \
+		awk '{print $4}' ${EQ}_AlignedIn_$$ | ${MINMAX} -C \
 		| awk -v D=${BinSize} '{print $1-D,$2+D}' \
 		| awk -v D=${Amplitude_APDS} -v P=${PlotHeight} '{X=(D*($2-$1))/(P-2*D);$1-=X;$2+=X; print $0}' > tmpfile_$$
 		read DISTMIN DISTMAX < tmpfile_$$
@@ -657,7 +657,7 @@ EOF
 			# plot a histogram of TraceNum count in each bin.
 
 			# count maximum binN.
-			XMAX=`awk '{print $2}' ${EQ}_TraceCount.txt | minmax -C | awk '{print $2}'`
+			XMAX=`awk '{print $2}' ${EQ}_TraceCount.txt | ${MINMAX} -C | awk '{print $2}'`
 
 			[ ${PlotOrient} = "Portrait" ] && XP="-X5.6i" || XP="-X8.3i"
 			PROJ="-JX1.1i/-${PlotHeight}i"
@@ -789,7 +789,7 @@ EOF
 			# plot a histogram of TraceNum count in each bin.
 
 			# count maximum binN.
-			XMAX=`awk '{print $2}' ${EQ}_TraceCount.txt | minmax -C | awk '{print $2}'`
+			XMAX=`awk '{print $2}' ${EQ}_TraceCount.txt | ${MINMAX} -C | awk '{print $2}'`
 
 			[ ${PlotOrient} = "Portrait" ] && XP="-X5.6i" || XP="-X8.3i"
 			PROJ="-JX1.1i/-${PlotHeight}i"

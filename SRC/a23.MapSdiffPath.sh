@@ -59,8 +59,8 @@ do
         continue
     else
         PhaseFile=`ls ${a05DIR}/${EQ}_*_Sdiff.gmt_Enveloped`
-        PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
-        PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
+        PhaseDistMin=`${MINMAX} -C ${PhaseFile} | awk '{print $1}'`
+        PhaseDistMax=`${MINMAX} -C ${PhaseFile} | awk '{print $2}'`
     fi
 
 

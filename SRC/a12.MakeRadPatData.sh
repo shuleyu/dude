@@ -92,8 +92,8 @@ do
 			echo "        ~=> RadPat: can't find First Arrival file for phase ${Phase} !"
 			continue
 		else
-			PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
-			PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
+			PhaseDistMin=`${MINMAX} -C ${PhaseFile} | awk '{print $1}'`
+			PhaseDistMax=`${MINMAX} -C ${PhaseFile} | awk '{print $2}'`
 		fi
 
 
@@ -116,8 +116,8 @@ do
 
 
 		awk '{print $3}' ${EQ}_netwk_stnm_gcarc_az > tmpfile_gcarc_$$
-		DISTMIN=`minmax -C tmpfile_gcarc_$$ | awk '{print $1}'`
-		DISTMAX=`minmax -C tmpfile_gcarc_$$ | awk '{print $2}'`
+		DISTMIN=`${MINMAX} -C tmpfile_gcarc_$$ | awk '{print $1}'`
+		DISTMAX=`${MINMAX} -C tmpfile_gcarc_$$ | awk '{print $2}'`
 		awk '{print $4}' ${EQ}_netwk_stnm_gcarc_az > tmpfile_az_$$
 
 

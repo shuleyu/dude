@@ -73,7 +73,7 @@ do
 		# Set up normalize & cross-correlation windows for this event, for this line of ESW parameters.
 		# Default windows will be -10 ~ 15 second around PREM arrival.
 		# Search the ESWWindow section for specific window parameters.
-		Info=`grep "${EQ}" ${WORKDIR}/tmpfile_ESWWindow_${RunNumber} | awk -v L=${Num} '{if ($2==L || $2=="*") print $3,$4,$5,$6,$7}' | head -n 1`
+		Info=`grep "${EQ}" ${OUTDIR}/tmpfile_ESWWindow_${RunNumber} | awk -v L=${Num} '{if ($2==L || $2=="*") print $3,$4,$5,$6,$7}' | head -n 1`
 
 		PREMBias=""
 		TimeMin=""
@@ -139,8 +139,8 @@ do
 			continue
 		else
 			PhaseFile=`ls ${a05DIR}/${EQ}_*_${Phase}.gmt_Enveloped`
-			PhaseDistMin=`minmax -C ${PhaseFile} | awk '{print $1}'`
-			PhaseDistMax=`minmax -C ${PhaseFile} | awk '{print $2}'`
+			PhaseDistMin=`${MINMAX} -C ${PhaseFile} | awk '{print $1}'`
+			PhaseDistMax=`${MINMAX} -C ${PhaseFile} | awk '{print $2}'`
 		fi
 
 
@@ -577,7 +577,7 @@ EOF
 			XNUM=0.5
 
 			YMIN=0
-			YMAX=`minmax -C ${EQ}_Count_CCC | awk '{print $4}'`
+			YMAX=`${MINMAX} -C ${EQ}_Count_CCC | awk '{print $4}'`
 			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
@@ -604,7 +604,7 @@ EOF
 			XNUM="5"
 
 			YMIN=0
-			YMAX=`minmax -C ${EQ}_Count_DT | awk '{print $4}'`
+			YMAX=`${MINMAX} -C ${EQ}_Count_DT | awk '{print $4}'`
 			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
@@ -731,7 +731,7 @@ EOF
 			XNUM=0.5
 
 			YMIN=0
-			YMAX=`minmax -C ${EQ}_Count_CCC | awk '{print $4}'`
+			YMAX=`${MINMAX} -C ${EQ}_Count_CCC | awk '{print $4}'`
 			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `
@@ -758,7 +758,7 @@ EOF
 			XNUM="5"
 
 			YMIN=0
-			YMAX=`minmax -C ${EQ}_Count_DT | awk '{print $4}'`
+			YMAX=`${MINMAX} -C ${EQ}_Count_DT | awk '{print $4}'`
 			YMAX=` echo ${YMAX} | awk '{if ($1<45) print 45; else print 10*int(1.2*$1/10) }' `
 			YNUM=` echo ${YMAX} | awk '{if ($1<100) print 20; else print 20*int(1.0*$1/100.0)}' `
 			YINC=` echo ${YNUM} | awk '{print int(1.0*$1/2.0)}' `

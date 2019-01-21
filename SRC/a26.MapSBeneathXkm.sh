@@ -59,8 +59,8 @@ do
         continue
     else
         cat ${a05DIR}/${EQ}_*_S.gmt_Enveloped ${a05DIR}/${EQ}_*_Sdiff.gmt_Enveloped > tmpfile_$$
-        PhaseDistMin=`minmax -C tmpfile_$$ | awk '{print $1}'`
-        PhaseDistMax=`minmax -C tmpfile_$$ | awk '{print $2}'`
+        PhaseDistMin=`${MINMAX} -C tmpfile_$$ | awk '{print $1}'`
+        PhaseDistMax=`${MINMAX} -C tmpfile_$$ | awk '{print $2}'`
     fi
 
     PLOTFILE=${PLOTDIR}/${EQ}.`basename ${0%.sh}`.ps
@@ -86,7 +86,7 @@ do
 	do
 		mid=`echo "${l} ${r}" | awk '{print $1+($2-$1)/2}'`
 		taup_path -ph S,Sdiff -h ${EVDP} -deg ${mid} -mod ${Model_TT} -o stdout | awk 'NR>1 {print $2}' > tmpfile_$$
-		MinR=`minmax -C tmpfile_$$ | awk '{print $1}'`
+		MinR=`${MINMAX} -C tmpfile_$$ | awk '{print $1}'`
 		[ `echo "${MinR} < 3480+${XDepth}" | bc` -eq 1 ] && r=${mid} || l=${mid}
 	done
 	awk -v D1=${l} '{if (D1<=$3) print $1,$2,$4,$5,$6}' ${EQ}_net_stn_gcarc_stlo_stla_az > ${EQ}_net_stn_stlo_stla_az

@@ -50,7 +50,7 @@ do
 
 	# a. for Pdiff, we need extend it to 180 degree.
 
-	DISTMAX=`minmax -C ${PhaseFile_Pdiff} | awk '{print $2+0.01}'`
+	DISTMAX=`${MINMAX} -C ${PhaseFile_Pdiff} | awk '{print $2+0.01}'`
 
 	rm -f tmpfile_$$
 	for gcarc in `seq ${DISTMAX} 0.1 180`
@@ -68,7 +68,7 @@ EOF
 
 	# b. for Sdiff, we need extend it to 180 degree.
 
-	DISTMAX=`minmax -C ${PhaseFile_Sdiff} | awk '{print $2+0.01}'`
+	DISTMAX=`${MINMAX} -C ${PhaseFile_Sdiff} | awk '{print $2+0.01}'`
 
 	rm -f tmpfile_$$
 	for gcarc in `seq ${DISTMAX} 0.1 180`
@@ -87,8 +87,8 @@ EOF
 
 	# C. Select stations which have the P arrival.
 
-	PhaseDistMin=`minmax -C ${EQ}_P_TC.txt | awk '{print $1}'`
-	PhaseDistMax=`minmax -C ${EQ}_P_TC.txt | awk '{print $2}'`
+	PhaseDistMin=`${MINMAX} -C ${EQ}_P_TC.txt | awk '{print $1}'`
+	PhaseDistMax=`${MINMAX} -C ${EQ}_P_TC.txt | awk '{print $2}'`
 
 	keys="<FileName> <NETWK> <STNM> <Gcarc> <BeginTime> <EndTime>"
 	${BASHCODEDIR}/Findfield.sh ${a01DIR}/${EQ}_FileList_Info "${keys}" \
@@ -111,8 +111,8 @@ EOF
 
 	# E. Select stations which have the S arrival.
 
-	PhaseDistMin=`minmax -C ${EQ}_S_TC.txt | awk '{print $1}'`
-	PhaseDistMax=`minmax -C ${EQ}_S_TC.txt | awk '{print $2}'`
+	PhaseDistMin=`${MINMAX} -C ${EQ}_S_TC.txt | awk '{print $1}'`
+	PhaseDistMax=`${MINMAX} -C ${EQ}_S_TC.txt | awk '{print $2}'`
 
 	awk -v D1=${PhaseDistMin} -v D2=${PhaseDistMax} '{if (D1<=$4 && $4<=D2) print $0}' ${EQ}_SelectedFiles_PArrival > ${EQ}_SelectedFiles_PArrival_SArrival
 
