@@ -134,7 +134,7 @@ case "${GMTVERSION}" in
 		;;
 	5 )
 		CommandList="${CommandList} gmt"
-        MINMAX="gmtinfo"
+        MINMAX="gmt info"
 		;;
 	* )
 		echo "Wrong GMT version ! Exiting ..."

@@ -2,13 +2,13 @@
 #                             ! DIRs and files !
 # ==============================================================================
 
-<DATADIR>                     /NAS/soduser/Merge.Mw6.50km
-<OUTDIR>                      /home/shule/ForDanFrost/t001.tmp
+<DATADIR>                     /home/shule/PROJ/t052.MultipleGaussian.ULVZ
+<OUTDIR>                      /home/shule/PROJ/t001.MultipleGaussian
                               # Events to process are listed at the end of this file.
 
-<BASHCODEDIR>                 /home/shule/ForDanFrost/Fun.Bash.c001
-<CCODEDIR>                    /home/shule/ForDanFrost/Fun.C.c002
-<CPPCODEDIR>                  /home/shule/ForDanFrost/Fun.C++.c003
+<BASHCODEDIR>                 /home/shule/Research/Fun.Bash.c001
+<CCODEDIR>                    /home/shule/Research/Fun.C.c002
+<CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
 <SACDIR>                      /opt/sac
 <GMTVERSION>                  5
 							  -- 4: use GMT-4.
@@ -20,7 +20,7 @@
 
 # Run.sh ----
 
-<NewPlots>                    0
+<NewPlots>                    1
                               1 -- Will delete every previous made figures of chosen events.
 							  0 -- Will keep old figures
 
@@ -146,7 +146,7 @@ SH 4.5kmps
 
 <BP_BEGIN>
 
-Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
+T    35    90    200    1800    0.03    0.3    Own    SH    AllSt    Landscape
 
 <BP_END>
 
@@ -195,7 +195,7 @@ Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <BPC_BEGIN>
 
-0.5    Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
+0.5    T    35    90    200    1800    0.03    0.3    Own    SH    AllSt    Landscape
 
 <BPC_END>
 
@@ -218,7 +218,7 @@ Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <BPDS_BEGIN>
 
-1    1    Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
+1    1    T    35    90    200    1800    0.03    0.3    Own    SH    AllSt    Landscape
 
 <BPDS_END>
 
@@ -241,7 +241,7 @@ Z    40    60    200    1800    0.01    1    Own    P    AllSt    Landscape
 
 <ZP_BEGIN>
 
-S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Portrait
+S    T    35    90    -100    100    0.03    0.3    Own    SH    AllSt    Landscape
 
 <ZP_END>
 
@@ -268,7 +268,7 @@ S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Port
 
 <ZPC_BEGIN>
 
-0.5    S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Portrait
+0.5    S    T    35    90    -100    100    0.03    0.3    Own    SH    AllSt    Landscape
 
 <ZPC_END>
 
@@ -291,7 +291,7 @@ S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Port
 
 <ZPDS_BEGIN>
 
-1    1    S    T    40    100    -100    100    0.015    0.2    Own    SH    AllSt    Portrait
+1    1    S    T    35    90    -100    100    0.03    0.3    Own    SH    AllSt    Landscape
 
 <ZPDS_END>
 
@@ -347,9 +347,8 @@ SKKS       SV
 
 <RP_BEGIN>
 
-P          P
-PcP        P
-ScP        P
+S          SH
+ScS        SH
 
 <RP_END>
 
@@ -410,7 +409,8 @@ SKKS       SV
 
 <PhaseESW_BEGIN>
 
-ScS    T    0    40    100    0    360    0.033    0.3    AllSt
+S      T    0    35    100    0    360    0.03    0.3    AllSt
+ScS    T    0    35    100    0    360    0.03    0.3    AllSt
 
 <PhaseESW_END>
 
@@ -445,20 +445,7 @@ ScS    T    0    40    100    0    360    0.033    0.3    AllSt
 
 <ESWWindow_BEGIN>
 
-200608250044    *            5             -10         15        -10         15
-200611130126    *            7             -7          15        -10         15
-200707211534    *            8             -7          15        -10         15
-200711160313    *            3             -10         15        -10         15
-200911141944    *            3             -10         15        -10         15
-201106201636    *            2             -10         15        -10         15
-201111221848    *           -4             -10         15        -10         15
-201208020938    *           -4             -10         15        -10         15
-201211221307    *           -3             -10         15        -10         15
-201302221201    *           -3             -10         15        -10         15
-201502111857    *            3             -10         15        -10         15
-201511242250    *           -5             -10         15        -10         15
-201511260545    *           -5             -10         15        -10         15
-200609220232    *            3             -7          13        -10         15
+201500000001    *            5             -10         15        -10         15
 
 <ESWWindow_END>
 
@@ -494,11 +481,12 @@ ScS    T    0    40    100    0    360    0.033    0.3    AllSt
 #                         ,a14(if UseSNR section is set to "1"),a15.
 
 <Delta_AP>                    0.05
-<Amplitude_AP>                0.375
+<Amplitude_AP>                0.2
 
 <AP_BEGIN>
 
-S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100    SH    Portrait
+S      T    0    35    100    0    360    0.03    0.3    AllSt    -100    100    SH    Portrait
+ScS    T    0    35    100    0    360    0.03    0.3    AllSt    -100    100    SH    Portrait
 
 <AP_END>
 
@@ -535,11 +523,12 @@ S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100  
 #                         ,a14(if UseSNR section is set to "1"),a15.
 
 <Delta_APC>                   0.05
-<Amplitude_APC>               0.375
+<Amplitude_APC>               0.2
 
 <APC_BEGIN>
 
-0.5    S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100    SH    Portrait
+0.5    S      T    0    35    100    0    360    0.03    0.3    AllSt    -100    100    SH    Portrait
+0.5    ScS    T    0    35    100    0    360    0.03    0.3    AllSt    -100    100    SH    Portrait
 
 <APC_END>
 
@@ -564,7 +553,8 @@ S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100  
 
 <APDS_BEGIN>
 
-1    1    ScS    T    0    40    100    0    360    0.033    0.3    AllSt     Own    0    -100    100    SH    Portrait
+1    1    S      T    0    35    100    0    360    0.03    0.3    AllSt     Own    0    -100    100    SH    Portrait
+1    1    ScS    T    0    35    100    0    360    0.03    0.3    AllSt     Own    0    -100    100    SH    Portrait
 
 <APDS_END>
 
@@ -637,6 +627,6 @@ S    T    0    40    100    350    360    0.015    0.2    AllSt    -100    100  
 
 <EQs_BEGIN>
 
-200809180141
+201500000001
 
 <EQs_END>

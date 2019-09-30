@@ -182,7 +182,7 @@ int main(int argc, char **argv){
 	GMT_Encode_ID(API,filename,ID);
 
 	char tmpname[L_tmpnam]="tmpfile_XXXXXX";
-	mkstemp(tmpname);
+	close(mkstemp(tmpname));
 	ofstream tmpout{tmpname};
 	for (Cnt=10;Cnt<180;Cnt+=10){
 		tmpout << Cnt << " C" << endl;
@@ -232,7 +232,7 @@ int main(int argc, char **argv){
 	GMT_Call_Module(API,"psxy",GMT_MODULE_CMD,command);
 
 	strcpy(tmpname,"tmpfile_XXXXXX");
-	mkstemp(tmpname);
+	close(mkstemp(tmpname));
 	tmpout.open(tmpname);
 	for (decltype(Lon.size()) index=0;index<Lon.size();++index){
 		tmpout << Lon[index]+5 << " " << Lat[index] << " 11p,5,black 0 ML " << Name[index] << endl;
@@ -259,7 +259,7 @@ int main(int argc, char **argv){
 
 	// Texts.
 	strcpy(tmpname,"tmpfile_XXXXXX");
-	mkstemp(tmpname);
+	close(mkstemp(tmpname));
 	tmpout.open(tmpname);
 	tmpout << "0 90 25p,1,black 0 CB " + PS[EQ].substr(4,2) + "/" + PS[EQ].substr(6,2) + "/" + PS[EQ].substr(0,4) + " " + PS[EQ].substr(8,2) + ":" + PS[EQ].substr(10,2) << endl;
 	tmpout << "0 80 15p,0,black 0 CB " + PS[EQ] + " LAT=" << P[evla] << " LON=" << P[evlo]

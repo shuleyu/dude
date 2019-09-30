@@ -192,7 +192,7 @@ int main(int argc, char **argv){
 
 	// Texts.
 	char tmpname[L_tmpnam]="tmpfile_XXXXXX";
-	mkstemp(tmpname);
+	close(mkstemp(tmpname));
 	ofstream tmpout{tmpname};
 	tmpout << "0 90 25p,1,black 0 CB " + PS[EQ].substr(4,2) + "/" + PS[EQ].substr(6,2) + "/" + PS[EQ].substr(0,4) + " " + PS[EQ].substr(8,2) + ":" + PS[EQ].substr(10,2) << endl;
 	tmpout << "0 80 15p,0,black 0 CB " + PS[EQ] + " LAT=" << P[evla] << " LON=" << P[evlo]

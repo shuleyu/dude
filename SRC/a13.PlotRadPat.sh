@@ -54,6 +54,7 @@ do
 	# Note: events before 2000 will cause problem in online search method because the event naming is different.
 
     CMTInfo=`${BASHCODEDIR}/GetCMT.sh ${EQ}`
+    CMTInfo="0 90 -130 0 90 -130"
     [ -z "${CMTInfo}" ] && CMTInfo=`${BASHCODEDIR}/GetCMT.sh ${EQ%?}`
 
 	if [ -z "${CMTInfo}" ]
@@ -63,9 +64,9 @@ do
 		continue
 	fi
 
-	Strike=`echo "${CMTInfo}" | awk '{print $3}'`
-	Dip=`echo "${CMTInfo}" | awk '{print $4}'`
-	Rake=`echo "${CMTInfo}" | awk '{print $5}'`
+	Strike=`echo "${CMTInfo}" | awk '{print $1}'`
+	Dip=`echo "${CMTInfo}" | awk '{print $2}'`
+	Rake=`echo "${CMTInfo}" | awk '{print $3}'`
 
 	rm -f tmpfile_$$
 

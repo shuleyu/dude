@@ -277,6 +277,7 @@ EOF
 
 
 		# f. Process data (to sac format) in ${EQ}_List1.
+        cat ${EQ}_List1
 		rm -f ${EQ}_SACMacro1.m
 		while read filename stnm netwk T1 T2
 		do

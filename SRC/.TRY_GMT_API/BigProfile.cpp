@@ -150,7 +150,7 @@ int main(int argc, char **argv){
 	/// texts.
 	string PlotOrient=(PI[PO]==1?" ":"-P");
 	char tmpname[L_tmpnam]="tmpfile_XXXXXX";
-	mkstemp(tmpname);
+	close(mkstemp(tmpname));
 	ofstream tmpout{tmpname};
 	tmpout << "0 138 25p,1,black 0 CB " + PS[EQ].substr(4,2) + "/" + PS[EQ].substr(6,2)
 			  + "/" + PS[EQ].substr(0,4) + " " + PS[EQ].substr(8,2) + ":" + PS[EQ].substr(10,2)
