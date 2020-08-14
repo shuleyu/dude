@@ -13,7 +13,7 @@
 # ${SRCDIR}/a11.ZoomProfileIncSum.sh
 # ${SRCDIR}/a12.MakeRadPatData.sh
 # ${SRCDIR}/a13.PlotRadPat.sh
-${SRCDIR}/a14.MakeSNRData.sh
+# ${SRCDIR}/a14.MakeSNRData.sh
 # ${SRCDIR}/a15.EmpiricalSourceWavelets.sh
 # ${SRCDIR}/a16.AlignedProfile.sh
 # ${SRCDIR}/a17.AlignedProfileComb.sh

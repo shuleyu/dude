@@ -7,8 +7,8 @@ SACDIR     := /opt/sac
 # Compile parameters & dirs, some could be overwritten in Run.sh
 # Notice: the order of library names in LIBS could matter.
 CPPCOMP    := c++ -static-libstdc++ -Wall -fPIC
-INCDIR     := -I. -I$(CDIR) -I$(CPPDIR) -I$(SACDIR)/include -I/usr/include -I/opt/local/include
-LIBDIR     := -L. -L$(CDIR) -L$(SACDIR)/lib -L/usr/local/lib64 -L/opt/local/lib
+INCDIR     := -I. -I$(CDIR) -I$(CPPDIR) -I$(SACDIR)/include -I/usr/include
+LIBDIR     := -L. -L$(CDIR) -L$(SACDIR)/lib -L/usr/local/lib
 LIBS       := -lASU_tools -lsac -lsacio -lm
 
 # all source files

@@ -2,14 +2,14 @@
 #                             ! DIRs and files !
 # ==============================================================================
 
-<DATADIR>                     /home/shule/PROJ/t052.MultipleGaussian.ULVZ
-<OUTDIR>                      /home/shule/PROJ/t001.MultipleGaussian
+<DATADIR>                     /Users/shuleyu/PROJ/t041.DATA/CleanNorthAmerican
+<OUTDIR>                      /Users/shuleyu/PROJ/t001.test
                               # Events to process are listed at the end of this file.
 
-<BASHCODEDIR>                 /home/shule/Research/Fun.Bash.c001
-<CCODEDIR>                    /home/shule/Research/Fun.C.c002
-<CPPCODEDIR>                  /home/shule/Research/Fun.C++.c003
-<SACDIR>                      /opt/sac
+<BASHCODEDIR>                 /Users/shuleyu/Research/Bash
+<CCODEDIR>                    /Users/shuleyu/Research/C-Library
+<CPPCODEDIR>                  /Users/shuleyu/Research/CPP-Library
+<SACDIR>                      /usr/local/sac
 <GMTVERSION>                  5
 							  -- 4: use GMT-4.
 							  -- 5: use GMT-5.
@@ -627,6 +627,66 @@ ScS    T    0    35    100    0    360    0.03    0.3    AllSt    -100    100   
 
 <EQs_BEGIN>
 
-201500000001
+200705251747
 
 <EQs_END>
+
+200608250044
+200609220232
+200610232100
+200611130126
+
+200707120523
+200707211327
+200707211534
+200711160313
+200711180540
+200802161445
+200803242039
+200807080913
+200808262100
+200809031125
+200810122055
+200907120612
+200907141838
+200909050358
+200911130727
+200911141944
+201001252252
+201001280804
+201003042239
+201005241618
+201007120011
+201008121154
+201009130715
+201010221931
+201101010956
+201103061231
+201104021059
+201104170158
+201106080306
+201106201636
+201108150253
+201108241746
+201109021347
+201111221848
+201205141000
+201205280507
+201206020752
+201206071603
+201208020938
+201210080150
+201211101457
+201211221307
+201302221201
+201308230834
+201409241116
+201410261045
+201502021049
+201502111857
+201503230451
+201506101352
+201509281528
+201511242250
+201511260545
+201601140325

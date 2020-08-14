@@ -62,8 +62,6 @@ then
 			ps2pdf tmpfile_$$ ${EQ}.pdf
 		fi
 
-        tomini ${EQ}.pdf
-
 	done # End of EQ loop.
 
 else
@@ -105,8 +103,6 @@ else
 			echo "    ==> Combining plot(s) from a${Task}..."
 			ps2pdf tmpfile_$$ a${Task}.pdf
 		fi
-
-        tomini a${Task}.pdf
 
 	done # End of Task loop.
 
